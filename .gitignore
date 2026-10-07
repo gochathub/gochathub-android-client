@@ -7,3 +7,4 @@ capture/
 .kotlin/
 CLAUDE.md
 *.jks
+keystore.properties

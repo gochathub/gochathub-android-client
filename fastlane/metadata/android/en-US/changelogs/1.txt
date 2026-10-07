@@ -1,0 +1,1 @@
+First release: conversations, direct and group chat over goChatHub servers, WebSocket realtime, UnifiedPush push, receipts and presence.

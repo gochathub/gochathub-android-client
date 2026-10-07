@@ -32,7 +32,7 @@ public fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("GoChatHub") },
+                title = { Text("goChatHub") },
                 actions = {
                     IconButton(onClick = onNewChat) {
                         Icon(Icons.Filled.Add, contentDescription = "New chat")

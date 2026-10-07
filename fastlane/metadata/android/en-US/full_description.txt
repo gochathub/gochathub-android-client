@@ -1,0 +1,11 @@
+GoChatHub is a chat client for self-hosted goChatHub deployments: direct messages and rooms, markdown bodies, typing indicators, presence, delivery/read receipts, and one-level message threads.
+
+The app talks only to the goChatHub server you point it at:
+- Realtime over your server's WebSocket (live messages, typing, receipts, presence).
+- Push notifications through UnifiedPush — any distributor you already run (e.g. ntfy). No FCM, no third-party cloud. Push payloads carry identifiers only; messages are fetched from your server.
+- Attachments go through your server's presigned upload sessions.
+- The login screen accepts the server URL, so one installation works against any deployment. Cleartext HTTP is restricted to LAN dev hosts.
+
+Accounts are provisioned by the server administrator (there is no in-app signup or password reset). Calls and voice/video are not included — the server has no call feature.
+
+The UI is built on the MIT-licensed CometChat Android UI Kit with its networking layer re-implemented against the goChatHub REST/WebSocket API. The app is free software (MIT) and the entire build is open source — no closed-source dependencies.

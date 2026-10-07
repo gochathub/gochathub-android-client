@@ -1,3 +1,5 @@
+import java.util.Properties
+
 configurations.all {
     // UnifiedPush connector needs tink-android; force the -android flavor everywhere.
     resolutionStrategy {
@@ -7,6 +9,14 @@ configurations.all {
                 .using(module("com.google.crypto.tink:tink-android:1.17.0"))
         }
     }
+}
+
+// Signing follows the url-save-to-faved convention: keystore.properties
+// (gitignored) points at a jks inside ~/keystores/. Absent it, release
+// builds unsigned (F-Droid signs out-of-band; CI builds unsigned).
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) load(file.inputStream())
 }
 
 plugins {
@@ -28,15 +38,14 @@ android {
         versionName = "1.0.0"
     }
 
-    // Signing is optional: F-Droid builds unsigned and signs itself. For a signed
-    // release set RELEASE_KEYSTORE, RELEASE_KEYSTORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD.
-    val releaseKeystore = System.getenv("RELEASE_KEYSTORE")
-    if (releaseKeystore != null) {
-        signingConfigs.create("release") {
-            storeFile = file(releaseKeystore)
-            storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-            keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+    signingConfigs {
+        if (keystoreProperties.containsKey("storeFile")) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
         }
     }
 
@@ -45,7 +54,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            if (releaseKeystore != null) signingConfig = signingConfigs.getByName("release")
+            if (keystoreProperties.containsKey("storeFile")) signingConfig = signingConfigs.getByName("release")
         }
     }
 
