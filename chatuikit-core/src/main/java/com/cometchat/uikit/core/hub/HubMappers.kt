@@ -92,7 +92,7 @@ public object HubMappers {
                     ?: CometChatConstants.MESSAGE_TYPE_FILE
             }
         } else {
-            TextMessage(receiverUid, receiverType, dto.body)
+            TextMessage(receiverUid, dto.body, receiverType).apply { text = dto.body }
         }
         return base.apply {
             id = longId
@@ -145,7 +145,7 @@ public object HubMappers {
     public fun isoToEpoch(rfc3339: String?): Long {
         if (rfc3339.isNullOrEmpty()) return 0L
         return try {
-            java.time.Instant.parse(rfc3339).toEpochMilli() / 1000
+            java.time.OffsetDateTime.parse(rfc3339).toInstant().toEpochMilli() / 1000
         } catch (_: Exception) {
             0L
         }

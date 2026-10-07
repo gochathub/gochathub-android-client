@@ -45,7 +45,7 @@ public object Hub {
 
     public fun init(context: android.content.Context): Hub {
         appContext = context.applicationContext
-        if (store == null) {
+        if (_store == null) {
             _store = HubStore(appContext)
             _client = HubClient(_store!!)
             _socket = HubSocket(_store!!)

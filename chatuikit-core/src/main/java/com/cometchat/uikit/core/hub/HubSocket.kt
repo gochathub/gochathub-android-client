@@ -114,36 +114,36 @@ public class HubSocket(
     }
 
     private fun sendSubscribe(roomId: String) {
-        sendJson(obj("subscribe") { "room_id" to roomId })
+        sendJson(obj("subscribe") { put("room_id", JsonPrimitive(roomId)) })
     }
 
     public fun unsubscribe(roomId: String) {
         synchronized(subscribed) { subscribed.remove(roomId) }
-        sendJson(obj("unsubscribe") { "room_id" to roomId })
+        sendJson(obj("unsubscribe") { put("room_id", JsonPrimitive(roomId)) })
     }
 
     /** Delivered receipts (ADR-009) — batch ack of message ids. */
     public fun ack(messageIds: List<String>) {
         if (messageIds.isEmpty()) return
         sendJson(obj("ack") {
-            "message_ids" to buildJsonArray { messageIds.forEach { add(JsonPrimitive(it)) } }
+            put("message_ids", buildJsonArray { messageIds.forEach { add(JsonPrimitive(it)) } })
         })
     }
 
     /** Advance the read cursor. */
     public fun read(roomId: String, messageId: String) {
         sendJson(obj("read") {
-            "room_id" to roomId
-            "message_id" to messageId
+            put("room_id", JsonPrimitive(roomId))
+            put("message_id", JsonPrimitive(messageId))
         })
     }
 
     public fun typingStarted(roomId: String) {
-        sendJson(obj("typing.started") { "room_id" to roomId })
+        sendJson(obj("typing.started") { put("room_id", JsonPrimitive(roomId)) })
     }
 
     public fun typingStopped(roomId: String) {
-        sendJson(obj("typing.stopped") { "room_id" to roomId })
+        sendJson(obj("typing.stopped") { put("room_id", JsonPrimitive(roomId)) })
     }
 
     private inline fun obj(type: String, body: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit): String =

@@ -1,7 +1,7 @@
 package com.cometchat.uikit.compose.presentation.messagelist.utils
 
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
+import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.chat.models.BaseMessage
 import com.cometchat.chat.models.User
 import com.cometchat.uikit.core.state.MessageAlignment
@@ -20,7 +20,7 @@ import java.util.Calendar
  * @return The [MessageAlignment] for the message
  */
 public fun getMessageAlignment(message: BaseMessage, loggedInUser: User? = null): MessageAlignment {
-    val currentUser = loggedInUser ?: CometChat.getLoggedInUser()
+    val currentUser = loggedInUser ?: CometChatUIKit.getLoggedInUser()
     
     return when {
         // Action messages (group member joined, left, kicked, banned, scope changed)

@@ -47,7 +47,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
-import com.cometchat.chat.core.CometChat
+import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.chat.core.MessagesRequest
 import com.cometchat.chat.core.ReactionsRequest
 import com.cometchat.chat.exceptions.CometChatException
@@ -1017,21 +1017,8 @@ public fun CometChatMessageList(
                         showMessageInformation = true
                     }
                     UIKitConstants.MessageOption.REPORT -> {
-                        // Show flag message dialog
-                        flagDialogMessage = message
-                        showFlagError = false
-                        showFlagProgress = false
-                        // Fetch flag reasons from SDK
-                        CometChat.getFlagReasons(object : CometChat.CallbackListener<List<FlagReason>>() {
-                            override fun onSuccess(reasons: List<FlagReason>?) {
-                                flagReasons = reasons ?: emptyList()
-                                showFlagDialog = true
-                            }
-                            override fun onError(e: CometChatException?) {
-                                flagReasons = emptyList()
-                                showFlagDialog = true
-                            }
-                        })
+                        // ponytail: server has no report endpoint; option was removed from menus.
+                        // kept as a silent no-op for stale callers until the option set is pruned.
                     }
                     UIKitConstants.MessageOption.MESSAGE_PRIVATELY -> {
                         // Fetch the message sender
@@ -1182,7 +1169,7 @@ public fun CometChatMessageList(
     }
     
     // Get logged in user
-    val loggedInUser = remember { CometChat.getLoggedInUser() }
+    val loggedInUser = remember { CometChatUIKit.getLoggedInUser() }
     
     // Derive conversation type for avatar visibility logic
     // Edge cases:
@@ -1435,7 +1422,7 @@ public fun CometChatMessageList(
         if (currentLastMessageId > lastKnownMessageId && lastKnownMessageId > 0L && !isAtBottom && !isPaginationComplete) {
             // Real-time new message arrived while user is scrolled up
             // Count only messages from OTHER users (exclude own sent messages)
-            val loggedInUserId = CometChat.getLoggedInUser()?.uid
+            val loggedInUserId = CometChatUIKit.getLoggedInUser()?.uid
             val newMessagesCount = messagesFromVm.count { 
                 it.id > lastKnownMessageId && it.sender?.uid != loggedInUserId 
             }
@@ -2514,7 +2501,7 @@ private fun performPinSaveAction(
     optionId: String,
     message: BaseMessage
 ) {
-    val listener = object : CometChat.CallbackListener<BaseMessage>() {
+    val listener = object : com.cometchat.chat.core.CometChat.CallbackListener<BaseMessage>() {
         override fun onSuccess(result: BaseMessage?) {
             val toastRes = when (optionId) {
                 UIKitConstants.MessageOption.PIN -> R.string.cometchat_message_pinned
@@ -2530,10 +2517,26 @@ private fun performPinSaveAction(
         }
     }
     when (optionId) {
-        UIKitConstants.MessageOption.PIN -> CometChat.pinMessage(message.id, listener)
-        UIKitConstants.MessageOption.UNPIN -> CometChat.unpinMessage(message.id, listener)
-        UIKitConstants.MessageOption.SAVE -> CometChat.saveMessage(message.id, listener)
-        UIKitConstants.MessageOption.UNSAVE -> CometChat.unsaveMessage(message.id, listener)
+        // Server pins are room-level: Room.pinned_message_id (+ room.pinned_changed events).
+        UIKitConstants.MessageOption.PIN, UIKitConstants.MessageOption.UNPIN ->
+            kotlinx.coroutines.MainScope().launch {
+                try {
+                    val roomId = message.metadata?.optString("hub_room_id").orEmpty()
+                    if (roomId.isEmpty()) return@launch
+                    if (optionId == UIKitConstants.MessageOption.PIN) {
+                        com.cometchat.uikit.core.hub.Hub.client.pinMessage(
+                            roomId, com.cometchat.uikit.core.hub.HubMappers.toUuid(message).orEmpty())
+                    } else {
+                        com.cometchat.uikit.core.hub.Hub.client.unpinMessage(roomId)
+                    }
+                    listener.onSuccess(message)
+                } catch (e: Exception) {
+                    listener.onError(e as? CometChatException ?: CometChatException("hub_error", e.message ?: "pin failed"))
+                }
+            }
+        else -> {
+            // ponytail: message-level save/unsave has no server surface (isSaveMessageEnabled=false hides it)
+        }
     }
 }
 

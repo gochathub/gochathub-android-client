@@ -36,7 +36,17 @@ private val EMPTY_BODY = ByteArray(0).toRequestBody(null)
  * GoChatHub REST client (api/openapi.yaml snapshot). Bearer token rides from
  * [HubStore]; non-2xx decodes the error envelope and throws [HubApiException].
  */
-public class HubClient(private val store: HubSession, private val http: OkHttpClient = OkHttpClient()) {
+public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
+    // ponytail: console-level request log (tag HubHttp) for device debugging
+    private val http: OkHttpClient = http.newBuilder()
+        .addInterceptor { chain ->
+            val request = chain.request()
+            val response = chain.proceed(request)
+            android.util.Log.d("HubHttp", request.method + " " + request.url.encodedPath + " -> " + response.code)
+            response
+        }
+        .build()
+    private val store: HubSession = store
 
     /** Fired on any 401 (session revoked server-side); app drops to login. */
     public var onUnauthorized: (() -> Unit)? = null

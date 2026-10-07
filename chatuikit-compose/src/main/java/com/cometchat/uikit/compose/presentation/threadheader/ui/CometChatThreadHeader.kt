@@ -312,7 +312,7 @@ private fun DefaultMessageBubbleContent(
     rightBubbleMargin: PaddingValues
 ) {
     // Determine bubble alignment based on sender
-    val loggedInUser = CometChat.getLoggedInUser()
+    val loggedInUser = CometChatUIKit.getLoggedInUser()
     val isOutgoing = message.sender?.uid == loggedInUser?.uid
     
     val bubbleAlignment = when {

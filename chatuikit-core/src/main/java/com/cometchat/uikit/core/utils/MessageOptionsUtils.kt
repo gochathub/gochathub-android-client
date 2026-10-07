@@ -55,7 +55,6 @@ public object MessageOptionsUtils {
         UIKitConstants.MessageOption.SAVE,
         UIKitConstants.MessageOption.UNSAVE,
         UIKitConstants.MessageOption.MESSAGE_INFORMATION,
-        UIKitConstants.MessageOption.REPORT,
         UIKitConstants.MessageOption.MESSAGE_PRIVATELY
     )
 
@@ -81,8 +80,7 @@ public object MessageOptionsUtils {
             UIKitConstants.MessageOption.SAVE,
             UIKitConstants.MessageOption.UNSAVE,
             UIKitConstants.MessageOption.MESSAGE_INFORMATION,
-            UIKitConstants.MessageOption.REPORT,
-            UIKitConstants.MessageOption.MESSAGE_PRIVATELY
+                UIKitConstants.MessageOption.MESSAGE_PRIVATELY
         ),
         "message_image" to mediaMessageDefaultOptions,
         "message_video" to mediaMessageDefaultOptions,
@@ -108,7 +106,6 @@ public object MessageOptionsUtils {
         UIKitConstants.MessageOption.SAVE,
         UIKitConstants.MessageOption.UNSAVE,
         UIKitConstants.MessageOption.MESSAGE_INFORMATION,
-        UIKitConstants.MessageOption.REPORT,
         UIKitConstants.MessageOption.MESSAGE_PRIVATELY
     )
 
@@ -131,7 +128,6 @@ public object MessageOptionsUtils {
         UIKitConstants.MessageOption.SAVE,
         UIKitConstants.MessageOption.UNSAVE,
         UIKitConstants.MessageOption.MESSAGE_INFORMATION,
-        UIKitConstants.MessageOption.REPORT,
         UIKitConstants.MessageOption.MESSAGE_PRIVATELY
     )
 

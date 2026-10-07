@@ -36,7 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
+
+import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.chat.models.Action
 import com.cometchat.chat.models.BaseMessage
 import com.cometchat.chat.models.Group
@@ -247,7 +248,7 @@ private fun SavedMessageRow(
         title = group?.name ?: message.receiverUid
         avatarUrl = group?.icon
     } else {
-        val myUid = CometChat.getLoggedInUser()?.uid
+        val myUid = CometChatUIKit.getLoggedInUser()?.uid
         val peer: User? = if (message.sender?.uid == myUid) message.receiver as? User else message.sender
         title = peer?.name ?: peer?.uid ?: message.receiverUid
         avatarUrl = peer?.avatar
@@ -387,7 +388,7 @@ private fun getSavedMessagePrefix(context: Context, message: BaseMessage): Strin
     val prefix = ConversationUtils.getMessagePrefix(context, message)
     if (prefix.isNotEmpty()) return prefix
     if (message is Action) return ""
-    val myUid = CometChat.getLoggedInUser()?.uid
+    val myUid = CometChatUIKit.getLoggedInUser()?.uid
     return if (myUid != null && message.sender?.uid == myUid) {
         "${context.getString(R.string.cometchat_you)}: "
     } else {

@@ -33,7 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cometchat.chat.core.CometChat
+import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.chat.models.BaseMessage
 import com.cometchat.chat.models.Group
 import com.cometchat.chat.models.TextMessage
@@ -428,7 +428,7 @@ private fun PinnedMessageBubble(
     ownTextFormatters: List<CometChatTextFormatter>,
     onLongClick: (() -> Unit)? = null
 ) {
-    val isOwn = message.sender?.uid == CometChat.getLoggedInUser()?.uid
+    val isOwn = message.sender?.uid == CometChatUIKit.getLoggedInUser()?.uid
     val name = if (isOwn) stringResource(R.string.cometchat_you)
     else message.sender?.name ?: message.sender?.uid ?: ""
 

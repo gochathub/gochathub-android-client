@@ -21,7 +21,8 @@ internal class SearchDataSourceImpl : SearchDataSource {
     }
 
     override suspend fun fetchMessages(request: MessagesRequest): List<BaseMessage> {
-        val roomId = request.guid.ifEmpty { request.uid }
+        val guid = request.guid.orEmpty()
+        val roomId = if (guid.isNotEmpty()) guid else Hub.roomForPeer(request.uid.orEmpty())
         val keyword = request.searchKeyword
         val limit = if (request.limit in 1..100) request.limit else 50
         val page = Hub.client.messages(roomId, limit.coerceIn(1, 100), null)
