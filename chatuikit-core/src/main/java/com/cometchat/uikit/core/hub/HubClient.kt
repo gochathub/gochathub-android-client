@@ -30,19 +30,22 @@ public class HubNetworkException(cause: IOException) : Exception(cause)
 // encodeDefaults: LoginRequest.token_request must ride the wire even when true is the default.
 internal val JSON = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = true }
 private val JSON_MEDIA = "application/json".toMediaType()
-private val EMPTY_BODY = ByteArray(0).toRequestBody(null)
+private const val MAX_RETRY_AFTER_SECONDS = 10L
+private val EMPTY_BODY =ByteArray(0).toRequestBody(null)
 
 /**
  * GoChatHub REST client (api/openapi.yaml snapshot). Bearer token rides from
  * [HubStore]; non-2xx decodes the error envelope and throws [HubApiException].
  */
 public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
-    // ponytail: console-level request log (tag HubHttp) for device debugging
+    // Request log is off unless enabled: adb shell setprop log.tag.HubHttp DEBUG
     private val http: OkHttpClient = http.newBuilder()
         .addInterceptor { chain ->
             val request = chain.request()
             val response = chain.proceed(request)
-            android.util.Log.d("HubHttp", request.method + " " + request.url.encodedPath + " -> " + response.code)
+            if (android.util.Log.isLoggable("HubHttp", android.util.Log.DEBUG)) {
+                android.util.Log.d("HubHttp", request.method + " " + request.url.encodedPath + " -> " + response.code)
+            }
             response
         }
         .build()
@@ -75,6 +78,18 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
         cont.invokeOnCancellation { call.cancel() }
     }
 
+    /** One 429 retry after Retry-After (capped); a second 429 surfaces to the caller. */
+    private suspend fun execute(request: Request): String {
+        var response = await(http.newCall(request))
+        if (response.code == 429) {
+            val wait = (response.header("Retry-After")?.toLongOrNull() ?: 1L).coerceIn(1L, MAX_RETRY_AFTER_SECONDS)
+            response.close()
+            kotlinx.coroutines.delay(wait * 1000)
+            response = await(http.newCall(request))
+        }
+        return readBody(response)
+    }
+
     private suspend fun readBody(response: Response): String {
         check(response)
         return (response.body?.string() ?: "").also { response.close() }
@@ -101,8 +116,8 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
     }
 
     private suspend fun <T> get(path: String, serializer: kotlinx.serialization.KSerializer<T>): T {
-        val text = readBody(await(http.newCall(
-            Request.Builder().url(api(path)).header("Authorization", "Bearer ${store.token}").get().build())))
+        val text = execute(
+            Request.Builder().url(api(path)).header("Authorization", "Bearer ${store.token}").get().build())
         // The server serializes empty Go slices as JSON `null`; lists must decode as [].
         val isList = serializer.descriptor.kind == kotlinx.serialization.descriptors.StructureKind.LIST
         return JSON.decodeFromString(serializer, if (isList && text.trim() == "null") "[]" else text)
@@ -118,7 +133,7 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
                 if (body != null) body.toRequestBody(JSON_MEDIA) else null)
             else -> throw IllegalArgumentException("bad method $method")
         }
-        return readBody(await(http.newCall(rb.build())))
+        return execute(rb.build())
     }
 
     private suspend fun <T> send(method: String, path: String, body: String?, serializer: kotlinx.serialization.KSerializer<T>): T =

@@ -28,16 +28,14 @@ push → REST fetch → notification), system Back navigation.
 ## Open issues
 
 ### Bugs / gaps in shipped features
-1. **Sign-out leaves the push device registered.** `Auth.logout` wipes local state
-   but never calls `DELETE /devices/{id}` or unregisters the connector, so the
-   server keeps pushing to a signed-out phone.
-2. **Conversation list shows no last-message preview** ("Tap to start
-   conversation"): `GET /rooms` carries no last message. Fix = fetch the newest
-   message per room (watch the rate limit, see 3).
-3. **N+1 requests / rate limit.** The room list fetches `/rooms/{id}/members` for
-   every room on each refresh; the server limit is 60 RPM per visitor. Cache
-   members, refresh on `room.member_*` events only, honour `Retry-After` on 429
-   (the client exposes `retryAfterSeconds` but nothing backs off yet).
+1. **Sign-out push cleanup** — coded (`Push.deleteDevice` before logout,
+   `Push.unregister` after wipe); **not verified on device**.
+2. **Conversation-list preview** — coded (`Hub.lastMessageCache`, one `limit=1`
+   fetch per room, kept current by `Hub.applyEvent` on WS frames); **not verified
+   on device**.
+3. **Rate limit** — coded: members fetched only for direct rooms missing from
+   cache, dropped on `room.member_*` frames; client retries a 429 once after
+   `Retry-After` (cap 10 s). Unit-tested; **not verified on device**.
 4. **Header presence always "Offline".** Presence wiring exists
    (`presence.changed`) but the online flip was never exercised.
 5. **Typing indicator display** on the phone is untested (outgoing frames verified).
@@ -59,13 +57,11 @@ ViewModel's public API (its SDK listeners no-op). Calls/polls/stickers/AI assist
 were deleted.
 
 ### Tests / tooling
-- Instrumented round trip (`HubRoundTripTest`) was never run; its package
-  declaration doesn't match its directory.
-- No unit tests yet for mappers, receipt shaping (`HubEvents.receiptsChangedOf`),
-  per-request pagination state, or the null-list decode.
-- `HubHttp` debug log tag stays in `HubClient`; drop or gate before a release build.
+- Instrumented round trip (`HubRoundTripTest`) was never run (package fixed; compile unchecked, androidTest deps not cached offline).
+- No unit tests yet for mappers, receipt shaping (`HubEvents.receiptsChangedOf`)
+  or per-request pagination state.
 - No release signing / R8 config; no per-ABI or store metadata.
-- CI warns about Node 20 on `actions/checkout@v4` and `gradle/actions/setup-gradle@v4`.
+- CI actions bumped to checkout@v5 / setup-gradle@v5 (Node 20 warning; confirm on next run).
 - `HubIds` derives the numeric Kit id from the UUID (ms<<20 | 20-bit hash): by-id
   lookups (pin/delete/react) only work for messages seen this session.
 

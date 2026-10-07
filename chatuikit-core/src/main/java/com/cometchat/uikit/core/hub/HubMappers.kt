@@ -70,6 +70,9 @@ public object HubMappers {
             setConversationWith(conversationWith as com.cometchat.chat.models.AppEntity)
             unreadMessageCount = dto.unreadCount.toInt()
             updatedAt = isoToEpoch(dto.updatedAt)
+            Hub.lastMessageCache[dto.id]?.let {
+                lastMessage = message(it, receiverTypeOf(dto.type), Hub.receiverOf(dto).second)
+            }
         }
     }
 

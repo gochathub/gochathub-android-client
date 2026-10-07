@@ -56,6 +56,18 @@ public object Push {
         }
     }
 
+    /** Sign-out, while the token is still valid: drop the server-side device so it stops pushing. */
+    public suspend fun deleteDevice() {
+        val id = Hub.store.deviceId
+        if (id.isEmpty()) return
+        try { Hub.client.deleteDevice(id) } catch (_: Exception) { /* already gone or offline */ }
+    }
+
+    /** Sign-out, after the session wipe (onUnregistered's re-register then sees no session). */
+    public fun unregister(context: Context) {
+        org.unifiedpush.android.connector.UnifiedPush.unregister(context)
+    }
+
     /** Endpoint from the connector: register (device 0) or renew (known id). */
     public fun onEndpoint(context: Context, url: String, publicKey: String, authSecret: String) {
         scope.launch {

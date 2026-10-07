@@ -37,6 +37,9 @@ public object Hub {
         return ("group" to room.id)
     }
 
+    /** room id → newest message, for the conversation-list preview (live frames update it in the VM). */
+    public val lastMessageCache = ConcurrentHashMap<String, MessageDto>()
+
     /** Cached room→members for direct-room peer resolution and presence. */
     private val membersCache = ConcurrentHashMap<String, List<UserDto>>()
 
@@ -72,6 +75,7 @@ public object Hub {
         _me = null
         membersCache.clear()
         presenceCache.clear()
+        lastMessageCache.clear()
     }
 
     /** Presence stamp for a user id ("" = unknown). */
@@ -95,6 +99,22 @@ public object Hub {
     /** The other member of a direct room, from cache (fetch on miss). */
     public fun memberPeer(roomId: String): UserDto? =
         membersCache[roomId]?.firstOrNull { it.id != meId() }
+
+    /**
+     * Global cache upkeep for every frame, independent of which screens collect:
+     * membership changes drop the room's members (refetched on demand); message
+     * frames keep the conversation-list preview current.
+     */
+    public fun applyEvent(envelope: WsEnvelope) {
+        when (envelope.type) {
+            "room.member_added", "room.member_removed" -> envelope.roomId?.let { membersCache.remove(it) }
+            "message.created", "message.updated", "message.deleted" -> {
+                val dto = HubEvents.messageDtoOf(envelope) ?: return
+                val current = lastMessageCache[dto.roomId]
+                if (current == null || dto.createdAt >= current.createdAt) lastMessageCache[dto.roomId] = dto
+            }
+        }
+    }
 
     public fun rememberPresenceFromEvent(envelope: WsEnvelope) {
         val userId = (envelope.data["user_id"] as? kotlinx.serialization.json.JsonPrimitive)?.content

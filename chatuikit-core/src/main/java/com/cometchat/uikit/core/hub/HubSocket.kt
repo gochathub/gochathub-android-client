@@ -80,6 +80,7 @@ public class HubSocket(
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             val env = try { json.decodeFromString(WsEnvelope.serializer(), text) } catch (_: Exception) { null } ?: return
+            Hub.applyEvent(env)
             events.tryEmit(env)
         }
 

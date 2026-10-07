@@ -89,18 +89,37 @@ class HubClientTest {
     }
 
     @Test
-    fun `retry-after rides rate_limited`() = runBlocking {
+    fun `retry-after rides rate_limited after the one retry`() = runBlocking {
         connect()
-        server.enqueue(
-            MockResponse().setResponseCode(429).setBody("""{"error":{"code":"rate_limited","message":"slow down"}}""")
-                .setHeader("Retry-After", "5")
-        )
+        repeat(2) {
+            server.enqueue(
+                MockResponse().setResponseCode(429).setBody("""{"error":{"code":"rate_limited","message":"slow down"}}""")
+                    .setHeader("Retry-After", "1")
+            )
+        }
         try {
             runBlocking { client.rooms() }
             fail("should throw")
         } catch (e: HubApiException) {
-            assertEquals(5L, e.retryAfterSeconds)
+            assertEquals(1L, e.retryAfterSeconds)
         }
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `429 backs off then succeeds`() = runBlocking {
+        connect()
+        server.enqueue(MockResponse().setResponseCode(429).setHeader("Retry-After", "1"))
+        server.enqueue(MockResponse().setResponseCode(200).setBody("[]"))
+        assertEquals(0, client.rooms().size)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `null list body decodes as empty`() = runBlocking {
+        connect()
+        server.enqueue(MockResponse().setResponseCode(200).setBody("null"))
+        assertEquals(0, client.rooms().size)
     }
 
     @Test

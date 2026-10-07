@@ -23,11 +23,13 @@ public object Auth {
         }
 
     public suspend fun logout() {
+        Push.deleteDevice()
         try {
             Hub.client.logout()
         } catch (_: Exception) { /* wipe regardless */ }
         Hub.socket.close()
         Hub.wipe()
+        Push.unregister(Hub.ctx)
     }
 
     /**

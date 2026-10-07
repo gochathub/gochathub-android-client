@@ -1,8 +1,10 @@
-package com.cometchat.uikit.core.hub
+package com.gochathub.gochathubclient
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.gochathub.gochathubclient.Auth
+import com.cometchat.uikit.core.hub.CreateMessageRequest
+import com.cometchat.uikit.core.hub.CreateRoomRequest
+import com.cometchat.uikit.core.hub.Hub
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
