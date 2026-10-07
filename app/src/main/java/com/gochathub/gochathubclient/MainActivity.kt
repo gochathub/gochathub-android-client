@@ -1,10 +1,16 @@
 package com.gochathub.gochathubclient
 
 import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -38,6 +44,15 @@ public class MainActivity : ComponentActivity() {
         restoreSession()
         setContent {
             GoChatHubTheme {
+                // Android 13+: notifications need a runtime grant; ask once after sign-in.
+                val askNotifications = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { /* denial just means no push banners; the app keeps working */ }
+                LaunchedEffect(loggedIn) {
+                    if (loggedIn && Build.VERSION.SDK_INT >= 33 &&
+                        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                    ) askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
                 // targetSdk 36 enforces edge-to-edge; draw the app inside the safe area
                 // in-app Back: chat -> list, sub-screens -> list (root exits as usual)
                 BackHandler(enabled = loggedIn && (openRoomId != null || route != Route.HOME)) {

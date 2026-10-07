@@ -30,17 +30,28 @@ public object Push {
     private val json = Json { ignoreUnknownKeys = true }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /** App start: pick the saved/default distributor, re-register with the VAPID key. */
+    /**
+     * App start: use the saved distributor, else pick one ourselves. With several
+     * installed (e.g. DAVx5 ships an embedded FCM distributor) the connector's
+     * default lookup returns false and registration silently stops — and the
+     * project must never route through FCM, so ntfy is preferred by name and a
+     * lone distributor is accepted; otherwise we skip.
+     * ponytail: no picker UI; add one if a second real distributor is ever needed.
+     */
     public fun register(context: Context) {
-        org.unifiedpush.android.connector.UnifiedPush.tryUseCurrentOrDefaultDistributor(context) { ok ->
-            if (!ok) return@tryUseCurrentOrDefaultDistributor
-            scope.launch {
-                try {
-                    val vapid = Hub.client.vapidPublicKey()
-                    org.unifiedpush.android.connector.UnifiedPush.register(context, "", vapid)
-                } catch (_: Exception) {
-                    // no session yet — PushServiceImpl re-registers on next endpoint
-                }
+        val up = org.unifiedpush.android.connector.UnifiedPush
+        val distributor = up.getSavedDistributor(context)
+            ?: up.getDistributors(context).let { all ->
+                all.firstOrNull { it == PREFERRED_DISTRIBUTOR } ?: all.singleOrNull()
+            }
+        if (distributor == null) return
+        up.saveDistributor(context, distributor)
+        scope.launch {
+            try {
+                val vapid = Hub.client.vapidPublicKey()
+                up.register(context, "", vapid)
+            } catch (_: Exception) {
+                // no session yet — endpoint callbacks re-register on the next start
             }
         }
     }
@@ -153,4 +164,5 @@ public object Push {
     }
 
     private const val CHANNEL = "messages"
+    private const val PREFERRED_DISTRIBUTOR = "io.heckel.ntfy"
 }
