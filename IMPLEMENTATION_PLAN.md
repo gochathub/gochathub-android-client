@@ -6,7 +6,7 @@ Decisions: Kit modules copied into this Gradle build; verification on a physical
 device (Pixel 8a) with a self-hosted ntfy as the UnifiedPush distributor;
 hand-mapped kotlinx.serialization DTOs mirroring server schema names 1:1; app
 name "GoChatHub" (`com.gochathub.gochathubclient`); login screen takes the
-server URL (debug default `http://192.0.2.10:8090`, cleartext allowed only
+server URL (blank, no default; cleartext allowed only
 for LAN dev hosts in `network_security_config.xml`).
 
 ## Stage status

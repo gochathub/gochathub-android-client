@@ -28,14 +28,6 @@ android {
         versionName = "1.0.0"
     }
 
-    buildTypes {
-        debug {
-            // ponytail: default points at the dev deployment; override with -Pbase_url
-            val defaultBaseUrl = project.findProperty("base_url") as String? ?: "http://192.0.2.10:8090"
-            buildConfigField("String", "DEFAULT_BASE_URL", "\"$defaultBaseUrl\"")
-        }
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true

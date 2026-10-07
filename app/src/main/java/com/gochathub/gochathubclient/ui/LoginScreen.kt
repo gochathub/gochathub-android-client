@@ -26,14 +26,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.gochathub.gochathubclient.BuildConfig
 import com.gochathub.gochathubclient.Auth
 import com.gochathub.gochathubclient.R
 import kotlinx.coroutines.launch
 
 @Composable
 public fun LoginScreen(onLoggedIn: () -> Unit) {
-    var serverUrl by rememberSaveable { mutableStateOf(BuildConfig.DEFAULT_BASE_URL) }
+    var serverUrl by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var busy by rememberSaveable { mutableStateOf(false) }
