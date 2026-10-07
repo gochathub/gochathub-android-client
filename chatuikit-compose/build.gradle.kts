@@ -34,8 +34,6 @@ android {
 dependencies {
     api(project(":chatuikit-core"))
 
-    implementation(libs.chat.sdk.android)
-    implementation(libs.cards.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

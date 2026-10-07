@@ -50,7 +50,8 @@ public object HubMappers {
         metadata = JSONObject().apply { put(META_ID, dto.id) }
     }
 
-    public fun groupMemberDto(dto: UserDto, room: RoomDto?): GroupMember = GroupMember(dto.id, dto.displayName).apply {
+    public fun groupMemberDto(dto: UserDto, room: RoomDto?): GroupMember = GroupMember(dto.id, dto.role).apply {
+        name = dto.displayName
         avatar = dto.avatarUrl
         role = dto.role
         room?.myRole?.let { scope = it }

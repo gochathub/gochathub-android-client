@@ -31,8 +31,6 @@ dependencies {
     // ponytail: closed SDK kept for model/config types only — no CometChat.init
     // anywhere; every datasource/repository impl is rewired to the GoChatHub API.
     // If models drag in cloud protocol later, mirror them under data/model/.
-    api(libs.chat.sdk.android)
-    implementation(libs.cards.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.appcompat)

@@ -60,7 +60,7 @@ were deleted.
 - No unit tests yet for mappers, receipt shaping (`HubEvents.receiptsChangedOf`)
   or per-request pagination state.
 - Release build: R8 + optional env-driven signing (`RELEASE_KEYSTORE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`; unsigned without them), CI builds it. Verified on device 2026-10-06 (self-signed test key): login, rooms, device register + validate under R8. Chat/message paths under R8 not exercised.
-- **F-Droid blocker:** `chat-sdk-android` / `cards-android` (closed CometChat binaries, model types only) are still dependencies; F-Droid builds from source and will likely reject them. Fix = mirror the used model classes into `data/model/` and drop the dependency. No fastlane metadata yet.
+- **F-Droid blocker removed (2026-10-06):** `chat-sdk-android` / `cards-android` dropped. `chatuikit-core/src/main/java/com/cometchat/chat/**` is now an in-tree, API-compatible set of plain data holders, request/builder holders and listener types (no networking; `fetchNext` and `callExtension` return `hub_unsupported`), so the Kit sources are unchanged. Card bubble shows text only. Debug + release build, unit tests pass; release smoke test on device pending. No fastlane metadata yet.
 - CI actions bumped to checkout@v5 / setup-gradle@v5 (Node 20 warning; confirm on next run).
 - `HubIds` derives the numeric Kit id from the UUID (ms<<20 | 20-bit hash): by-id
   lookups (pin/delete/react) only work for messages seen this session.

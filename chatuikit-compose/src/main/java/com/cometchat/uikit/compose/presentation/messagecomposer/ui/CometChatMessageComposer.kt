@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.cometchat.uikit.compose.presentation.messagecomposer.ui
 
 import android.app.Activity
