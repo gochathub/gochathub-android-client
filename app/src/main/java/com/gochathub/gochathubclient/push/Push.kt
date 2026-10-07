@@ -79,7 +79,7 @@ public object Push {
                     val response = Hub.client.registerDevice(
                         RegisterDeviceRequest(
                             platform = "android",
-                            clientName = "GoChatHub",
+                            clientName = "goChatHub",
                             clientVersion = "1.0.0",
                             pushRegistration = registration
                         )
@@ -146,7 +146,7 @@ public object Push {
         try {
             val message = Hub.client.message(messageId)
             val room = Hub.roomById(roomId) ?: Hub.client.room(roomId).also { Hub.rememberRoom(it) }
-            val title = room.name ?: message.author?.displayName ?: "GoChatHub"
+            val title = room.name ?: message.author?.displayName ?: "goChatHub"
             if (message.deletedAt != null) return
             show(context, title, message.body, roomId)
         } catch (_: Exception) { /* offline: resync fills it in */ }
