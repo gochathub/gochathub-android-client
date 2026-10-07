@@ -52,20 +52,30 @@ public object HubEvents {
     public suspend fun receiptsChangedOf(envelope: WsEnvelope): MessageReceipt? {
         val uuid = messageIdOf(envelope) ?: return null
         val dto = try { Hub.client.message(uuid) } catch (_: Exception) { return null }
-        val me = Hub.me ?: return null
-        val longMessageId = HubIds.toLong(uuid)
+        val room = Hub.roomById(dto.roomId)
+        val read = dto.receipts?.readAt != null
+        val delivered = dto.receipts?.deliveredAt != null
+        if (!read && !delivered) return null
+        val direct = room?.type == "direct"
         return MessageReceipt().apply {
-            this.messageId = longMessageId
-            sender = me.let { HubMappers.user(it) }
-            receiverId = dto.roomId
-            receiverType = "user"
-            receiptType = when {
-                dto.receipts?.readAt != null -> MessageReceipt.RECEIPT_TYPE_READ_BY_ALL
-                dto.receipts?.deliveredAt != null -> MessageReceipt.RECEIPT_TYPE_DELIVERED_TO_ALL
-                else -> MessageReceipt.RECEIPT_TYPE_DELIVERED
-            }
+            this.messageId = HubIds.toLong(uuid)
             dto.receipts?.deliveredAt?.let { deliveredAt = HubMappers.isoToEpoch(it) }
             dto.receipts?.readAt?.let { readAt = HubMappers.isoToEpoch(it) }
+            if (direct) {
+                // kit semantics for a user chat: the PEER's receipt, DELIVERED/READ
+                val peer = Hub.memberPeer(dto.roomId)?.let { HubMappers.user(it) } ?: return null
+                sender = peer
+                receiverType = "user"
+                receiverId = Hub.meId()
+                receiptType = if (read) MessageReceipt.RECEIPT_TYPE_READ else MessageReceipt.RECEIPT_TYPE_DELIVERED
+            } else {
+                // group: the server aggregate is the ADR-009 "everyone" state
+                sender = Hub.me?.let { HubMappers.user(it) } ?: return null
+                receiverType = "group"
+                receiverId = dto.roomId
+                receiptType = if (read) MessageReceipt.RECEIPT_TYPE_READ_BY_ALL else MessageReceipt.RECEIPT_TYPE_DELIVERED_TO_ALL
+            }
+            timestamp = (if (read) readAt else deliveredAt)
         }
     }
 
