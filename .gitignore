@@ -6,3 +6,4 @@ local.properties
 capture/
 .kotlin/
 CLAUDE.md
+*.jks

@@ -25,4 +25,4 @@ jobs:
           }
       - uses: gradle/actions/setup-gradle@v5
       - name: Build + unit tests
-        run: ./gradlew assembleDebug :chatuikit-core:testDebugUnitTest checkContract
+        run: ./gradlew assembleDebug assembleRelease :chatuikit-core:testDebugUnitTest checkContract

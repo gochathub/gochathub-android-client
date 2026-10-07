@@ -59,7 +59,8 @@ were deleted.
 - Instrumented round trip (`HubRoundTripTest`) was never run (package fixed; compile unchecked, androidTest deps not cached offline).
 - No unit tests yet for mappers, receipt shaping (`HubEvents.receiptsChangedOf`)
   or per-request pagination state.
-- No release signing / R8 config; no per-ABI or store metadata.
+- Release build: R8 + optional env-driven signing (`RELEASE_KEYSTORE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`; unsigned without them), CI builds it. Verified on device 2026-10-06 (self-signed test key): login, rooms, device register + validate under R8. Chat/message paths under R8 not exercised.
+- **F-Droid blocker:** `chat-sdk-android` / `cards-android` (closed CometChat binaries, model types only) are still dependencies; F-Droid builds from source and will likely reject them. Fix = mirror the used model classes into `data/model/` and drop the dependency. No fastlane metadata yet.
 - CI actions bumped to checkout@v5 / setup-gradle@v5 (Node 20 warning; confirm on next run).
 - `HubIds` derives the numeric Kit id from the UUID (ms<<20 | 20-bit hash): by-id
   lookups (pin/delete/react) only work for messages seen this session.
