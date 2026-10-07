@@ -29,17 +29,16 @@ push → REST fetch → notification), system Back navigation.
 
 ### Bugs / gaps in shipped features
 1. **Sign-out push cleanup** — coded (`Push.deleteDevice` before logout,
-   `Push.unregister` after wipe); **not verified on device**.
+   `Push.unregister` after wipe); **verified on device 2026-10-06**.
 2. **Conversation-list preview** — coded (`Hub.lastMessageCache`, one `limit=1`
-   fetch per room, kept current by `Hub.applyEvent` on WS frames); **not verified
-   on device**.
+   fetch per room, kept current by `Hub.applyEvent` on WS frames); verified on device 2026-10-06.
 3. **Rate limit** — coded: members fetched only for direct rooms missing from
    cache, dropped on `room.member_*` frames; client retries a 429 once after
-   `Retry-After` (cap 10 s). Unit-tested; **not verified on device**.
+   `Retry-After` (cap 10 s). Unit-tested; device: second room-list load made no members/messages calls (cache hit); the 429 path itself was not exercised on device. Cold start still issues each room fetch twice (two concurrent loads).
 4. **Header presence always "Offline".** Presence wiring exists
    (`presence.changed`) but the online flip was never exercised.
 5. **Typing indicator display** on the phone is untested (outgoing frames verified).
-6. **Push renewal** (`PATCH /devices/{id}`), re-register after sign-out/in, and
+6. **Push renewal** (`PATCH /devices/{id}` returns 500 from the server on app start, 2026-10-06 — server-side bug, no error detail logged), re-register after sign-out/in, and
    behaviour with the app in the foreground are untested. No distributor picker UI:
    ntfy is preferred by name, else a lone distributor, else push is skipped.
 7. **Attachments** (upload session → presigned PUT → complete; download via
