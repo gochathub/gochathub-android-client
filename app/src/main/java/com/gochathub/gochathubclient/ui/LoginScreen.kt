@@ -57,6 +57,7 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
             onValueChange = { serverUrl = it },
             label = { Text("Server URL") },
             singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(12.dp))
@@ -65,6 +66,7 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
             onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(12.dp))
@@ -73,6 +75,7 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth()
@@ -93,7 +96,7 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
             enabled = !busy && username.isNotBlank() && password.isNotBlank() && serverUrl.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (busy) CircularProgressIndicator() else Text("Sign in")
+            if (busy) CircularProgressIndicator() else Text("Sign in", style = MaterialTheme.typography.labelLarge)
         }
         error?.let {
             Spacer(Modifier.height(12.dp))

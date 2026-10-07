@@ -3,6 +3,7 @@ package com.gochathub.gochathubclient
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,10 @@ public class MainActivity : ComponentActivity() {
         setContent {
             GoChatHubTheme {
                 // targetSdk 36 enforces edge-to-edge; draw the app inside the safe area
+                // in-app Back: chat -> list, sub-screens -> list (root exits as usual)
+                BackHandler(enabled = loggedIn && (openRoomId != null || route != Route.HOME)) {
+                    if (openRoomId != null) openRoomId = null else route = Route.HOME
+                }
                 Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                     when {
                         !loggedIn -> LoginScreen(onLoggedIn = { loggedIn = true; route = Route.HOME })

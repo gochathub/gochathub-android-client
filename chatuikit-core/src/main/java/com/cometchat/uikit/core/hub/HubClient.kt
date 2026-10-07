@@ -100,9 +100,13 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
         throw HubApiException(status, code, message, retryAfter)
     }
 
-    private suspend fun <T> get(path: String, serializer: kotlinx.serialization.KSerializer<T>): T =
-        JSON.decodeFromString(serializer, readBody(await(http.newCall(
-            Request.Builder().url(api(path)).header("Authorization", "Bearer ${store.token}").get().build()))))
+    private suspend fun <T> get(path: String, serializer: kotlinx.serialization.KSerializer<T>): T {
+        val text = readBody(await(http.newCall(
+            Request.Builder().url(api(path)).header("Authorization", "Bearer ${store.token}").get().build())))
+        // The server serializes empty Go slices as JSON `null`; lists must decode as [].
+        val isList = serializer.descriptor.kind == kotlinx.serialization.descriptors.StructureKind.LIST
+        return JSON.decodeFromString(serializer, if (isList && text.trim() == "null") "[]" else text)
+    }
 
     private suspend fun send(method: String, path: String, body: String?): String {
         val rb = Request.Builder().url(api(path)).header("Authorization", "Bearer ${store.token}")

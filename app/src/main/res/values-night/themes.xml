@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- dark window background so there is no light flash behind Compose -->
+    <style name="Theme.GoChatHub" parent="android:Theme.Material.NoActionBar" />
+</resources>

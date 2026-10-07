@@ -1,6 +1,7 @@
 package com.gochathub.gochathubclient.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -117,18 +118,31 @@ public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
 @Composable
 public fun GoChatHubTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
-    val scheme = hubColorScheme(dark)
-    MaterialTheme(
-        colorScheme = if (dark) darkColorScheme(
-            primary = GoChatHubColors.indigo400,
-            background = GoChatHubColors.darkBackground,
-            surface = GoChatHubColors.gray800
-        ) else lightColorScheme(
-            primary = GoChatHubColors.indigo300,
-            background = GoChatHubColors.white,
-            surface = GoChatHubColors.gray100
-        )
-    ) {
-        CometChatTheme(colorScheme = scheme, content = content)
+    val c = GoChatHubColors
+    val material = if (dark) androidx.compose.material3.darkColorScheme(
+        primary = c.indigo400, onPrimary = c.white,
+        secondary = c.slate, onSecondary = c.white,
+        background = c.darkBackground, onBackground = c.white,
+        surface = c.gray800, onSurface = c.white,
+        surfaceVariant = c.gray700, onSurfaceVariant = c.gray300,
+        outline = c.gray600, outlineVariant = c.gray700,
+        error = c.red400, onError = c.white
+    ) else androidx.compose.material3.lightColorScheme(
+        primary = c.indigo300, onPrimary = c.white,
+        secondary = c.slate, onSecondary = c.white,
+        background = c.white, onBackground = c.gray900,
+        surface = c.gray100, onSurface = c.gray900,
+        surfaceVariant = c.gray200, onSurfaceVariant = c.gray600,
+        outline = c.gray300, outlineVariant = c.gray200,
+        error = c.red400, onError = c.white
+    )
+    MaterialTheme(colorScheme = material) {
+        // paints the whole window (incl. under system bars) so no screen leaks the light window bg
+        androidx.compose.material3.Surface(
+            modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            CometChatTheme(colorScheme = hubColorScheme(dark), content = content)
+        }
     }
 }
