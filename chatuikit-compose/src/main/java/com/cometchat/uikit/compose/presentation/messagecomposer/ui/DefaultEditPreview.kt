@@ -25,9 +25,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messagecomposer.style.CometChatMessageComposerStyle
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

@@ -29,7 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.conversations.style.CometChatConversationsStyle
 import com.cometchat.uikit.compose.presentation.conversations.ui.CometChatConversations

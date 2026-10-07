@@ -105,12 +105,12 @@ import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messagecomposer.style.CometChatAttachmentTileStyle
 import com.cometchat.uikit.compose.presentation.messagecomposer.style.CometChatAttachmentTrayStyle
@@ -163,7 +163,7 @@ import com.cometchat.uikit.compose.presentation.shared.mentions.rememberMentionI
 import com.cometchat.uikit.compose.presentation.shared.mentions.ComposeMentionInsertionState
 import com.cometchat.uikit.compose.presentation.shared.mentions.ComposerMentionVisualTransformation
 import com.cometchat.uikit.compose.presentation.shared.mentions.CombinedVisualTransformation
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 import com.cometchat.uikit.compose.theme.CometChatTheme
 import android.widget.Toast
 import androidx.compose.runtime.CompositionLocalProvider

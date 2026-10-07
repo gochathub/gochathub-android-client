@@ -1,10 +1,10 @@
 package com.cometchat.uikit.core.data.repository
 
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.core.data.datasource.MessageComposerDataSource
 import com.cometchat.uikit.core.domain.repository.MessageComposerRepository
 import kotlinx.coroutines.CancellationException

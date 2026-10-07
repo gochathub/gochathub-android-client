@@ -41,11 +41,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CardMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CardMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.search.style.SearchMessageItemStyle
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.ui.buildCaptionAnnotatedString
@@ -274,7 +274,7 @@ private fun TextMessageContent(
         if (message.sender?.uid == currentUser?.uid) "You" else message.sender?.name ?: ""
     } else {
         val receiver = message.receiver
-        if (receiver is com.cometchat.chat.models.Group) {
+        if (receiver is com.gochathub.chat.models.Group) {
             receiver.name ?: ""
         } else {
             message.sender?.name ?: ""
@@ -831,7 +831,7 @@ private fun conversationTitle(message: BaseMessage, uid: String?, guid: String?)
         return if (message.sender?.uid == currentUser?.uid) "You" else message.sender?.name ?: ""
     }
     val receiver = message.receiver
-    return if (receiver is com.cometchat.chat.models.Group) {
+    return if (receiver is com.gochathub.chat.models.Group) {
         receiver.name ?: ""
     } else {
         message.sender?.name ?: ""
@@ -875,7 +875,7 @@ private fun formatTimestamp(timestamp: Long): String {
  * Returns the appropriate file icon drawable resource based on the document's MIME type.
  * Matches the Java reference implementation's file type detection logic.
  */
-private fun getDocumentFileIcon(attachment: com.cometchat.chat.models.Attachment?): Int {
+private fun getDocumentFileIcon(attachment: com.gochathub.chat.models.Attachment?): Int {
     if (attachment == null) return R.drawable.cometchat_unknown_file_icon
     val mimeType = attachment.fileMimeType ?: return R.drawable.cometchat_unknown_file_icon
     val fileUrl = attachment.fileUrl ?: ""

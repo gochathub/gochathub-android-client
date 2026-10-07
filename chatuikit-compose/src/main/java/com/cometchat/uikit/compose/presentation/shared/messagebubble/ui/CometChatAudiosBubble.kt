@@ -44,8 +44,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.Attachment
-import com.cometchat.chat.models.MediaMessage
+import com.gochathub.chat.models.Attachment
+import com.gochathub.chat.models.MediaMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.imageviewer.ui.CometChatImageViewerActivity
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

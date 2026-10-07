@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.utils
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
+import com.gochathub.chat.models.User
 
 /**
  * Shared utility object for group member permission checks and scope operations.

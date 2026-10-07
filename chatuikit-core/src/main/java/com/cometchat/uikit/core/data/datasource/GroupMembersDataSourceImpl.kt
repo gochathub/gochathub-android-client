@@ -1,13 +1,13 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.core.data.datasource.HubImpls.unsupported
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubMappers
 
 /** GoChatHub room members datasource. */
 internal class GroupMembersDataSourceImpl(
-    @Suppress("UNUSED_PARAMETER") private val requestBuilder: com.cometchat.chat.core.GroupMembersRequest.GroupMembersRequestBuilder? = null
+    @Suppress("UNUSED_PARAMETER") private val requestBuilder: com.gochathub.chat.core.GroupMembersRequest.GroupMembersRequestBuilder? = null
 ) : GroupMembersDataSource {
     private var hasMore = true
 

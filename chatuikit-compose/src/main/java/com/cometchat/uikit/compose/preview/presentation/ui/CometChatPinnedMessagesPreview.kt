@@ -2,7 +2,7 @@ package com.cometchat.uikit.compose.preview.presentation.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.presentation.pinnedmessages.ui.CometChatPinnedMessages
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.compose.theme.CometChatTheme

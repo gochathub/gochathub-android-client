@@ -12,9 +12,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.theme.CometChatTheme
 import com.cometchat.uikit.core.CometChatUIKit
 

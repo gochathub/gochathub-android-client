@@ -32,10 +32,10 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.core.ReactionsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Reaction
+import com.gochathub.chat.core.ReactionsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Reaction
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.reactionlist.style.CometChatReactionListStyle
 import com.cometchat.uikit.compose.presentation.shared.shimmer.ui.CometChatReactionListShimmer

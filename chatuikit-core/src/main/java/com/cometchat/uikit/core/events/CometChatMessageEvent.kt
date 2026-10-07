@@ -1,14 +1,14 @@
 package com.cometchat.uikit.core.events
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.InteractionReceipt
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.ReactionEvent
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.TransientMessage
-import com.cometchat.chat.models.TypingIndicator
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.InteractionReceipt
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.MessageReceipt
+import com.gochathub.chat.models.ReactionEvent
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.TransientMessage
+import com.gochathub.chat.models.TypingIndicator
 
 /**
  * Sealed class hierarchy representing all message-related events.

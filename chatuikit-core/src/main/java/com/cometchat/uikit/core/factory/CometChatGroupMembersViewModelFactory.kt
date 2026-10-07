@@ -2,7 +2,7 @@ package com.cometchat.uikit.core.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.cometchat.chat.core.GroupMembersRequest
+import com.gochathub.chat.core.GroupMembersRequest
 import com.cometchat.uikit.core.data.datasource.GroupMembersDataSourceImpl
 import com.cometchat.uikit.core.data.repository.GroupMembersRepositoryImpl
 import com.cometchat.uikit.core.domain.usecase.BanGroupMemberUseCase

@@ -16,7 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.shared.mentions.MentionDisplayContext
 import com.cometchat.uikit.compose.presentation.shared.mentions.MentionText
 import com.cometchat.uikit.compose.presentation.shared.mentions.MentionTextStyle

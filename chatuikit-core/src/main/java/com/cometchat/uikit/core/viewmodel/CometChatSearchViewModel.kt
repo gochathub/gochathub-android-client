@@ -2,13 +2,13 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.enums.AttachmentType
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.enums.AttachmentType
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.core.constants.FilterGroup
 import com.cometchat.uikit.core.constants.SearchFilter
 import com.cometchat.uikit.core.constants.SearchMode

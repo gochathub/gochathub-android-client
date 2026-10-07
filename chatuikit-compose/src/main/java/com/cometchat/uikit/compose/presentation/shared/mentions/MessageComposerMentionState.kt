@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.TextFieldValue
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter
 import com.cometchat.uikit.compose.presentation.shared.formatters.SuggestionItem
 

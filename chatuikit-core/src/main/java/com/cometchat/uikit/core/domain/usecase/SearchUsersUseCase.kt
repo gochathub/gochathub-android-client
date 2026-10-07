@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.core.UsersRequest
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.UsersRequest
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.domain.repository.UsersRepository
 
 /**

@@ -25,10 +25,10 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.search.style.SearchConversationItemStyle
 import com.cometchat.uikit.compose.presentation.shared.baseelements.avatar.CometChatAvatar
@@ -211,7 +211,7 @@ private fun DefaultSubtitleView(
     val lastMessage = conversation.lastMessage
 
     // For text messages with formatters, use rich text
-    val subtitle: AnnotatedString = if (lastMessage is com.cometchat.chat.models.TextMessage && textFormatters.isNotEmpty() && !lastMessage.text.isNullOrEmpty()) {
+    val subtitle: AnnotatedString = if (lastMessage is com.gochathub.chat.models.TextMessage && textFormatters.isNotEmpty() && !lastMessage.text.isNullOrEmpty()) {
         val formatted = FormatterUtils.getFormattedText(
             context = context,
             baseMessage = lastMessage,
@@ -352,11 +352,11 @@ private fun getLastMessagePreview(conversation: Conversation): String {
     }
 
     val messageText = when (lastMessage) {
-        is com.cometchat.chat.models.TextMessage -> {
+        is com.gochathub.chat.models.TextMessage -> {
             val text = lastMessage.text
             if (!text.isNullOrEmpty()) text else "This message was deleted"
         }
-        is com.cometchat.chat.models.MediaMessage -> {
+        is com.gochathub.chat.models.MediaMessage -> {
             when (lastMessage.type) {
                 CometChatConstants.MESSAGE_TYPE_IMAGE -> {
                     val attachment = lastMessage.attachment
@@ -368,7 +368,7 @@ private fun getLastMessagePreview(conversation: Conversation): String {
                 else -> "Document"
             }
         }
-        is com.cometchat.chat.models.CustomMessage -> {
+        is com.gochathub.chat.models.CustomMessage -> {
             val conversationText = lastMessage.conversationText
             if (!conversationText.isNullOrEmpty()) {
                 conversationText
@@ -386,13 +386,13 @@ private fun getLastMessagePreview(conversation: Conversation): String {
                 }
             }
         }
-        is com.cometchat.chat.core.Call -> {
+        is com.gochathub.chat.core.Call -> {
             getCallStatusText(lastMessage)
         }
-        is com.cometchat.chat.models.Action -> {
+        is com.gochathub.chat.models.Action -> {
             getActionMessageText(lastMessage)
         }
-        is com.cometchat.chat.models.InteractiveMessage -> {
+        is com.gochathub.chat.models.InteractiveMessage -> {
             "This message type is not supported"
         }
         else -> ""
@@ -401,7 +401,7 @@ private fun getLastMessagePreview(conversation: Conversation): String {
     // Add sender prefix for group conversations (matching reference)
     if (conversation.conversationType == CometChatConstants.CONVERSATION_TYPE_GROUP && messageText.isNotEmpty()) {
         // Don't add prefix for Action messages — they already contain the actor name
-        if (lastMessage is com.cometchat.chat.models.Action) return messageText
+        if (lastMessage is com.gochathub.chat.models.Action) return messageText
 
         val sender = lastMessage.sender
         if (sender != null) {
@@ -422,7 +422,7 @@ private fun getLastMessagePreview(conversation: Conversation): String {
     return messageText
 }
 
-private fun getCallStatusText(call: com.cometchat.chat.core.Call): String {
+private fun getCallStatusText(call: com.gochathub.chat.core.Call): String {
     val callType = if (call.type == CometChatConstants.CALL_TYPE_VIDEO) "Video" else "Voice"
     return when (call.callStatus) {
         "unanswered", "cancelled" -> "Missed $callType Call"
@@ -435,7 +435,7 @@ private fun getCallStatusText(call: com.cometchat.chat.core.Call): String {
     }
 }
 
-private fun getActionMessageText(action: com.cometchat.chat.models.Action): String {
+private fun getActionMessageText(action: com.gochathub.chat.models.Action): String {
     return action.message ?: action.action ?: ""
 }
 
@@ -443,7 +443,7 @@ private fun getActionMessageText(action: com.cometchat.chat.models.Action): Stri
  * Gets the sender prefix for group conversations (e.g., "You: " or "SenderName: ").
  * Returns empty string for non-group conversations.
  */
-private fun getSenderPrefix(conversation: Conversation, message: com.cometchat.chat.models.BaseMessage, context: android.content.Context): String {
+private fun getSenderPrefix(conversation: Conversation, message: com.gochathub.chat.models.BaseMessage, context: android.content.Context): String {
     if (conversation.conversationType != CometChatConstants.CONVERSATION_TYPE_GROUP) return ""
     val sender = message.sender ?: return ""
     val currentUser = try { CometChatUIKit.getLoggedInUser() } catch (e: Exception) { null }

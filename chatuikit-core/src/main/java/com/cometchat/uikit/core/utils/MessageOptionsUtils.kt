@@ -2,9 +2,9 @@ package com.cometchat.uikit.core.utils
 
 import android.content.Context
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.R
 import com.cometchat.uikit.core.constants.UIKitConstants
@@ -224,8 +224,8 @@ public object MessageOptionsUtils {
 
         // Check moderation status — if DISAPPROVED, restrict to Copy, Delete, Translate only
         val isDisapproved = when (message) {
-            is com.cometchat.chat.models.TextMessage -> message.moderationStatus?.name == "DISAPPROVED"
-            is com.cometchat.chat.models.MediaMessage -> message.moderationStatus?.name == "DISAPPROVED"
+            is com.gochathub.chat.models.TextMessage -> message.moderationStatus?.name == "DISAPPROVED"
+            is com.gochathub.chat.models.MediaMessage -> message.moderationStatus?.name == "DISAPPROVED"
             else -> false
         }
         val filteredOptionIds = if (isDisapproved) {
@@ -243,8 +243,8 @@ public object MessageOptionsUtils {
         // Admin/Moderator/Owner. The owner is checked explicitly because a group owner's scope is
         // not always reported as "admin", which otherwise hid admin-only options from them.
         val isGroupAdmin = group?.let {
-            it.scope == com.cometchat.chat.constants.CometChatConstants.SCOPE_ADMIN ||
-                it.scope == com.cometchat.chat.constants.CometChatConstants.SCOPE_MODERATOR ||
+            it.scope == com.gochathub.chat.constants.CometChatConstants.SCOPE_ADMIN ||
+                it.scope == com.gochathub.chat.constants.CometChatConstants.SCOPE_MODERATOR ||
                 (loggedInUser != null && it.owner == loggedInUser.uid)
         } ?: false
 
@@ -345,7 +345,7 @@ public object MessageOptionsUtils {
             UIKitConstants.MessageOption.EDIT -> {
                 // Media messages are only editable when there is caption text to edit.
                 val hasEditableContent = when (message) {
-                    is com.cometchat.chat.models.MediaMessage -> !message.caption.isNullOrEmpty()
+                    is com.gochathub.chat.models.MediaMessage -> !message.caption.isNullOrEmpty()
                     else -> true
                 }
                 if (!isMyMessage || !hasEditableContent) null

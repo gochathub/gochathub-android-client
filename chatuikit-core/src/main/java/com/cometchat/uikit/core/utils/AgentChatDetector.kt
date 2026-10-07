@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.utils
 
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.constants.UIKitConstants
 
 /**

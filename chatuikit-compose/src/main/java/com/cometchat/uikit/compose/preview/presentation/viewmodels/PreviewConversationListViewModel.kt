@@ -1,6 +1,6 @@
 package com.cometchat.uikit.compose.preview.presentation.viewmodels
 
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.compose.presentation.conversations.utils.TypingIndicator
 import com.cometchat.uikit.core.viewmodel.CometChatConversationsViewModel
 import com.cometchat.uikit.compose.preview.domain.PreviewEmptyConversationListUseCase

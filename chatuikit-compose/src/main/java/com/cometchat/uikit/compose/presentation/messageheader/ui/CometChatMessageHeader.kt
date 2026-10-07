@@ -32,11 +32,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.TypingIndicator
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.TypingIndicator
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messageheader.style.CometChatMessageHeaderStyle
 import com.cometchat.uikit.compose.presentation.shared.baseelements.avatar.CometChatAvatar

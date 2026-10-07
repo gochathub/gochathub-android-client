@@ -4,7 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.presentation.messageinformation.style.CometChatMessageInformationStyle
 import com.cometchat.uikit.compose.presentation.messageinformation.ui.CometChatMessageInformation
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
@@ -93,7 +93,7 @@ public fun PreviewMessageInformationCustomBubbleView() {
             message = createMockMessageForInfo(),
             bubbleView = { message ->
                 Text(
-                    text = "Custom: ${(message as? com.cometchat.chat.models.TextMessage)?.text ?: "Message"}",
+                    text = "Custom: ${(message as? com.gochathub.chat.models.TextMessage)?.text ?: "Message"}",
                     style = CometChatTheme.typography.bodyRegular,
                     color = CometChatTheme.colorScheme.textColorPrimary
                 )

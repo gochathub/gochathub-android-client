@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.data.repository
 
-import com.cometchat.chat.core.ReactionsRequest
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Reaction
+import com.gochathub.chat.core.ReactionsRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Reaction
 import com.cometchat.uikit.core.data.datasource.ReactionListDataSource
 import com.cometchat.uikit.core.domain.repository.ReactionListRepository
 

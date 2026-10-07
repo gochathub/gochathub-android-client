@@ -29,9 +29,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.core.state.DeleteState
 import com.cometchat.uikit.core.state.UIState

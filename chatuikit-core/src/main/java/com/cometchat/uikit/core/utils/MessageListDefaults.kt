@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.utils
 
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 import com.cometchat.uikit.core.constants.UIKitConstants
 
 /**

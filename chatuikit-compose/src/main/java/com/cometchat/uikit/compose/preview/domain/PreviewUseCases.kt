@@ -1,8 +1,8 @@
 package com.cometchat.uikit.compose.preview.domain
 
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.core.domain.repository.ConversationListRepository
 import com.cometchat.uikit.core.domain.usecase.DeleteConversationUseCase
 import com.cometchat.uikit.core.domain.usecase.GetConversationListUseCase

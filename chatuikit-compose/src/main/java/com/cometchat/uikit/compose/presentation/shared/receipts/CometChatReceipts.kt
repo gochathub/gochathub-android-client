@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.R
 
 /**

@@ -30,9 +30,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.conversations.style.CometChatConversationsStyle
 import com.cometchat.uikit.core.constants.UIKitConstants
@@ -77,7 +77,7 @@ import kotlinx.coroutines.flow.SharedFlow
 @Composable
 internal fun ConversationListContent(
     conversations: List<Conversation>,
-    typingIndicators: Map<String, com.cometchat.chat.models.TypingIndicator>,
+    typingIndicators: Map<String, com.gochathub.chat.models.TypingIndicator>,
     selectedConversations: Set<Conversation>,
     selectionMode: UIKitConstants.SelectionMode,
     style: CometChatConversationsStyle,
@@ -261,7 +261,7 @@ internal fun ConversationListContent(
  */
 private fun getTypingIndicatorForConversation(
     conversation: Conversation,
-    typingIndicators: Map<String, com.cometchat.chat.models.TypingIndicator>
+    typingIndicators: Map<String, com.gochathub.chat.models.TypingIndicator>
 ): TypingIndicator? {
     val conversationType = conversation.conversationType
     

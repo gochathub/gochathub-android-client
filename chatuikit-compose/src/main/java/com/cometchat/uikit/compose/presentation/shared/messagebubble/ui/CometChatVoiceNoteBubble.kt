@@ -2,7 +2,7 @@ package com.cometchat.uikit.compose.presentation.shared.messagebubble.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.cometchat.chat.models.MediaMessage
+import com.gochathub.chat.models.MediaMessage
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.style.CometChatAudioBubbleStyle
 import com.cometchat.uikit.core.constants.UIKitConstants
 

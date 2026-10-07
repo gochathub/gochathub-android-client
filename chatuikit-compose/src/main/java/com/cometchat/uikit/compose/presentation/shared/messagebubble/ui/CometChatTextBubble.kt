@@ -61,8 +61,8 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.Stroke
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.formatter.MarkdownRenderer

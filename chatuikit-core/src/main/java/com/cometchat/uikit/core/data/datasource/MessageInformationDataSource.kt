@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.models.MessageReceipt
 
 /**
  * Interface defining data source operations for message information.

@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.core.UsersRequest
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.UsersRequest
+import com.gochathub.chat.models.User
 
 /**
  * Interface defining data source operations for users.

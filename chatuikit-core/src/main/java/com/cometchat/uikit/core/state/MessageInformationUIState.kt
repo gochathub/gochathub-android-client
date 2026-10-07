@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.state
 
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.exceptions.CometChatException
 
 /**
  * Sealed class representing the UI states for the MessageInformation component.

@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.data.repository
 
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.core.data.datasource.ConversationListDataSource
 import com.cometchat.uikit.core.domain.repository.ConversationListRepository
 

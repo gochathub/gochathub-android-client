@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.cometchat.uikit.compose.presentation.shared.shimmer.ui.CometChatMessageListShimmer
 import com.cometchat.uikit.compose.presentation.shared.shimmer.utils.ProvideShimmerAnimation
 import com.cometchat.uikit.compose.presentation.shared.baseelements.badgecount.CometChatBadgeCount
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle
 import com.cometchat.uikit.compose.presentation.shared.interfaces.DateTimeFormatterCallback

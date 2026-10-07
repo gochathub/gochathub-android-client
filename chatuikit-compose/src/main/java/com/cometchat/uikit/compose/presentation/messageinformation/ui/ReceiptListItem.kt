@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.models.MessageReceipt
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messageinformation.style.CometChatMessageInformationStyle
 import com.cometchat.uikit.compose.presentation.shared.baseelements.avatar.CometChatAvatar

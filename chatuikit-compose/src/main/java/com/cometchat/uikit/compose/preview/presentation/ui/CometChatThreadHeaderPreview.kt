@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.presentation.threadheader.style.CometChatThreadHeaderStyle
 import com.cometchat.uikit.compose.presentation.threadheader.ui.CometChatThreadHeader
 import com.cometchat.uikit.core.constants.UIKitConstants
@@ -244,7 +244,7 @@ public fun PreviewThreadHeaderCustomBubbleView() {
             parentMessage = createMockParentMessage(),
             messageBubbleView = { message ->
                 Text(
-                    text = "Custom bubble: ${(message as? com.cometchat.chat.models.TextMessage)?.text ?: "Message"}",
+                    text = "Custom bubble: ${(message as? com.gochathub.chat.models.TextMessage)?.text ?: "Message"}",
                     style = CometChatTheme.typography.bodyRegular,
                     color = CometChatTheme.colorScheme.textColorPrimary
                 )

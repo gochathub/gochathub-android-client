@@ -34,8 +34,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.shared.baseelements.avatar.CometChatAvatar
 import com.cometchat.uikit.compose.presentation.shared.statusindicator.CometChatStatusIndicator

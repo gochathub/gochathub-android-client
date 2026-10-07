@@ -1,10 +1,10 @@
 package com.cometchat.uikit.core.domain.repository
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
-import com.cometchat.chat.core.MessagesRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
+import com.gochathub.chat.core.MessagesRequest
 import com.cometchat.uikit.core.domain.model.SurroundingMessagesResult
 
 /**

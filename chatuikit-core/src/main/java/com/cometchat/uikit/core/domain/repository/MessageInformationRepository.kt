@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.domain.repository
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MessageReceipt
 
 /**
  * Repository interface defining data operations contract for message information.

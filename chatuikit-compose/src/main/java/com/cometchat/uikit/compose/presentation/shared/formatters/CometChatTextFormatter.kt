@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.VisualTransformation
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.compose.presentation.shared.formatters.style.PromptTextStyle
 import org.json.JSONObject

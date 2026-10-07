@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.utils
 
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.core.constants.UIKitConstants
 
 /**

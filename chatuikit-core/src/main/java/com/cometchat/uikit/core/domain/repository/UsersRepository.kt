@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.domain.repository
 
-import com.cometchat.chat.core.UsersRequest
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.UsersRequest
+import com.gochathub.chat.models.User
 
 /**
  * Repository interface defining data operations contract for users.

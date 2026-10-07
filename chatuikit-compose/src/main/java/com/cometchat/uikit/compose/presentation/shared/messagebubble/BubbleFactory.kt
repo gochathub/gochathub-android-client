@@ -1,7 +1,7 @@
 package com.cometchat.uikit.compose.presentation.shared.messagebubble
 
 import androidx.compose.runtime.Composable
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.style.CometChatMessageBubbleStyle
 import com.cometchat.uikit.core.constants.UIKitConstants

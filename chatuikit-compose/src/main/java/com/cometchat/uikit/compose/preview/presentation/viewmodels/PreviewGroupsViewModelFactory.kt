@@ -1,6 +1,6 @@
 package com.cometchat.uikit.compose.preview.presentation.viewmodels
 
-import com.cometchat.chat.models.Group
+import com.gochathub.chat.models.Group
 import com.cometchat.uikit.compose.preview.data.repository.PreviewGroupsRepository
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.usecase.FetchGroupsUseCase

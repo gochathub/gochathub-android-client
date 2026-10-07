@@ -15,8 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.messagecomposer.ui.CometChatMessageComposer
 import com.cometchat.uikit.compose.presentation.messageheader.ui.CometChatMessageHeader
 import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle

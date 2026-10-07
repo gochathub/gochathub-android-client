@@ -6,4 +6,4 @@
 -keep,includedescriptorclasses class com.cometchat.uikit.core.hub.**$$serializer { *; }
 
 # Kit models are populated/serialized reflectively (Gson, JSON metadata)
--keep class com.cometchat.chat.models.** { *; }
+-keep class com.gochathub.chat.models.** { *; }

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.exceptions.CometChatException
 import com.cometchat.uikit.compose.presentation.shared.aiconversationstarter.CometChatAIConversationStarterView
 import com.cometchat.uikit.compose.presentation.shared.aiconversationsummary.CometChatAIConversationSummaryView
 import com.cometchat.uikit.compose.presentation.shared.aismartreplies.CometChatAISmartRepliesView

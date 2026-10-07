@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubIds
 import com.cometchat.uikit.core.data.datasource.HubImpls
@@ -132,7 +132,7 @@ internal class MessageListDataSourceImpl : MessageListDataSource {
     }
 
     private fun messageFor(messageId: Long): BaseMessage =
-        com.cometchat.chat.models.TextMessage("", "", "").apply {
+        com.gochathub.chat.models.TextMessage("", "", "").apply {
             id = messageId
             metadata = org.json.JSONObject().put(HubMappers.META_ID, HubIds.toStringId(messageId).orEmpty())
         }

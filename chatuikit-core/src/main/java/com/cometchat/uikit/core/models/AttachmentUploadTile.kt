@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.models
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Attachment
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Attachment
 
 /**
  * Derives an attachment's default category (`image` / `video` / `audio` / `file`) from its MIME

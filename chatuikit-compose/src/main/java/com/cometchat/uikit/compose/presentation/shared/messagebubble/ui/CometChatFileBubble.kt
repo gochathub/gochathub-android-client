@@ -34,8 +34,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.Attachment
-import com.cometchat.chat.models.MediaMessage
+import com.gochathub.chat.models.Attachment
+import com.gochathub.chat.models.MediaMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.style.CometChatFileBubbleStyle

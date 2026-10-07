@@ -9,10 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.AIAssistantMessage
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.AIAssistantMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle
 import com.cometchat.uikit.compose.presentation.messagelist.utils.getMessageAlignment
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

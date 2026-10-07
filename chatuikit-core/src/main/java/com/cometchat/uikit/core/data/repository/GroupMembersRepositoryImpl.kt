@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.repository
 
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.core.data.datasource.GroupMembersDataSource
 import com.cometchat.uikit.core.domain.repository.GroupMembersRepository
 

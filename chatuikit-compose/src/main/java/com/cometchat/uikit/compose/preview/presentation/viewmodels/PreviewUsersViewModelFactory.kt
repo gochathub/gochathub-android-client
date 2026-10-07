@@ -1,6 +1,6 @@
 package com.cometchat.uikit.compose.preview.presentation.viewmodels
 
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.preview.data.repository.PreviewUsersRepository
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.usecase.FetchUsersUseCase

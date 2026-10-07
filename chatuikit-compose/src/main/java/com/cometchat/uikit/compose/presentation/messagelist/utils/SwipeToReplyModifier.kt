@@ -29,8 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.compose.theme.CometChatTheme

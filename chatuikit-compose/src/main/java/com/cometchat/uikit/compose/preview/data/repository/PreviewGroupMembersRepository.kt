@@ -1,7 +1,7 @@
 package com.cometchat.uikit.compose.preview.data.repository
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.core.domain.repository.GroupMembersRepository
 
 /**
@@ -25,7 +25,7 @@ public class PreviewGroupMembersRepository(
     ): Result<List<GroupMember>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )

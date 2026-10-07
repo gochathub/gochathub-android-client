@@ -2,7 +2,7 @@ package com.cometchat.uikit.core.data.datasource
 
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubEvents
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.models.MessageReceipt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

@@ -59,11 +59,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.GroupMembersRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.GroupMembersRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.groupmembers.style.CometChatGroupMembersStyle
 import com.cometchat.uikit.compose.presentation.groupmembers.utils.GroupMembersUtils

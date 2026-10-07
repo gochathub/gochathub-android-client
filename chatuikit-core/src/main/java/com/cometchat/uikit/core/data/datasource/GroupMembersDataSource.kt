@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.GroupMember
 
 /**
  * Interface defining data source operations for group members.

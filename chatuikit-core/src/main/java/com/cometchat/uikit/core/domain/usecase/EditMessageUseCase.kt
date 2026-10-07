@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.core.domain.repository.MessageComposerRepository
 
 /**

@@ -22,7 +22,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.Reaction
+import com.gochathub.chat.models.Reaction
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.reactionlist.style.CometChatReactionListItemStyle
 import com.cometchat.uikit.compose.presentation.shared.baseelements.avatar.CometChatAvatar

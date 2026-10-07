@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.repository
 
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.models.GroupMember
 
 /**
  * Repository interface defining data operations contract for group members.

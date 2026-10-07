@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.events
 
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.models.Conversation
 
 /**
  * Sealed class hierarchy representing all conversation-related events.

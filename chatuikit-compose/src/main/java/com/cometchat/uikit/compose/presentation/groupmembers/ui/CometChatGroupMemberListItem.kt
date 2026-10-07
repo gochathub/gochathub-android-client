@@ -39,9 +39,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.groupmembers.style.CometChatGroupMembersStyle
 import com.cometchat.uikit.compose.presentation.groupmembers.utils.GroupMembersUtils

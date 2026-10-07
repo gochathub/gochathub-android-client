@@ -13,9 +13,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messagecomposer.style.CometChatMessageComposerStyle
 import com.cometchat.uikit.compose.presentation.messagecomposer.ui.CometChatMessageComposer

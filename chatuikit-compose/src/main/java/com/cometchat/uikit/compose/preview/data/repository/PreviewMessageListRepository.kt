@@ -1,12 +1,12 @@
 package com.cometchat.uikit.compose.preview.data.repository
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.model.SurroundingMessagesResult
 import com.cometchat.uikit.core.domain.repository.MessageListRepository
@@ -30,7 +30,7 @@ public class PreviewMessageListRepository(
     override suspend fun fetchPreviousMessages(): Result<List<BaseMessage>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )
@@ -54,7 +54,7 @@ public class PreviewMessageListRepository(
         val msg = initialMessages.find { it.id == messageId }
         return if (msg != null) Result.success(msg)
         else Result.failure(
-            com.cometchat.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
+            com.gochathub.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
         )
     }
 
@@ -68,7 +68,7 @@ public class PreviewMessageListRepository(
         val msg = initialMessages.find { it.id == messageId }
         return if (msg != null) Result.success(msg)
         else Result.failure(
-            com.cometchat.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
+            com.gochathub.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
         )
     }
 
@@ -76,7 +76,7 @@ public class PreviewMessageListRepository(
         val msg = initialMessages.find { it.id == messageId }
         return if (msg != null) Result.success(msg)
         else Result.failure(
-            com.cometchat.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
+            com.gochathub.chat.exceptions.CometChatException("NOT_FOUND", "Message not found")
         )
     }
 

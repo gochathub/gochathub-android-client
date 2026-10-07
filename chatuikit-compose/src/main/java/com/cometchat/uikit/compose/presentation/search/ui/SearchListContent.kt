@@ -23,10 +23,10 @@ import androidx.compose.ui.semantics.collectionInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.search.style.CometChatSearchStyle
 import com.cometchat.uikit.compose.presentation.shared.interfaces.DateTimeFormatterCallback

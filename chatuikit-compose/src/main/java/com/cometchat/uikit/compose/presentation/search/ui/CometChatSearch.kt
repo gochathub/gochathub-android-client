@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.cometchat.uikit.compose.presentation.shared.interfaces.DateTimeFormatterCallback
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.core.MessagesRequest
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.core.MessagesRequest
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,11 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.search.style.CometChatSearchStyle
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

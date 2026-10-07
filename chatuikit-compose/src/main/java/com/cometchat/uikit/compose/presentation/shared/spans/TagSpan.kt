@@ -3,7 +3,7 @@ package com.cometchat.uikit.compose.presentation.shared.spans
 import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.shared.formatters.SuggestionItem
 import com.cometchat.uikit.compose.presentation.shared.formatters.style.PromptTextStyle
 

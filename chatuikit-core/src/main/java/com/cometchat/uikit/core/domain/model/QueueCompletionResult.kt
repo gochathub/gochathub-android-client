@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.domain.model
 
-import com.cometchat.chat.models.AIAssistantMessage
-import com.cometchat.chat.models.AIToolArgumentMessage
-import com.cometchat.chat.models.AIToolResultMessage
+import com.gochathub.chat.models.AIAssistantMessage
+import com.gochathub.chat.models.AIToolArgumentMessage
+import com.gochathub.chat.models.AIToolResultMessage
 
 /**
  * Bundles the final messages delivered upon completion of a streaming run.

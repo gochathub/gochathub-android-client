@@ -48,15 +48,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
 import com.cometchat.uikit.core.CometChatUIKit
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.core.ReactionsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.FlagReason
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.core.ReactionsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.FlagReason
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messageinformation.style.CometChatMessageInformationStyle
 import com.cometchat.uikit.compose.presentation.messageinformation.ui.CometChatMessageInformation
@@ -2501,7 +2501,7 @@ private fun performPinSaveAction(
     optionId: String,
     message: BaseMessage
 ) {
-    val listener = object : com.cometchat.chat.core.CometChat.CallbackListener<BaseMessage>() {
+    val listener = object : com.gochathub.chat.core.CometChat.CallbackListener<BaseMessage>() {
         override fun onSuccess(result: BaseMessage?) {
             val toastRes = when (optionId) {
                 UIKitConstants.MessageOption.PIN -> R.string.cometchat_message_pinned
@@ -2599,7 +2599,7 @@ private fun shareMessage(
             }
         }
         message is MediaMessage && 
-            message.type == com.cometchat.chat.constants.CometChatConstants.MESSAGE_TYPE_IMAGE -> {
+            message.type == com.gochathub.chat.constants.CometChatConstants.MESSAGE_TYPE_IMAGE -> {
             // Share image message via Coil bitmap download
             val attachment = message.attachment ?: return
             val fileUrl = attachment.fileUrl ?: return

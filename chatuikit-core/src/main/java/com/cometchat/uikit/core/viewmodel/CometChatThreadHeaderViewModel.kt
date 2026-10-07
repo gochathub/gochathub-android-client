@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MessageReceipt
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.events.MessageStatus

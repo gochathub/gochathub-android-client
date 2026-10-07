@@ -1,10 +1,10 @@
 package com.cometchat.uikit.core.data.datasource
 
 import android.util.Base64
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.core.data.datasource.HubImpls.unsupported
 import com.cometchat.uikit.core.hub.AttachmentDto
 import com.cometchat.uikit.core.hub.CreateMessageRequest
@@ -87,9 +87,9 @@ internal class MessageComposerDataSourceImpl : MessageComposerDataSource {
             "pdf" to "application/pdf", "txt" to "text/plain", "zip" to "application/zip"
         )[ext]
             ?: when (fallback) {
-                com.cometchat.chat.constants.CometChatConstants.MESSAGE_TYPE_IMAGE -> "image/jpeg"
-                com.cometchat.chat.constants.CometChatConstants.MESSAGE_TYPE_VIDEO -> "video/mp4"
-                com.cometchat.chat.constants.CometChatConstants.MESSAGE_TYPE_AUDIO -> "audio/mpeg"
+                com.gochathub.chat.constants.CometChatConstants.MESSAGE_TYPE_IMAGE -> "image/jpeg"
+                com.gochathub.chat.constants.CometChatConstants.MESSAGE_TYPE_VIDEO -> "video/mp4"
+                com.gochathub.chat.constants.CometChatConstants.MESSAGE_TYPE_AUDIO -> "audio/mpeg"
                 else -> "application/octet-stream"
             }
     }

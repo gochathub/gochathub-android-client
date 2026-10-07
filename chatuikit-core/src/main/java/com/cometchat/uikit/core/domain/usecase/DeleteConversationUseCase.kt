@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.domain.repository.ConversationListRepository
 
 /**

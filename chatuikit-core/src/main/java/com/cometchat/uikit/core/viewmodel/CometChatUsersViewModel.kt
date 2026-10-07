@@ -2,9 +2,9 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.core.UsersRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.UsersRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.domain.usecase.FetchUsersUseCase
 import com.cometchat.uikit.core.domain.usecase.SearchUsersUseCase

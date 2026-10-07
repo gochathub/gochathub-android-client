@@ -2,8 +2,8 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.state.PinnedSavedListUIState
@@ -248,7 +248,7 @@ public open class CometChatPinnedMessagesViewModel(
      * with the same toast the kit shows on a translation error.
      */
     public fun translate(message: BaseMessage) {
-        if (message !is com.cometchat.chat.models.TextMessage) return
+        if (message !is com.gochathub.chat.models.TextMessage) return
         _actionResult.tryEmit(PinnedActionResult.TRANSLATE_FAILED)
     }
 

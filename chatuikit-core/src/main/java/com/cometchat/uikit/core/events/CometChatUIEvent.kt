@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.events
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 
 /**
  * Sealed class hierarchy representing all UI-related events.

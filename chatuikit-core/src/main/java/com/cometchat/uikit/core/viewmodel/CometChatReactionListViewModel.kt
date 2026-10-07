@@ -2,13 +2,13 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.ReactionsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Reaction
-import com.cometchat.chat.models.ReactionCount
-import com.cometchat.chat.models.ReactionEvent
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.ReactionsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Reaction
+import com.gochathub.chat.models.ReactionCount
+import com.gochathub.chat.models.ReactionEvent
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.domain.usecase.FetchReactionsUseCase
 import com.cometchat.uikit.core.domain.usecase.RemoveReactionUseCase
@@ -507,7 +507,7 @@ open public class CometChatReactionListViewModel(
     /**
      * Safely gets the logged-in user, returning null if SDK is not initialized.
      */
-    private fun getLoggedInUserSafe(): com.cometchat.chat.models.User? {
+    private fun getLoggedInUserSafe(): com.gochathub.chat.models.User? {
         return try {
             CometChatUIKit.getLoggedInUser()
         } catch (e: Exception) {

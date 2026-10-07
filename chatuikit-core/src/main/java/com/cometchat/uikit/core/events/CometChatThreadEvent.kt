@@ -17,7 +17,7 @@ public sealed class CometChatThreadEvent {
      *
      * Every surface showing that thread should, on a matching [parentMessageId], update its own
      * reactive state **and** write the flag onto the message object(s) it holds
-     * ([com.cometchat.chat.models.BaseMessage.setThreadSubscribed]) so direct reads stay coherent.
+     * ([com.gochathub.chat.models.BaseMessage.setThreadSubscribed]) so direct reads stay coherent.
      *
      * @param parentMessageId The root message id of the affected thread.
      * @param subscribed The new subscription state.

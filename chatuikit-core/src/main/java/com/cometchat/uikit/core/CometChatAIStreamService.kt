@@ -1,13 +1,13 @@
 package com.cometchat.uikit.core
 
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.AIAssistantBaseEvent
-import com.cometchat.chat.models.AIAssistantContentReceivedEvent
-import com.cometchat.chat.models.AIAssistantMessage
-import com.cometchat.chat.models.AIAssistantToolEndedEvent
-import com.cometchat.chat.models.AIToolArgumentMessage
-import com.cometchat.chat.models.AIToolResultMessage
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.AIAssistantBaseEvent
+import com.gochathub.chat.models.AIAssistantContentReceivedEvent
+import com.gochathub.chat.models.AIAssistantMessage
+import com.gochathub.chat.models.AIAssistantToolEndedEvent
+import com.gochathub.chat.models.AIToolArgumentMessage
+import com.gochathub.chat.models.AIToolResultMessage
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.domain.model.ConnectionState
 import com.cometchat.uikit.core.domain.model.QueueCompletionResult

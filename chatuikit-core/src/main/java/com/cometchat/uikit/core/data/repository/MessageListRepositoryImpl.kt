@@ -1,12 +1,12 @@
 package com.cometchat.uikit.core.data.repository
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.data.datasource.MessageListDataSource
 import com.cometchat.uikit.core.data.datasource.MessageListDataSourceImpl

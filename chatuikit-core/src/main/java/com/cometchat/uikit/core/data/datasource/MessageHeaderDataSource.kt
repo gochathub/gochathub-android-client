@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 
 /**
  * Interface defining data source operations for message header.

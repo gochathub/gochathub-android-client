@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubIds
 import com.cometchat.uikit.core.hub.HubMappers

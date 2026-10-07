@@ -3,7 +3,7 @@ package com.cometchat.uikit.compose.presentation.groupmembers.state
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.core.viewmodel.CometChatGroupMembersViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow

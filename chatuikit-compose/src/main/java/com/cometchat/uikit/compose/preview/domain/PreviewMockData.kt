@@ -1,10 +1,10 @@
 package com.cometchat.uikit.compose.preview.domain
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 
 /**
  * Preview-safe mock data factory for Compose previews.

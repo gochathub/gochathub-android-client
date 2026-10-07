@@ -34,9 +34,9 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.core.GroupsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Group
+import com.gochathub.chat.core.GroupsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Group
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.groups.style.CometChatGroupsStyle
 import com.cometchat.uikit.compose.presentation.shared.defaultstates.CometChatEmptyState

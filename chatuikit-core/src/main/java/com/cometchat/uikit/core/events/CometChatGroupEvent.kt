@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.events
 
-import com.cometchat.chat.models.Action
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Action
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
+import com.gochathub.chat.models.User
 
 /**
  * Sealed class hierarchy representing all group-related events.

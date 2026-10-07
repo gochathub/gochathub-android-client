@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.models.CardMessage
+import com.gochathub.chat.models.CardMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.theme.CometChatTheme
 import com.cometchat.uikit.core.constants.UIKitConstants

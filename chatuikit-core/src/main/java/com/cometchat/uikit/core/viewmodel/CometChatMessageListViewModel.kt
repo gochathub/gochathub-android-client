@@ -4,22 +4,22 @@ import android.content.Context
 import androidx.annotation.RawRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Action
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.Reaction
-import com.cometchat.chat.models.ReactionEvent
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.TypingIndicator
-import com.cometchat.chat.models.User
-import com.cometchat.chat.models.AIAssistantBaseEvent
-import com.cometchat.chat.models.AIAssistantMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Action
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.MessageReceipt
+import com.gochathub.chat.models.Reaction
+import com.gochathub.chat.models.ReactionEvent
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.TypingIndicator
+import com.gochathub.chat.models.User
+import com.gochathub.chat.models.AIAssistantBaseEvent
+import com.gochathub.chat.models.AIAssistantMessage
 import com.cometchat.uikit.core.CometChatAIStreamService
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.constants.UIKitConstants
@@ -37,7 +37,7 @@ import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.events.CometChatThreadEvent
 import com.cometchat.uikit.core.events.CometChatUIEvent
 import com.cometchat.uikit.core.events.MessageStatus
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.core.resources.soundmanager.CometChatSoundManager
 import com.cometchat.uikit.core.resources.soundmanager.Sound
 import com.cometchat.uikit.core.state.MessageAlignment
@@ -4037,8 +4037,8 @@ open public class CometChatMessageListViewModel(
         // Add Members screen don't have it set, but the action bubble reads it for display.
         event.actions.forEach { action ->
             if (action.message.isNullOrEmpty()) {
-                val addedByName = (action.actionBy as? com.cometchat.chat.models.User)?.name ?: event.addedBy.name
-                val addedUserName = (action.actionOn as? com.cometchat.chat.models.User)?.name ?: ""
+                val addedByName = (action.actionBy as? com.gochathub.chat.models.User)?.name ?: event.addedBy.name
+                val addedUserName = (action.actionOn as? com.gochathub.chat.models.User)?.name ?: ""
                 action.message = "$addedByName added $addedUserName"
             }
             addMessage(action)
@@ -4062,8 +4062,8 @@ open public class CometChatMessageListViewModel(
         
         // Populate the `message` field if missing
         if (event.action.message.isNullOrEmpty()) {
-            val kickedByName = (event.action.actionBy as? com.cometchat.chat.models.User)?.name ?: ""
-            val kickedUserName = (event.action.actionOn as? com.cometchat.chat.models.User)?.name ?: ""
+            val kickedByName = (event.action.actionBy as? com.gochathub.chat.models.User)?.name ?: ""
+            val kickedUserName = (event.action.actionOn as? com.gochathub.chat.models.User)?.name ?: ""
             event.action.message = "$kickedByName kicked $kickedUserName"
         }
         addMessage(event.action)
@@ -4086,8 +4086,8 @@ open public class CometChatMessageListViewModel(
         
         // Populate the `message` field if missing
         if (event.action.message.isNullOrEmpty()) {
-            val bannedByName = (event.action.actionBy as? com.cometchat.chat.models.User)?.name ?: ""
-            val bannedUserName = (event.action.actionOn as? com.cometchat.chat.models.User)?.name ?: ""
+            val bannedByName = (event.action.actionBy as? com.gochathub.chat.models.User)?.name ?: ""
+            val bannedUserName = (event.action.actionOn as? com.gochathub.chat.models.User)?.name ?: ""
             event.action.message = "$bannedByName banned $bannedUserName"
         }
         addMessage(event.action)
@@ -4110,8 +4110,8 @@ open public class CometChatMessageListViewModel(
         
         // Populate the `message` field if missing
         if (event.action.message.isNullOrEmpty()) {
-            val unbannedByName = (event.action.actionBy as? com.cometchat.chat.models.User)?.name ?: ""
-            val unbannedUserName = (event.action.actionOn as? com.cometchat.chat.models.User)?.name ?: ""
+            val unbannedByName = (event.action.actionBy as? com.gochathub.chat.models.User)?.name ?: ""
+            val unbannedUserName = (event.action.actionOn as? com.gochathub.chat.models.User)?.name ?: ""
             event.action.message = "$unbannedByName unbanned $unbannedUserName"
         }
         addMessage(event.action)
@@ -4134,8 +4134,8 @@ open public class CometChatMessageListViewModel(
         
         // Populate the `message` field if missing
         if (event.action.message.isNullOrEmpty()) {
-            val changedByName = (event.action.actionBy as? com.cometchat.chat.models.User)?.name ?: ""
-            val memberName = (event.action.actionOn as? com.cometchat.chat.models.User)?.name ?: ""
+            val changedByName = (event.action.actionBy as? com.gochathub.chat.models.User)?.name ?: ""
+            val memberName = (event.action.actionOn as? com.gochathub.chat.models.User)?.name ?: ""
             val newScope = event.action.newScope ?: ""
             event.action.message = "$changedByName made $memberName $newScope"
         }

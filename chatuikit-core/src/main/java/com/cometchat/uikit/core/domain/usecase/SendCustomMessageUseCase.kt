@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.models.CustomMessage
+import com.gochathub.chat.models.CustomMessage
 import com.cometchat.uikit.core.utils.CometChatThreadSubscription
 import com.cometchat.uikit.core.domain.repository.MessageComposerRepository
 

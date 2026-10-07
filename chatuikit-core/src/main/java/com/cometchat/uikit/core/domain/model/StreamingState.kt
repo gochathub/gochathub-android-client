@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.model
 
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.exceptions.CometChatException
 
 /**
  * Represents the lifecycle of a streaming session for a given Run ID

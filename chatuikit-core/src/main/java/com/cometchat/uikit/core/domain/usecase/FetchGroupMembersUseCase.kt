@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.models.GroupMember
 import com.cometchat.uikit.core.domain.repository.GroupMembersRepository
 
 /**

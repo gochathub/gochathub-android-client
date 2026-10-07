@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.hub
 
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame

@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.core.GroupMembersRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.GroupMember
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.core.GroupMembersRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.GroupMember
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException

@@ -3,7 +3,7 @@ package com.gochathub.gochathubclient.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.users.ui.CometChatUsers
 
 /**

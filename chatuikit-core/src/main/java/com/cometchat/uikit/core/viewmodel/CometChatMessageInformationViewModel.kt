@@ -2,10 +2,10 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MessageReceipt
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MessageReceipt
 import com.cometchat.uikit.core.data.datasource.MessageReceiptEventListener
 import com.cometchat.uikit.core.domain.repository.MessageInformationRepository
 import com.cometchat.uikit.core.state.MessageInformationUIState

@@ -35,9 +35,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messageinformation.style.CometChatMessageInformationStyle
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatMentionsFormatter
@@ -446,7 +446,7 @@ private fun UserReceiptSection(
  */
 @Composable
 private fun GroupReceiptList(
-    receipts: List<com.cometchat.chat.models.MessageReceipt>,
+    receipts: List<com.gochathub.chat.models.MessageReceipt>,
     style: CometChatMessageInformationStyle
 ) {
     LazyColumn(

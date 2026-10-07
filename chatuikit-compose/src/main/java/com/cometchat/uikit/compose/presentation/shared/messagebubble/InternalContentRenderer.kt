@@ -30,14 +30,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.AIAssistantMessage
-import com.cometchat.chat.models.Action
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.AIAssistantMessage
+import com.gochathub.chat.models.Action
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter
 import com.cometchat.uikit.compose.presentation.shared.mediaselection.cometchatFileProviderAuthority
 import com.cometchat.uikit.compose.presentation.shared.mentions.MentionTextStyle
@@ -636,7 +636,7 @@ internal object InternalContentRenderer {
      * @param mediaMessage The media message
      * @return List of attachments (may be empty)
      */
-    private fun getAttachmentsList(mediaMessage: MediaMessage): List<com.cometchat.chat.models.Attachment> {
+    private fun getAttachmentsList(mediaMessage: MediaMessage): List<com.gochathub.chat.models.Attachment> {
         // Prefer the SDK-parsed multi-attachment list. Multi-file messages are sent via the native
         // setAttachments (plural), NOT a metadata "attachments" array — so this must mirror the
         // render path (resolveAttachments). Without it the fallbacks below return only the single
@@ -648,10 +648,10 @@ internal object InternalContentRenderer {
             val metadata = mediaMessage.metadata
             if (metadata != null && metadata.has("attachments")) {
                 val attachmentsArray = metadata.getJSONArray("attachments")
-                val result = mutableListOf<com.cometchat.chat.models.Attachment>()
+                val result = mutableListOf<com.gochathub.chat.models.Attachment>()
                 for (i in 0 until attachmentsArray.length()) {
                     val json = attachmentsArray.getJSONObject(i)
-                    val attachment = com.cometchat.chat.models.Attachment().apply {
+                    val attachment = com.gochathub.chat.models.Attachment().apply {
                         fileUrl = json.optString("url", "")
                         fileName = json.optString("fileName", "")
                         fileExtension = json.optString("extension", "")
@@ -670,7 +670,7 @@ internal object InternalContentRenderer {
     }
 
     /** Opens a single image attachment in the in-app image viewer. */
-    private fun openImageViewer(context: android.content.Context, attachment: com.cometchat.chat.models.Attachment) {
+    private fun openImageViewer(context: android.content.Context, attachment: com.gochathub.chat.models.Attachment) {
         openImageViewer(context, listOf(attachment), 0)
     }
 
@@ -680,7 +680,7 @@ internal object InternalContentRenderer {
      */
     private fun openImageViewer(
         context: android.content.Context,
-        attachments: List<com.cometchat.chat.models.Attachment>,
+        attachments: List<com.gochathub.chat.models.Attachment>,
         startIndex: Int
     ) {
         // Keep all four lists parallel (urls included) — dropping empty-url entries here would
@@ -698,7 +698,7 @@ internal object InternalContentRenderer {
     }
 
     /** Opens a single video attachment in the in-app (non full-screen) video player. */
-    private fun openVideoViewer(context: android.content.Context, attachment: com.cometchat.chat.models.Attachment) {
+    private fun openVideoViewer(context: android.content.Context, attachment: com.gochathub.chat.models.Attachment) {
         openVideoViewer(context, listOf(attachment), 0)
     }
 
@@ -708,7 +708,7 @@ internal object InternalContentRenderer {
      */
     private fun openVideoViewer(
         context: android.content.Context,
-        attachments: List<com.cometchat.chat.models.Attachment>,
+        attachments: List<com.gochathub.chat.models.Attachment>,
         startIndex: Int
     ) {
         // Keep all four lists parallel (urls included) — dropping empty-url entries here would
@@ -1343,7 +1343,7 @@ internal object InternalContentRenderer {
         messageBubbleStyle: CometChatMessageBubbleStyle?,
         onLongClick: (() -> Unit)? = null
     ): Boolean {
-        val cardMessage = message as? com.cometchat.chat.models.CardMessage ?: return false
+        val cardMessage = message as? com.gochathub.chat.models.CardMessage ?: return false
 
         com.cometchat.uikit.compose.presentation.shared.messagebubble.ui.CometChatCardBubble(
             message = cardMessage,

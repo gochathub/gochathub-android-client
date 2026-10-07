@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.exceptions.CometChatException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
 import kotlin.coroutines.resume

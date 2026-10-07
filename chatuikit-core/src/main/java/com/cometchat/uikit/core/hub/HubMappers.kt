@@ -1,15 +1,15 @@
 package com.cometchat.uikit.core.hub
 
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Attachment
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.ReactionCount
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Attachment
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.ReactionCount
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import org.json.JSONObject
 
 /**
@@ -68,7 +68,7 @@ public object HubMappers {
             if (dto.type == "direct") CometChatConstants.RECEIVER_TYPE_USER
             else CometChatConstants.RECEIVER_TYPE_GROUP
         ).apply {
-            setConversationWith(conversationWith as com.cometchat.chat.models.AppEntity)
+            setConversationWith(conversationWith as com.gochathub.chat.models.AppEntity)
             unreadMessageCount = dto.unreadCount.toInt()
             updatedAt = isoToEpoch(dto.updatedAt)
             Hub.lastMessageCache[dto.id]?.let {

@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.formatter.RichTextFormat
 import com.cometchat.uikit.core.formatter.RichTextSpanManager

@@ -35,14 +35,14 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 
 import com.cometchat.uikit.core.CometChatUIKit
-import com.cometchat.chat.models.Action
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.Action
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.conversations.utils.ConversationUtils
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatMentionsFormatter

@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.state
 
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Group
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Group
 
 /**
  * Sealed class representing UI states for the groups screen.

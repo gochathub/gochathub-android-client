@@ -1,10 +1,10 @@
 package com.cometchat.uikit.compose.presentation.groupmembers.utils
 
 import android.content.Context
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.GroupMember
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.shared.views.popupmenu.MenuItem
 import com.cometchat.uikit.core.constants.UIKitConstants

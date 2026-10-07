@@ -52,9 +52,9 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import com.cometchat.chat.models.Attachment
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MediaMessage
+import com.gochathub.chat.models.Attachment
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MediaMessage
 import androidx.compose.ui.text.TextStyle
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

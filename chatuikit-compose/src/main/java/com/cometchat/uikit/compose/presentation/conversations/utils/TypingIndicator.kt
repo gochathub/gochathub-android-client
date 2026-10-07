@@ -1,6 +1,6 @@
 package com.cometchat.uikit.compose.presentation.conversations.utils
 
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 
 /**
  * Data class representing a typing indicator state.

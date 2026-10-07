@@ -1,7 +1,7 @@
 package com.cometchat.uikit.compose.preview.data.repository
 
-import com.cometchat.chat.core.GroupsRequest
-import com.cometchat.chat.models.Group
+import com.gochathub.chat.core.GroupsRequest
+import com.gochathub.chat.models.Group
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.repository.GroupsRepository
 
@@ -22,7 +22,7 @@ public class PreviewGroupsRepository(
     override suspend fun fetchGroups(request: GroupsRequest): Result<List<Group>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )

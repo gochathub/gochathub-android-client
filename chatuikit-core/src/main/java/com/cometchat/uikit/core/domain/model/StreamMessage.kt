@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.model
 
-import com.cometchat.chat.models.AIAssistantMessage
+import com.gochathub.chat.models.AIAssistantMessage
 import com.cometchat.uikit.core.constants.UIKitConstants
 
 public class StreamMessage(

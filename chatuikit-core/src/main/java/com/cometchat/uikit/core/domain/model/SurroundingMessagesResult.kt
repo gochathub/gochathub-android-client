@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.domain.model
 
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 
 /**
  * Result of fetching messages surrounding a target message.

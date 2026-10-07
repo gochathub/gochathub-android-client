@@ -2,7 +2,7 @@ package com.cometchat.uikit.compose.presentation.shared.formatters
 
 import android.content.Context
 import androidx.compose.ui.text.AnnotatedString
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.utils.CometChatLogger
 

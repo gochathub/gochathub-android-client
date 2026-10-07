@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 import com.cometchat.uikit.compose.presentation.groupmembers.style.CometChatGroupMembersStyle
 import com.cometchat.uikit.compose.presentation.groupmembers.ui.CometChatGroupMembers
 import com.cometchat.uikit.core.constants.UIKitConstants

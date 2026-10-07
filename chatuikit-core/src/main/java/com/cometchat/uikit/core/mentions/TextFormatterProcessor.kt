@@ -3,7 +3,7 @@ package com.cometchat.uikit.core.mentions
 import android.content.Context
 import android.text.Editable
 import android.text.Spannable
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.models.BaseMessage
 
 /**
  * TextFormatterProcessor handles processing of text formatters before sending messages.

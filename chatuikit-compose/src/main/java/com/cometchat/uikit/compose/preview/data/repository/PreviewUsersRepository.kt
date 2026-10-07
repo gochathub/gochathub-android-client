@@ -1,7 +1,7 @@
 package com.cometchat.uikit.compose.preview.data.repository
 
-import com.cometchat.chat.core.UsersRequest
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.UsersRequest
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.repository.UsersRepository
 
@@ -22,7 +22,7 @@ public class PreviewUsersRepository(
     override suspend fun getUsers(request: UsersRequest): Result<List<User>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )

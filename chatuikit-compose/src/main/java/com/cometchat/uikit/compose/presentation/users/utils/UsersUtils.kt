@@ -1,6 +1,6 @@
 package com.cometchat.uikit.compose.presentation.users.utils
 
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.User
 
 /**
  * Utility functions for the CometChatUsers component.

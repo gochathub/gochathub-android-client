@@ -31,7 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.exceptions.CometChatException
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatThreadEvent
@@ -39,8 +39,8 @@ import com.cometchat.uikit.core.utils.CometChatThreadSubscription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.models.BaseMessage
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatMentionsFormatter
 import com.cometchat.uikit.compose.presentation.shared.formatters.CometChatTextFormatter

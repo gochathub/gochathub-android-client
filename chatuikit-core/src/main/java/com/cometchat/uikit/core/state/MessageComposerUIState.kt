@@ -2,8 +2,8 @@ package com.cometchat.uikit.core.state
 
 import android.content.Context
 import android.view.View
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.BaseMessage
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.BaseMessage
 
 /**
  * Sealed class representing UI states for the message composer.

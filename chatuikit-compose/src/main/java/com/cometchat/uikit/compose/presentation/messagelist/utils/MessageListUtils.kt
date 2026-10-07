@@ -1,9 +1,9 @@
 package com.cometchat.uikit.compose.presentation.messagelist.utils
 
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 import com.cometchat.uikit.core.CometChatUIKit
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.state.MessageAlignment
 import java.util.Calendar
 

@@ -1,8 +1,8 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.core.ConversationsRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
 
 /**
  * Interface defining data source operations for conversations.

@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
-import com.cometchat.chat.constants.CometChatConstants
+import com.gochathub.chat.constants.CometChatConstants
 import com.cometchat.uikit.compose.R
 import com.cometchat.uikit.compose.presentation.messagecomposer.style.CometChatAttachmentTileStyle
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.utils.formatFileSize

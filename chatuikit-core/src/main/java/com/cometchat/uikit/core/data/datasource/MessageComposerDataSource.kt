@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.TextMessage
 
 /**
  * Interface defining data source operations for message composer.
@@ -25,7 +25,7 @@ public interface MessageComposerDataSource {
      * 
      * @param message The TextMessage object containing the message text and receiver information
      * @return The sent TextMessage with updated metadata (id, sentAt, etc.)
-     * @throws com.cometchat.chat.exceptions.CometChatException if sending fails
+     * @throws com.gochathub.chat.exceptions.CometChatException if sending fails
      */
     suspend public fun sendTextMessage(message: TextMessage): TextMessage
     
@@ -34,7 +34,7 @@ public interface MessageComposerDataSource {
      * 
      * @param message The MediaMessage object containing the media file and receiver information
      * @return The sent MediaMessage with updated metadata (id, sentAt, attachment URL, etc.)
-     * @throws com.cometchat.chat.exceptions.CometChatException if sending fails
+     * @throws com.gochathub.chat.exceptions.CometChatException if sending fails
      */
     suspend public fun sendMediaMessage(message: MediaMessage): MediaMessage
     
@@ -43,7 +43,7 @@ public interface MessageComposerDataSource {
      * 
      * @param message The CustomMessage object containing custom data and receiver information
      * @return The sent CustomMessage with updated metadata (id, sentAt, etc.)
-     * @throws com.cometchat.chat.exceptions.CometChatException if sending fails
+     * @throws com.gochathub.chat.exceptions.CometChatException if sending fails
      */
     suspend public fun sendCustomMessage(message: CustomMessage): CustomMessage
     
@@ -53,7 +53,7 @@ public interface MessageComposerDataSource {
      * @param message The message with updated content (text for TextMessage, caption for
      *                MediaMessage) and the original message ID
      * @return The edited BaseMessage with updated metadata
-     * @throws com.cometchat.chat.exceptions.CometChatException if editing fails
+     * @throws com.gochathub.chat.exceptions.CometChatException if editing fails
      */
     suspend public fun editMessage(message: BaseMessage): BaseMessage
 }

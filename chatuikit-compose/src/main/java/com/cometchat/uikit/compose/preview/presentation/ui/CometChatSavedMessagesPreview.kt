@@ -2,10 +2,10 @@ package com.cometchat.uikit.compose.preview.presentation.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.savedmessages.ui.CometChatSavedMessages
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.compose.theme.CometChatTheme

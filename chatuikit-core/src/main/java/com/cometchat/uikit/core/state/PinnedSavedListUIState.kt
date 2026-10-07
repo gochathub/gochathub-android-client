@@ -1,6 +1,6 @@
 package com.cometchat.uikit.core.state
 
-import com.cometchat.chat.exceptions.CometChatException
+import com.gochathub.chat.exceptions.CometChatException
 
 /**
  * UI states shared by the Pinned Messages and Saved Messages list screens.

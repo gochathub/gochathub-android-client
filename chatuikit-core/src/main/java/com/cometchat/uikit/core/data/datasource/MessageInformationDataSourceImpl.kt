@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.MessageReceipt
+import com.gochathub.chat.models.User
 
 /**
  * Server exposes only aggregate receipts (ADR-009); per-user receipt details

@@ -26,8 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.models.TextMessage
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.models.TextMessage
 import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle
 import com.cometchat.uikit.compose.presentation.shared.defaultstates.CometChatEmptyState
 import com.cometchat.uikit.compose.presentation.shared.defaultstates.CometChatErrorState

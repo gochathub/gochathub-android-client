@@ -4,19 +4,19 @@ import android.content.Context
 import androidx.annotation.RawRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Action
-import com.cometchat.chat.models.Conversation
-import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
-import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.TypingIndicator
-import com.cometchat.chat.models.User
+import com.gochathub.chat.constants.CometChatConstants
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.Action
+import com.gochathub.chat.models.Conversation
+import com.gochathub.chat.models.Group
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.CustomMessage
+import com.gochathub.chat.models.MediaMessage
+import com.gochathub.chat.models.MessageReceipt
+import com.gochathub.chat.models.TextMessage
+import com.gochathub.chat.models.TypingIndicator
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.constants.UIKitConstants
 
@@ -271,7 +271,7 @@ open public class CometChatConversationsViewModel(
     public fun pinConversation(
         conversation: Conversation,
         onSuccess: (() -> Unit)? = null,
-        onError: ((com.cometchat.chat.exceptions.CometChatException?) -> Unit)? = null
+        onError: ((com.gochathub.chat.exceptions.CometChatException?) -> Unit)? = null
     ) {
         // ponytail: the server has no conversation-pin endpoint (only a pinned
         // message per room) — the pin reports unsupported so the UI can surface it.
@@ -601,7 +601,7 @@ open public class CometChatConversationsViewModel(
     }
 
     /** The list's current last message for a conversation id (frames carry none). */
-    private fun listOfConversationLastMessage(conversationId: String?): com.cometchat.chat.models.BaseMessage? =
+    private fun listOfConversationLastMessage(conversationId: String?): com.gochathub.chat.models.BaseMessage? =
         _conversations.value.firstOrNull { it.conversationId == conversationId }?.lastMessage
 
     /**
@@ -920,7 +920,7 @@ open public class CometChatConversationsViewModel(
      *
      * Merge semantics: every field the caller actually supplied is taken, and the rest of
      * the existing entry is preserved. This is what lets an integrator refresh
-     * [Conversation.conversationWith] — a [com.cometchat.chat.models.Group] whose metadata
+     * [Conversation.conversationWith] — a [com.gochathub.chat.models.Group] whose metadata
      * changed server-side, say — for which the SDK emits no real-time event.
      *
      * The counters — [Conversation.unreadMessageCount], [Conversation.unreadMentionsCount],

@@ -1,10 +1,10 @@
 package com.cometchat.uikit.core
 
 import android.content.Context
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.ConversationUpdateSettings
-import com.cometchat.chat.models.User
+import com.gochathub.chat.core.CometChat
+import com.gochathub.chat.exceptions.CometChatException
+import com.gochathub.chat.models.ConversationUpdateSettings
+import com.gochathub.chat.models.User
 import com.cometchat.uikit.core.utils.CometChatLogger
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubMappers

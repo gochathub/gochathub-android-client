@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.hub
 
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.TypingIndicator
-import com.cometchat.chat.models.User
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.MessageReceipt
+import com.gochathub.chat.models.TypingIndicator
+import com.gochathub.chat.models.User
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 

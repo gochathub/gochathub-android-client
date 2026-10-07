@@ -1,9 +1,9 @@
 package com.cometchat.uikit.compose.preview.data.repository
 
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
 import com.cometchat.uikit.compose.preview.domain.PreviewMockData
 import com.cometchat.uikit.core.domain.repository.SearchRepository
 
@@ -24,7 +24,7 @@ public class PreviewSearchRepository(
     override suspend fun getConversations(request: ConversationsRequest): Result<List<Conversation>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )
@@ -39,7 +39,7 @@ public class PreviewSearchRepository(
     override suspend fun getMessages(request: MessagesRequest): Result<List<BaseMessage>> {
         if (simulateError) {
             return Result.failure(
-                com.cometchat.chat.exceptions.CometChatException(
+                com.gochathub.chat.exceptions.CometChatException(
                     "PREVIEW_ERROR",
                     "Simulated error for preview"
                 )

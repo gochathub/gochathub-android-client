@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.domain.usecase
 
-import com.cometchat.chat.core.ReactionsRequest
-import com.cometchat.chat.models.Reaction
+import com.gochathub.chat.core.ReactionsRequest
+import com.gochathub.chat.models.Reaction
 import com.cometchat.uikit.core.domain.repository.ReactionListRepository
 
 /**

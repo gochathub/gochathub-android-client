@@ -1,9 +1,9 @@
 package com.cometchat.uikit.core.data.datasource
 
-import com.cometchat.chat.core.ConversationsRequest
-import com.cometchat.chat.core.MessagesRequest
-import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.Conversation
+import com.gochathub.chat.core.ConversationsRequest
+import com.gochathub.chat.core.MessagesRequest
+import com.gochathub.chat.models.BaseMessage
+import com.gochathub.chat.models.Conversation
 
 /**
  * Interface defining data source operations for search functionality.
