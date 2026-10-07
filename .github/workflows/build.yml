@@ -19,9 +19,10 @@ jobs:
       - name: Fetch live contract for the drift guard
         run: |
           curl -sfL https://raw.githubusercontent.com/gochathub/gochathub-server/main/api/openapi.yaml -o /tmp/live-openapi.yaml
-          diff /tmp/live-openapi.yaml api/openapi.yaml || (
-            echo "::warning::api/openapi.yaml snapshot differs from the live server contract"
-          )
+          diff /tmp/live-openapi.yaml api/openapi.yaml || {
+            echo "::error::api/openapi.yaml differs from gochathub-server main — refresh the snapshot"
+            exit 1
+          }
       - uses: gradle/actions/setup-gradle@v4
       - name: Build + unit tests
         run: ./gradlew assembleDebug :chatuikit-core:testDebugUnitTest checkContract
