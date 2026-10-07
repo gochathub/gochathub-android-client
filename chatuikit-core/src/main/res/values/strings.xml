@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name" translatable="false">chatuikit-core</string>
+
+    <!-- Message option strings -->
+    <string name="cometchat_reply_uppercase" translatable="true">Reply In Thread</string>
+    <string name="cometchat_reply" translatable="true">Reply</string>
+    <!-- Thread subscription (subscribe/unsubscribe — SDK vocabulary). Full localization is P5 -->
+    <string name="cometchat_thread_subscription_subscribe" translatable="true">Subscribe to thread</string>
+    <string name="cometchat_thread_subscription_unsubscribe" translatable="true">Unsubscribe from thread</string>
+    <!-- Pin & Save message options -->
+    <string name="cometchat_pin" translatable="true">Pin message</string>
+    <string name="cometchat_unpin" translatable="true">Unpin message</string>
+    <string name="cometchat_save" translatable="true">Save message</string>
+    <string name="cometchat_unsave" translatable="true">Unsave message</string>
+    <string name="cometchat_copy" translatable="true">Copy</string>
+    <string name="cometchat_edit" translatable="true">Edit</string>
+    <string name="cometchat_delete" translatable="true">Delete</string>
+    <string name="cometchat_share" translatable="true">Share</string>
+    <string name="cometchat_translate" translatable="true">Translate</string>
+    <string name="cometchat_info" translatable="true">"Info"</string>
+    <string name="cometchat_report" translatable="true">Report</string>
+    <string name="cometchat_message_privately" translatable="true">Message Privately</string>
+    <string name="cometchat_mark_unread" translatable="true">Mark Unread</string>
+</resources>

@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cometchat_app_name" translatable="true">UI KIT</string>
+    <string name="cometchat_shared_image_transition" translatable="false">gedeelde_afbeelding_overgang_%1$d</string>
+    <string name="cometchat_user" translatable="true">gebruiker</string>
+    <string name="cometchat_group" translatable="true">groep</string>
+    <string name="cometchat_conversation" translatable="true">gesprek</string>
+    <string name="cometchat_reply_lowercase" translatable="true">antwoord</string>
+    <string name="cometchat_call" translatable="true">Oproep</string>
+    <string name="cometchat_sticker_lowercase" translatable="true">sticker</string>
+    <string name="cometchat_message" translatable="true">Schrijf een bericht</string>
+    <string name="cometchat_start_conv_hint" translatable="true">Tik om een gesprek te starten</string>
+    <string name="cometchat_admin" translatable="true">Beheerder</string>
+    <string name="cometchat_moderator" translatable="true">Moderator</string>
+    <string name="cometchat_member" translatable="true">Lid</string>
+    <string name="cometchat_join" translatable="true">Deelnemen</string>
+    <string name="cometchat_camera_perm" translatable="true">Geef toestemming voor de camera via de app-instellingen</string>
+    <string name="cometchat_storage_perm" translatable="true">Geef toestemming voor opslag via de app-instellingen</string>
+    <string name="cometchat_file_not_exist" translatable="true">Bestand bestaat niet</string>
+    <string name="cometchat_ended" translatable="true">Beëindigd</string>
+    <string name="cometchat_outgoing" translatable="true">Uitgaand</string>
+    <string name="cometchat_incoming" translatable="true">Inkomend</string>
+    <string name="cometchat_missed_call" translatable="true">Gemist</string>
+    <string name="cometchat_cancel_call" translatable="true">Geannuleerd</string>
+    <string name="cometchat_rejected_call" translatable="true">Afgewezen</string>
+    <string name="cometchat_busy_call" translatable="true">Bezig</string>
+    <string name="cometchat_you" translatable="true">Jij</string>
+    <string name="cometchat_edit" translatable="true">Bewerken</string>
+    <string name="cometchat_delete" translatable="true">Verwijderen</string>
+    <string name="cometchat_share" translatable="true">Delen</string>
+    <string name="cometchat_copy" translatable="true">Kopiëren</string>
+    <string name="cometchat_translate" translatable="true">Vertalen</string>
+    <string name="cometchat_message_privately" translatable="true">Privébericht sturen</string>
+    <string name="cometchat_reply_uppercase" translatable="true">Antwoord</string>
+    <string name="cometchat_info" translatable="true">"Info"</string>
+    <string name="cometchat_online" translatable="true">Online</string>
+    <string name="cometchat_offline" translatable="true">Offline</string>
+    <string name="cometchat_attach_image" translatable="true">Beeld bijvoegen</string>
+    <string name="cometchat_attach_video" translatable="true">Video bijvoegen</string>
+    <string name="cometchat_poll" translatable="true">Poll</string>
+    <string name="cometchat_camera" translatable="true">Camera</string>
+    <string name="cometchat_yes" translatable="true">Ja</string>
+    <string name="cometchat_shared_sticker" translatable="true">Sticker gedeeld</string>
+    <string name="cometchat_attach_audio" translatable="true">Audio bijvoegen</string>
+    <string name="cometchat_attach_document" translatable="true">Document bijvoegen</string>
+    <string name="cometchat_no" translatable="true">Nee</string>
+    <string name="cometchat_question" translatable="true">Vraag</string>
+    <string name="cometchat_collaborative_whiteboard" translatable="true">Collaboratief Whiteboard</string>
+    <string name="cometchat_collaborative_doc" translatable="true">Collaboratief Document</string>
+    <string name="cometchat_yesterday" translatable="true">Gisteren</string>
+    <string name="cometchat_ban" translatable="true">Verbannen</string>
+    <string name="cometchat_document" translatable="true">Document</string>
+    <string name="cometchat_polls" translatable="true">Polls</string>
+    <string name="cometchat_sticker_uppercase" translatable="true">Sticker</string>
+    <string name="cometchat_custom_message_whiteboard" translatable="true">Whiteboard</string>
+    <string name="cometchat_error" translatable="true">Fout</string>
+    <string name="cometchat_added" translatable="true">toegevoegd</string>
+    <string name="cometchat_kicked_by" translatable="true">uitgeschopt</string>
+    <string name="cometchat_left" translatable="true">vertrokken</string>
+    <string name="cometchat_joined" translatable="true">toegevoegd</string>
+    <string name="cometchat_unban" translatable="true">Unban</string>
+    <string name="cometchat_made" translatable="true">gemaakt</string>
+    <string name="cometchat_participant" translatable="true">Deelnemer</string>
+    <string name="cometchat_translation_error" translatable="true">De geselecteerde taal voor vertaling lijkt op de taal van het oorspronkelijke bericht</string>
+    <string name="cometchat_group_call" translatable="true">Groepsoproep</string>
+    <string name="cometchat_updating" translatable="true">Bijwerken</string>
+    <string name="cometchat_chats" translatable="true">Gesprekken</string>
+    <string name="cometchat_downloading" translatable="true">Downloaden</string>
+    <string name="cometchat_today" translatable="true">Vandaag</string>
+    <string name="cometchat_replies" translatable="true">Antwoorden</string>
+    <string name="cometchat_new_message" translatable="true">nieuw bericht</string>
+    <string name="cometchat_new_messages" translatable="true">nieuwe berichten</string>
+    <string name="cometchat_channel_description" translatable="true">Kanaalbeschrijving</string>
+    <string name="cometchat_action_item" translatable="true">actie_item</string>
+    <string name="cometchat_try_again" translatable="true">Probeer het opnieuw</string>
+    <string name="cometchat_something_went_wrong" translatable="true">Er is iets mis gegaan.</string>
+    <string name="cometchat_action_permission_denied" translatable="true">Je hebt geen toestemming om deze actie uit te voeren.</string>
+    <string name="cometchat_transfer_ownership" translatable="true">Overdracht van eigendom</string>
+    <string name="cometchat_add_members" translatable="true">Leden toevoegen</string>
+    <string name="cometchat_owner" translatable="true">Eigenaar</string>
+    <string name="cometchat_banned" translatable="true">Verbannen</string>
+    <string name="cometchat_calling" translatable="true">Bellen</string>
+    <string name="cometchat_accepted" translatable="true">Geaccepteerd</string>
+    <string name="cometchat_unanswered" translatable="true">Onbeantwoord</string>
+    <string name="cometchat_message_receipt" translatable="true">Bericht Ontvangst</string>
+    <string name="cometchat_file_download_failed" translatable="true">Bestand downloaden mislukt.</string>
+    <string name="cometchat_suggest_a_reply" translatable="true">Stel een antwoord voor</string>
+    <string name="cometchat_enter_a_text" translatable="true">Voer een tekst in</string>
+    <string name="cometchat_form_completion_message" translatable="true">Bedankt voor het invullen van het formulier.</string>
+    <string name="cometchat_conversation_summary" translatable="true">Gespreks Samenvatting</string>
+    <string name="cometchat_generate_summary" translatable="true">Genereer een samenvatting</string>
+    <string name="cometchat_more_times" translatable="true">Meer tijden</string>
+    <string name="cometchat_select_a_day" translatable="true">Selecteer een dag</string>
+    <string name="cometchat_meeting_scheduled" translatable="true">Je vergadering is ingepland.</string>
+    <string name="cometchat_meet_with" translatable="true">Ontmoet met </string>
+    <string name="cometchat_min_meeting" translatable="true">min vergadering</string>
+    <string name="cometchat_select_a_time" translatable="true">Selecteer een tijd</string>
+    <string name="cometchat_no_time_slots_available" translatable="true">Geen tijdslot beschikbaar voor deze datum. Probeer een andere datum.</string>
+    <string name="cometchat_book_new_slot" translatable="true">Boek nieuw slot</string>
+    <string name="cometchat_something_went_wrong_please_try_again" translatable="true">Er is iets mis gegaan. Probeer het opnieuw.</string>
+    <string name="cometchat_time_slot_no_longer_available_please_choose_another" translatable="true">Tijdslot is niet meer beschikbaar. Kies een ander tijdslot.</string>
+    <string name="cometchat_no_quick_time_slots_available" translatable="true">Geen snel beschikbare tijdslots.</string>
+    <string name="cometchat_tag_item" translatable="true">Tag Item</string>
+    <string name="cometchat_you_can_mention_up_to" translatable="true">Je kunt tot</string>
+    <string name="cometchat_time_at_a_time" translatable="true">keer tegelijk</string>
+    <string name="cometchat_reply" translatable="true">Antwoord</string>
+    <string name="cometchat_all" translatable="true">Alles</string>
+    <string name="cometchat_tap_to_remove" translatable="true">Tik om te verwijderen</string>
+    <string name="cometchat_avatar" translatable="true">CometChat Avatar</string>
+    <string name="cometchat_unread_message_count_max" translatable="true">999+</string>
+    <string name="cometchat_empty_conversations_title" translatable="true">Geen gesprekken</string>
+    <string name="cometchat_empty_conversations_subtitle" translatable="true">Start een nieuw gesprek of nodig anderen uit om deel te nemen aan\nhet gesprek.</string>
+    <string name="cometchat_error_conversations_title" translatable="true">Oeps!</string>
+    <string name="cometchat_error_conversations_subtitle" translatable="true">Er lijkt iets mis te zijn.\nProbeer het opnieuw.</string>
+    <string name="cometchat_typing" translatable="true">Typen…</string>
+    <string name="cometchat_is_typing" translatable="true">is aan het typen…</string>
+    <string name="cometchat_message_image" translatable="true">Foto</string>
+    <string name="cometchat_message_video" translatable="true">Video</string>
+    <string name="cometchat_message_audio" translatable="true">Audio</string>
+    <string name="cometchat_message_sticker" translatable="true">Sticker</string>
+    <string name="cometchat_message_gif" translatable="true">GIF</string>
+    <string name="cometchat_message_poll" translatable="true">Poll</string>
+    <string name="cometchat_message_document" translatable="true">Document</string>
+    <string name="cometchat_message_location" translatable="true">Locatie</string>
+    <string name="cometchat_message_collaborative_whiteboard" translatable="true">Samenwerkend Whiteboard</string>
+    <string name="cometchat_message_collaborative_document" translatable="true">Samenwerkend Document</string>
+    <string name="cometchat_conversation_delete_message_title" translatable="true">Dit gesprek verwijderen?</string>
+    <string name="cometchat_delete_message_title" translatable="true">Dit bericht verwijderen?</string>
+    <string name="cometchat_conversation_delete_message_subtitle" translatable="true">Weet je zeker dat je dit gesprek wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</string>
+    <string name="cometchat_delete_message_subtitle" translatable="true">Weet je zeker dat je dit bericht wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</string>
+    <string name="cometchat_cancel" translatable="true">Annuleren</string>
+    <string name="cometchat_reaction_list_error" translatable="true">Er lijkt iets mis te zijn.\nProbeer het opnieuw.</string>
+    <string name="cometchat_text_translated" translatable="true">Vertaalde tekst</string>
+    <string name="cometchat_composer_place_holder_text" translatable="true">Typ je bericht…</string>
+    <string name="cometchat_last_seen" translatable="true">Laatst gezien</string>
+    <string name="cometchat_conversation_delete_error" translatable="true">Kan het gesprek niet verwijderen</string>
+    <string name="cometchat_message_info" translatable="true">Berichtinformatie</string>
+    <string name="cometchat_read" translatable="true">Gelezen</string>
+    <string name="cometchat_deliver" translatable="true">Afgeleverd</string>
+    <string name="cometchat_message_receipt_time_stamp_placeholder" translatable="true">----</string>
+    <string name="cometchat_message_delete_error" translatable="true">Kan het bericht niet verwijderen</string>
+    <string name="cometchat_no_stickers_available" translatable="true">Geen stickers beschikbaar</string>
+    <string name="cometchat_you_don_t_have_any_stickers_yet" translatable="true">Je hebt nog geen stickers.</string>
+    <string name="cometchat_looks_like_something_went_wrong_n_please_try_again" translatable="true">Er lijkt iets mis te zijn.\nProbeer het opnieuw.</string>
+    <string name="cometchat_retry" translatable="true">Opnieuw proberen</string>
+    <string name="cometchat_group_members_empty_title" translatable="true">Geen leden beschikbaar</string>
+    <string name="cometchat_group_member_empty_subtitle" translatable="true">Voeg leden toe aan de groep en zie ze hier worden weergegeven.</string>
+    <string name="cometchat_remove" translatable="true">Verwijderen</string>
+    <string name="cometchat_scope_change" translatable="true">Wijzig rol</string>
+    <string name="cometchat_change_scope_subtitle" translatable="true">Je kunt rollen wijzigen om groepsrechten en -verantwoordelijkheden te beheren.</string>
+    <string name="cometchat_save" translatable="true">Opslaan</string>
+    <string name="cometchat_users" translatable="true">Gebruikers</string>
+    <string name="cometchat_user_list_empty_state_title" translatable="true">Geen gebruikers beschikbaar</string>
+    <string name="cometchat_user_list_empty_state_subtitle" translatable="true">Voeg contacten toe om gesprekken te starten en zie ze hier worden weergegeven.</string>
+    <string name="cometchat_user_list_error_state_title" translatable="true">Oeps!</string>
+    <string name="cometchat_user_list_error_state_subtitle" translatable="true">Er lijkt iets mis te zijn. Probeer het opnieuw.</string>
+    <string name="cometchat_search" translatable="true">Zoeken</string>
+    <string name="cometchat_groups" translatable="true">Groepen</string>
+    <string name="cometchat_group_list_empty_state_title" translatable="true">Geen groepen gevonden</string>
+    <string name="cometchat_group_list_empty_state_subtitle" translatable="true">Maak of voeg groepen toe om ze hier te zien en samen te werken.</string>
+    <string name="cometchat_group_list_error_state_title" translatable="true">Oeps!</string>
+    <string name="cometchat_group_list_error_state_subtitle" translatable="true">Er lijkt iets mis te zijn. Probeer het opnieuw.</string>
+    <string name="cometchat_members" translatable="true">Leden</string>
+    <string name="cometchat_call_logs_title" translatable="true">Gesprekken</string>
+    <string name="cometchat_call_logs_empty_title" translatable="true">Geen oproeplogs</string>
+    <string name="cometchat_call_logs_empty_subtitle" translatable="true">Maak of ontvang oproepen om je oproeplogboek hier te zien</string>
+    <string name="cometchat_call_logs_error_title" translatable="true">Oeps!</string>
+    <string name="cometchat_call_logs_error_subtitle" translatable="true">Er lijkt iets mis te zijn. Probeer het opnieuw.</string>
+    <string name="cometchat_this_message_deleted" translatable="true">Dit bericht is verwijderd</string>
+    <string name="cometchat_this_message_type_is_not_supported" translatable="true">Dit berichttype wordt niet ondersteund</string>
+    <string name="cometchat_message_form" translatable="true">Formulier</string>
+    <string name="cometchat_message_card" translatable="true">Kaart</string>
+    <string name="cometchat_message_scheduler" translatable="true">Planner</string>
+    <string name="cometchat_message_mention_max_limit" translatable="true">Je kunt maximaal 10 keer in één keer noemen</string>
+    <string name="cometchat_ask_question" translatable="true">Stel een vraag</string>
+    <string name="cometchat_options" translatable="true">Opties</string>
+    <string name="cometchat_send" translatable="true">Verzenden</string>
+    <string name="cometchat_submit" translatable="true">Versturen</string>
+    <string name="cometchat_add" translatable="true">Toevoegen</string>
+    <string name="cometchat_last_seen_a_min_ago" translatable="true">1 minuut geleden</string>
+    <plurals name="cometchat_last_seen_minutes_ago" translatable="true">
+        <item quantity="one" translatable="true">%d minuut geleden</item>
+        <item quantity="other" translatable="true">%d minuten geleden</item>
+    </plurals>
+    <plurals name="cometchat_last_seen_hours_ago" translatable="true">
+        <item quantity="one" translatable="true">%d uur geleden</item>
+        <item quantity="other" translatable="true">%d uur geleden</item>
+    </plurals>
+    <string name="cometchat_meeting_initiated_by_you" translatable="true">%s heeft een groepsgesprek gestart</string>
+    <string name="cometchat_meeting_initiated_by_others" translatable="true">%s heeft een groepsgesprek gestart</string>
+    <string name="cometchat_edited" translatable="true">Bewerkt</string>
+    <string name="cometchat_incoming_call_accept" translatable="true">Accepteren</string>
+    <string name="cometchat_incoming_call_decline" translatable="true">Afwijzen</string>
+    <string name="cometchat_incoming_call_type" translatable="true">Binnenkomende %s oproep</string>
+    <string name="cometchat_kick" translatable="true">Verwijderen</string>
+    <string name="cometchat_open_document_to_edit_content_together" translatable="true">Open document om samen inhoud te bewerken</string>
+    <string name="cometchat_open_document" translatable="true">Document openen</string>
+    <string name="cometchat_open_whiteboard_to_edit_content_together" translatable="true">Open whiteboard om samen inhoud te bewerken</string>
+    <string name="cometchat_open_whiteboard" translatable="true">Whiteboard openen</string>
+    <string name="cometchat_video_call" translatable="true">Videogesprek</string>
+    <string name="cometchat_audio_call" translatable="true">Audiogesprek</string>
+    <string name="cometchat_incoming_call_audio" translatable="true">audio</string>
+    <string name="cometchat_incoming_call_video" translatable="true">video</string>
+    <string name="cometchat_permission_required">Toestemming vereist</string>
+    <string name="cometchat_microphone_permission_warning">Microfoontoestemming is vereist om audio op te nemen.</string>
+    <string name="cometchat_camera_permission_warning">Cameratoestemming is vereist om foto\'s te nemen.</string>
+    <string name="cometchat_storage_permission_warning">Toestemming voor opslag is vereist om bestanden te openen.</string>
+    <string name="cometchat_cancel_button">Annuleren</string>
+    <string name="cometchat_settings_button">Instellingen</string>
+    <string name="cometchat_moderation_block_message">Je bericht werd geblokkeerd vanwege het moderatiebeleid.</string>
+    <string name="cometchat_no_conversations_history_title">Geen gesprekshistorie gevonden</string>
+    <string name="cometchat_ask_anything">Vraag iets</string>
+    <string name="cometchat_something_went_wrong_try_again">Er ging iets mis aan onze kant. Probeer het opnieuw</string>
+    <string name="cometchat_no_conversations_history_subtitle">Start een chat door op de knop \'Nieuwe chat\' te tikken</string>
+    <string name="cometchat_new_chat">Nieuwe chat</string>
+    <string name="cometchat_chat_history">Chatgeschiedenis</string>
+    <string name="cometchat_messages">Berichten</string>
+    <string name="cometchat_menu">Menu</string>
+    <string name="cometchat_menu_search">Zoeken</string>
+    <string name="cometchat_menu_conversation_summary">Gespreks Samenvatting</string>
+    <string name="cometchat_see_more">Meer weergeven</string>
+    <string name="cometchat_no_results">Geen resultaten</string>
+    <string name="cometchat_no_matches_found">We konden geen resultaten vinden. Probeer een ander zoekwoord.</string>
+    <string name="cometchat_start_your_search">Begin je zoekopdracht</string>
+    <string name="cometchat_search_for_conversations_or_messages">Zoek naar gesprekken of berichten door boven een zoekwoord in te typen.</string>
+    <string name="cometchat_unread" translatable="true">Ongelezen</string>
+    <string name="cometchat_photos" translatable="true">Foto\'s</string>
+    <string name="cometchat_videos" translatable="true">Video\'s</string>
+    <string name="cometchat_audio" translatable="true">Audio</string>
+    <string name="cometchat_documents" translatable="true">Documenten</string>
+    <string name="cometchat_links" translatable="true">Links</string>
+    <string name="cometchat_details" translatable="true">Details</string>
+    <string name="cometchat_report">Melden</string>
+    <string name="cometchat_report_a_message">Bericht melden</string>
+    <string name="cometchat_report_message_title">Bericht melden</string>
+    <string name="cometchat_report_message_description">Meld deze chat als deze in strijd is met onze Communityrichtlijnen. We informeren het account dat je hebt gemeld niet.</string>
+    <string name="cometchat_report_reason_label">Reden</string>
+    <string name="cometchat_report_optional_label">(Optioneel)</string>
+    <string name="cometchat_report_remark_hint">Geef extra context voor je melding…</string>
+    <string name="cometchat_report_button_report">Melden</string>
+    <string name="cometchat_report_success_message">Bericht gemeld</string>
+    <string name="cometchat_report_error_message">Melden mislukt</string>
+    <string name="cometchat_something_went_wrong_please_check_and_try_again">Er ging iets mis. Controleer het en probeer opnieuw.</string>
+    <string name="cometchat_unable_to_flag_message">Kan bericht niet markeren</string>
+    <string name="cometchat_flag_message_success">Bericht gemeld</string>
+    <string name="cometchat_flag_reason_spam" translatable="true">Spam / Ongewenste inhoud</string>
+    <string name="cometchat_flag_reason_sexual" translatable="true">Seksuele inhoud</string>
+    <string name="cometchat_flag_reason_harassment" translatable="true">Hinderen / Pesten</string>
+    <string name="cometchat_notify_everyone_in_this_group">Iedereen in deze groep op de hoogte stellen</string>
+    <string name="cometchat_notify_all" translatable="true">iedereen</string>
+
+    <!-- Thread subscription (follow/unfollow) — P5 localization  -->
+    <string name="cometchat_thread_subscription_subscribe" translatable="true">Abonneren op thread</string>
+    <string name="cometchat_thread_subscription_unsubscribe" translatable="true">Abonnement op thread opzeggen</string>
+    <string name="cometchat_thread_subscribed_toast" translatable="true">Geabonneerd. Je ontvangt meldingen over nieuwe reacties in deze thread.</string>
+    <string name="cometchat_thread_subscribed_toast_no_replies" translatable="true">Geabonneerd. Je ontvangt meldingen over nieuwe reacties.</string>
+    <string name="cometchat_thread_unsubscribed_toast" translatable="true">Afgemeld. Meldingen staan uit totdat je reageert of wordt genoemd.</string>
+    <string name="cometchat_thread_unsubscribed_toast_no_replies" translatable="true">Afgemeld. Meldingen staan uit totdat je reageert of wordt genoemd.</string>
+    <string name="cometchat_thread_subscription_failed" translatable="true">Bijwerken mislukt. Probeer het opnieuw.</string>
+    <string name="cometchat_thread_mute" translatable="true">Abonnement op thread opzeggen</string>
+    <string name="cometchat_thread_unmute" translatable="true">Abonneren op thread</string>
+    <string name="cometchat_pin">Vastzetten</string>
+    <string name="cometchat_unpin">Losmaken</string>
+    <string name="cometchat_unsave">Uit opgeslagen verwijderen</string>
+    <string name="cometchat_pinned">Vastgezet</string>
+    <string name="cometchat_saved">Opgeslagen</string>
+    <string name="cometchat_pin_message_confirm_title">Bericht vastzetten</string>
+    <string name="cometchat_pin_message_confirm_body">Wil je dit bericht in dit gesprek vastzetten?</string>
+    <string name="cometchat_unpin_message_confirm_title">Bericht losmaken</string>
+    <string name="cometchat_unpin_message_confirm_body">Wil je dit bericht losmaken?</string>
+    <string name="cometchat_save_message_confirm_title">Bericht opslaan</string>
+    <string name="cometchat_save_message_confirm_body">Wil je dit bericht opslaan?</string>
+    <string name="cometchat_unsave_message_confirm_title">Bericht uit opgeslagen verwijderen</string>
+    <string name="cometchat_unsave_message_confirm_body">Wil je dit bericht uit opgeslagen verwijderen?</string>
+    <string name="cometchat_pin_conversation">Gesprek vastzetten</string>
+    <string name="cometchat_unpin_conversation">Gesprek losmaken</string>
+    <string name="cometchat_unpin_conversation_confirm_title">Gesprek losmaken</string>
+    <string name="cometchat_unpin_conversation_confirm_body">Wil je dit gesprek losmaken?</string>
+    <string name="cometchat_pin_conversation_limit_reached">Je kunt maar %1$d chats vastzetten. Maak er een los om een andere vast te zetten.</string>
+    <string name="cometchat_pin_limit_reached">Je kunt maar %1$d berichten vastzetten. Maak er een los om een ander vast te zetten.</string>
+    <string name="cometchat_pin_limit_reached_unknown" translatable="true">Limiet voor vastgezette berichten bereikt. Maak er een los om een ander vast te zetten.</string>
+    <string name="cometchat_save_limit_reached">Je kunt maximaal %1$d berichten opslaan.</string>
+    <string name="cometchat_save_limit_reached_unknown" translatable="true">Limiet voor opgeslagen berichten bereikt. Verwijder er een uit opgeslagen om een ander op te slaan.</string>
+    <string name="cometchat_pin_save_generic_error">Er is iets misgegaan. Probeer het opnieuw.</string>
+    <string name="cometchat_message_pinned">Bericht vastgezet</string>
+    <string name="cometchat_message_unpinned">Bericht losgemaakt</string>
+    <string name="cometchat_message_saved">Bericht opgeslagen</string>
+    <string name="cometchat_message_unsaved">Bericht uit opgeslagen verwijderd</string>
+    <string name="cometchat_no_pinned_messages">Nog geen vastgezette berichten</string>
+    <string name="cometchat_no_pinned_messages_subtitle">Zet belangrijke berichten vast om ze snel terug te vinden.</string>
+    <string name="cometchat_no_saved_messages">Nog geen opgeslagen berichten</string>
+    <string name="cometchat_no_saved_messages_subtitle">Sla berichten op zodat je ze altijd bij de hand hebt.</string>
+    <string name="cometchat_pinned_messages">Vastgezette berichten</string>
+    <string name="cometchat_saved_messages">Opgeslagen berichten</string>
+    <string name="cometchat_unpin_message">Bericht losmaken</string>
+    <string name="cometchat_message_option_more">Meer</string>
+    <string name="cometchat_message_option_back">Terug</string>
+    <string name="cometchat_message_type_icon">Pictogram berichttype</string>
+
+    <!-- ENG-38656 (X3): backfilled translations -->
+    <string name="cometchat_a11y_action_message" translatable="true">Actiebericht: %1$s</string>
+    <string name="cometchat_a11y_add_reaction" translatable="true">Reactie toevoegen</string>
+    <string name="cometchat_a11y_ai_assistant" translatable="true">AI-assistent</string>
+    <string name="cometchat_a11y_ai_conversation_starters" translatable="true">AI-gespreksopeners</string>
+    <string name="cometchat_a11y_ai_conversation_summary" translatable="true">AI-gesprekssamenvatting</string>
+    <string name="cometchat_a11y_ai_smart_replies" translatable="true">Slimme AI-antwoorden</string>
+    <string name="cometchat_a11y_audio" translatable="true">Audio</string>
+    <string name="cometchat_a11y_audio_message" translatable="true">Audiobericht</string>
+    <string name="cometchat_a11y_audio_visualizer_showing_recording_amplitude" translatable="true">Audiovisualisatie van het opnamevolume</string>
+    <string name="cometchat_a11y_audio_waveform" translatable="true">Audiogolfvorm</string>
+    <string name="cometchat_a11y_avatar_for" translatable="true">Avatar voor %1$s</string>
+    <string name="cometchat_a11y_avatar_of" translatable="true">Avatar van %1$s</string>
+    <string name="cometchat_a11y_back" translatable="true">Terug</string>
+    <string name="cometchat_a11y_blockquote" translatable="true">Citaat</string>
+    <string name="cometchat_a11y_bold" translatable="true">Vet</string>
+    <string name="cometchat_a11y_bullet_list" translatable="true">Opsomming</string>
+    <string name="cometchat_a11y_call" translatable="true">Oproep: %1$s</string>
+    <string name="cometchat_a11y_caller" translatable="true">Beller: %1$s</string>
+    <string name="cometchat_a11y_calling" translatable="true">%1$s bellen</string>
+    <string name="cometchat_a11y_change_scope" translatable="true">Rol wijzigen</string>
+    <string name="cometchat_a11y_chat_history" translatable="true">Chatgeschiedenis</string>
+    <string name="cometchat_a11y_clear_search" translatable="true">Zoekopdracht wissen</string>
+    <string name="cometchat_a11y_close" translatable="true">Sluiten</string>
+    <string name="cometchat_a11y_close_conversation_summary" translatable="true">Gesprekssamenvatting sluiten</string>
+    <string name="cometchat_a11y_close_edit_preview" translatable="true">Bewerkingsvoorbeeld sluiten</string>
+    <string name="cometchat_a11y_close_formatting_toolbar" translatable="true">Opmaakbalk sluiten</string>
+    <string name="cometchat_a11y_close_preview" translatable="true">Voorbeeld sluiten</string>
+    <string name="cometchat_a11y_close_reply_preview" translatable="true">Antwoordvoorbeeld sluiten</string>
+    <string name="cometchat_a11y_close_smart_replies" translatable="true">Slimme antwoorden sluiten</string>
+    <string name="cometchat_a11y_code_block" translatable="true">Codeblok</string>
+    <string name="cometchat_a11y_collaborative" translatable="true">Gezamenlijk %1$s: %2$s</string>
+    <string name="cometchat_a11y_composer_action_buttons" translatable="true">Actieknoppen van opsteller</string>
+    <string name="cometchat_a11y_connecting_to_call" translatable="true">Verbinden met oproep</string>
+    <string name="cometchat_a11y_conversation_starter" translatable="true">Gespreksopener: %1$s</string>
+    <string name="cometchat_a11y_copy" translatable="true">Kopiëren</string>
+    <string name="cometchat_a11y_delete" translatable="true">Verwijderen</string>
+    <string name="cometchat_a11y_delete_icon" translatable="true">Verwijderpictogram</string>
+    <string name="cometchat_a11y_delete_recording" translatable="true">Opname verwijderen</string>
+    <string name="cometchat_a11y_deleted_message" translatable="true">Verwijderd bericht</string>
+    <string name="cometchat_a11y_document" translatable="true">Document</string>
+    <string name="cometchat_a11y_download" translatable="true">Downloaden</string>
+    <string name="cometchat_a11y_download_attachment" translatable="true">Bijlage downloaden</string>
+    <string name="cometchat_a11y_download_audio" translatable="true">Audio downloaden</string>
+    <string name="cometchat_a11y_download_file" translatable="true">Bestand downloaden</string>
+    <string name="cometchat_a11y_drag_handle_for_option" translatable="true">Sleepgreep voor optie %1$s</string>
+    <string name="cometchat_a11y_duration" translatable="true">Duur: %1$s</string>
+    <string name="cometchat_a11y_edit_preview" translatable="true">Bewerkingsvoorbeeld</string>
+    <string name="cometchat_a11y_end_call" translatable="true">Oproep beëindigen</string>
+    <string name="cometchat_a11y_error" translatable="true">Fout: %1$s</string>
+    <string name="cometchat_a11y_error_2" translatable="true">Fout: %1$s. %2$s</string>
+    <string name="cometchat_a11y_file_message_with_file_s" translatable="true">Bericht met %1$s bestand(en)</string>
+    <string name="cometchat_a11y_file_type" translatable="true">Bestandstype: %1$s</string>
+    <string name="cometchat_a11y_filter" translatable="true">Filter %1$s%2$s</string>
+    <string name="cometchat_a11y_flag_message_dialog" translatable="true">Dialoogvenster bericht rapporteren</string>
+    <string name="cometchat_a11y_format_text" translatable="true">Tekst opmaken</string>
+    <string name="cometchat_a11y_go_back_from_create_poll" translatable="true">Peiling maken verlaten</string>
+    <string name="cometchat_a11y_image" translatable="true">Afbeelding</string>
+    <string name="cometchat_a11y_image_2" translatable="true">Afbeelding %1$s</string>
+    <string name="cometchat_a11y_image_message_with_image_s" translatable="true">Bericht met %1$s afbeelding(en)</string>
+    <string name="cometchat_a11y_image_preview" translatable="true">Afbeeldingsvoorbeeld</string>
+    <string name="cometchat_a11y_incoming_call_from" translatable="true">Inkomende oproep van %1$s</string>
+    <string name="cometchat_a11y_inline_code" translatable="true">Inline code</string>
+    <string name="cometchat_a11y_italic" translatable="true">Cursief</string>
+    <string name="cometchat_a11y_link" translatable="true">Link</string>
+    <string name="cometchat_a11y_link_edit_dialog" translatable="true">Dialoogvenster link bewerken</string>
+    <string name="cometchat_a11y_link_popup_dialog" translatable="true">Linkpop-updialoog</string>
+    <string name="cometchat_a11y_link_preview_image" translatable="true">Voorbeeldafbeelding van link</string>
+    <string name="cometchat_a11y_loading" translatable="true">%1$s laden</string>
+    <string name="cometchat_a11y_loading_group_member" translatable="true">Groepslid laden</string>
+    <string name="cometchat_a11y_loading_list_item" translatable="true">Lijstitem laden</string>
+    <string name="cometchat_a11y_loading_messages" translatable="true">Berichten laden</string>
+    <string name="cometchat_a11y_loading_notifications" translatable="true">Meldingen laden</string>
+    <string name="cometchat_a11y_loading_please_wait" translatable="true">Laden, even geduld</string>
+    <string name="cometchat_a11y_loading_reaction" translatable="true">Reactie laden</string>
+    <string name="cometchat_a11y_loading_reactions_please_wait" translatable="true">Reacties laden, even geduld</string>
+    <string name="cometchat_a11y_loading_stickers_please_wait" translatable="true">Stickers laden, even geduld</string>
+    <string name="cometchat_a11y_media_message_with_items" translatable="true">%1$s-bericht met %2$s item(s)</string>
+    <string name="cometchat_a11y_menu" translatable="true">Menu</string>
+    <string name="cometchat_a11y_message_composer" translatable="true">Berichtopsteller</string>
+    <string name="cometchat_a11y_message_list" translatable="true">Berichtenlijst</string>
+    <string name="cometchat_a11y_message_preview" translatable="true">Berichtvoorbeeld: %1$s – %2$s</string>
+    <string name="cometchat_a11y_microphone_disabled" translatable="true">Microfoon (uitgeschakeld)</string>
+    <string name="cometchat_a11y_moderation_warning" translatable="true">Moderatiewaarschuwing</string>
+    <string name="cometchat_a11y_more" translatable="true">Meer</string>
+    <string name="cometchat_a11y_more_options" translatable="true">Meer opties</string>
+    <string name="cometchat_a11y_new_chat" translatable="true">Nieuwe chat</string>
+    <string name="cometchat_a11y_notification_from" translatable="true">Melding van %1$s</string>
+    <string name="cometchat_a11y_numbered_list" translatable="true">Genummerde lijst</string>
+    <string name="cometchat_a11y_ongoing_call" translatable="true">Lopende oproep</string>
+    <string name="cometchat_a11y_open_ai_options" translatable="true">AI-opties openen</string>
+    <string name="cometchat_a11y_options" translatable="true">Opties</string>
+    <string name="cometchat_a11y_outgoing_call_to" translatable="true">Uitgaande oproep naar %1$s</string>
+    <string name="cometchat_a11y_pause" translatable="true">Pauzeren</string>
+    <string name="cometchat_a11y_pause_playback" translatable="true">Afspelen pauzeren</string>
+    <string name="cometchat_a11y_pause_recording" translatable="true">Opname pauzeren</string>
+    <string name="cometchat_a11y_play" translatable="true">Afspelen</string>
+    <string name="cometchat_a11y_play_recording" translatable="true">Opname afspelen</string>
+    <string name="cometchat_a11y_play_video" translatable="true">Video afspelen</string>
+    <string name="cometchat_a11y_poll" translatable="true">Peiling: %1$s</string>
+    <string name="cometchat_a11y_poll_option" translatable="true">Peilingoptie %1$s</string>
+    <string name="cometchat_a11y_poll_question_input" translatable="true">Invoerveld peilingvraag</string>
+    <string name="cometchat_a11y_reactions" translatable="true">%1$s, %2$s reacties</string>
+    <string name="cometchat_a11y_record_voice_message" translatable="true">Spraakbericht opnemen</string>
+    <string name="cometchat_a11y_recording_duration" translatable="true">Opnameduur: %1$s</string>
+    <string name="cometchat_a11y_recording_icon" translatable="true">Opnamepictogram</string>
+    <string name="cometchat_a11y_recording_in_progress" translatable="true">Opname bezig</string>
+    <string name="cometchat_a11y_recording_time" translatable="true">Opnametijd: %1$s</string>
+    <string name="cometchat_a11y_reply_preview" translatable="true">Antwoordvoorbeeld</string>
+    <string name="cometchat_a11y_restart" translatable="true">Opnieuw starten</string>
+    <string name="cometchat_a11y_restart_recording" translatable="true">Opname opnieuw starten</string>
+    <string name="cometchat_a11y_resume_recording" translatable="true">Opname hervatten</string>
+    <string name="cometchat_a11y_retry" translatable="true">Opnieuw proberen</string>
+    <string name="cometchat_a11y_rich_text_toolbar" translatable="true">Werkbalk voor opgemaakte tekst</string>
+    <string name="cometchat_a11y_search" translatable="true">Zoeken</string>
+    <string name="cometchat_a11y_search_conversations" translatable="true">Gesprekken zoeken</string>
+    <string name="cometchat_a11y_search_conversations_tap_to_open_search" translatable="true">Gesprekken zoeken, tik om te zoeken</string>
+    <string name="cometchat_a11y_search_results_conversations_messages" translatable="true">Zoekresultaten: %1$s gesprekken, %2$s berichten</string>
+    <string name="cometchat_a11y_selected_suffix" translatable="true">, geselecteerd</string>
+    <string name="cometchat_a11y_send" translatable="true">Verzenden</string>
+    <string name="cometchat_a11y_send_recording" translatable="true">Opname verzenden</string>
+    <string name="cometchat_a11y_share" translatable="true">Delen</string>
+    <string name="cometchat_a11y_show_formatting_options" translatable="true">Opmaakopties weergeven</string>
+    <string name="cometchat_a11y_site_favicon" translatable="true">Favicon van site</string>
+    <string name="cometchat_a11y_smart_reply" translatable="true">Slim antwoord: %1$s</string>
+    <string name="cometchat_a11y_start_recording" translatable="true">Opname starten</string>
+    <string name="cometchat_a11y_sticker_set" translatable="true">Stickerset %1$s</string>
+    <string name="cometchat_a11y_stickers" translatable="true">Stickers</string>
+    <string name="cometchat_a11y_stop" translatable="true">Stoppen</string>
+    <string name="cometchat_a11y_stop_recording" translatable="true">Opname stoppen</string>
+    <string name="cometchat_a11y_strikethrough" translatable="true">Doorhalen</string>
+    <string name="cometchat_a11y_submit_recording" translatable="true">Opname verzenden</string>
+    <string name="cometchat_a11y_submit_recording_disabled" translatable="true">Opname verzenden (uitgeschakeld)</string>
+    <string name="cometchat_a11y_submit_selection_of_conversations" translatable="true">Selectie van %1$s gesprekken bevestigen</string>
+    <string name="cometchat_a11y_submit_selection_of_members" translatable="true">Selectie van %1$s leden bevestigen</string>
+    <string name="cometchat_a11y_submit_selection_of_users" translatable="true">Selectie van %1$s gebruikers bevestigen</string>
+    <string name="cometchat_a11y_suggestion" translatable="true">Suggestie: %1$s</string>
+    <string name="cometchat_a11y_suggestion_list" translatable="true">Suggestielijst</string>
+    <string name="cometchat_a11y_summary" translatable="true">Samenvatting: %1$s</string>
+    <string name="cometchat_a11y_text" translatable="true">%1$s. %2$s</string>
+    <string name="cometchat_a11y_text_message" translatable="true">Tekstbericht: %1$s</string>
+    <string name="cometchat_a11y_thread" translatable="true">Thread</string>
+    <string name="cometchat_a11y_thread_replies" translatable="true">Threadantwoorden</string>
+    <string name="cometchat_a11y_underline" translatable="true">Onderstrepen</string>
+    <string name="cometchat_a11y_user_avatar" translatable="true">Gebruikersavatar</string>
+    <string name="cometchat_a11y_video" translatable="true">Video %1$s</string>
+    <string name="cometchat_a11y_video_2" translatable="true">Video</string>
+    <string name="cometchat_a11y_video_call" translatable="true">Video-oproep</string>
+    <string name="cometchat_a11y_video_label" translatable="true">Video</string>
+    <string name="cometchat_a11y_video_message_with_video_s" translatable="true">Bericht met %1$s video(\'s)</string>
+    <string name="cometchat_a11y_video_thumbnail" translatable="true">Videominiatuur</string>
+    <string name="cometchat_a11y_video_unavailable" translatable="true">Video niet beschikbaar</string>
+    <string name="cometchat_a11y_voice_call" translatable="true">Spraakoproep</string>
+    <string name="cometchat_a11y_voice_recording" translatable="true">Spraakopname</string>
+    <string name="cometchat_add_link" translatable="true">Link toevoegen</string>
+    <string name="cometchat_ai_agent_message" translatable="true">Bericht van AI-agent</string>
+    <string name="cometchat_ai_assistant" translatable="true">AI-assistent</string>
+    <string name="cometchat_answer_n" translatable="true">Antwoord %1$d</string>
+    <string name="cometchat_apply" translatable="true">Toepassen</string>
+    <string name="cometchat_are_typing" translatable="true">%1$d mensen zijn aan het typen…</string>
+    <string name="cometchat_attachment_cancel" translatable="true">Annuleren</string>
+    <string name="cometchat_attachment_count" translatable="true">%1$d bijlagen</string>
+    <string name="cometchat_attachment_count_exceeded" translatable="true">U kunt maximaal %1$d bestanden bijvoegen</string>
+    <string name="cometchat_attachment_overflow" translatable="true">+%1$d</string>
+    <string name="cometchat_attachment_pause" translatable="true">Pauzeren</string>
+    <string name="cometchat_attachment_play" translatable="true">Afspelen</string>
+    <string name="cometchat_attachment_progress" translatable="true">%1$s / %2$s</string>
+    <string name="cometchat_attachment_remaining_slots" translatable="true">U kunt nog %1$d bestanden selecteren</string>
+    <string name="cometchat_attachment_remove" translatable="true">Verwijderen</string>
+    <string name="cometchat_attachment_retry" translatable="true">Opnieuw proberen</string>
+    <string name="cometchat_attachment_size_exceeded" translatable="true">%1$s is te groot (max. %2$s)</string>
+    <string name="cometchat_attachment_size_unknown" translatable="true">Kan %1$s niet lezen — probeer een ander bestand</string>
+    <string name="cometchat_attachment_tap_to_retry" translatable="true">Tik om opnieuw te proberen</string>
+    <string name="cometchat_attachment_tile_description" translatable="true">%1$s, %2$s</string>
+    <string name="cometchat_attachment_total_size_exceeded" translatable="true">Deze bestanden overschrijden de limiet van %1$s per bericht</string>
+    <string name="cometchat_attachment_type_not_allowed" translatable="true">%1$s is geen toegestaan bestandstype</string>
+    <string name="cometchat_attachment_upload_failed" translatable="true">Uploaden mislukt</string>
+    <string name="cometchat_attachment_upload_unavailable" translatable="true">Uploads zijn niet beschikbaar in uw abonnement</string>
+    <string name="cometchat_attachment_uploading" translatable="true">Uploaden…</string>
+    <string name="cometchat_ban_member" translatable="true">Lid verbannen</string>
+    <string name="cometchat_change_scope" translatable="true">Rol wijzigen</string>
+    <string name="cometchat_close" translatable="true">Sluiten</string>
+    <string name="cometchat_confirm_ban_message" translatable="true">Weet u zeker dat u %1$s wilt verbannen?</string>
+    <string name="cometchat_confirm_kick_message" translatable="true">Weet u zeker dat u %1$s wilt verwijderen?</string>
+    <string name="cometchat_conversation_list_description" translatable="true">Gesprekkenlijst met %1$d gesprekken</string>
+    <string name="cometchat_create_poll" translatable="true">Peiling maken</string>
+    <string name="cometchat_discard_selection" translatable="true">Selectie annuleren</string>
+    <string name="cometchat_download" translatable="true">Downloaden</string>
+    <string name="cometchat_drag_to_reorder" translatable="true">Sleep om te herschikken</string>
+    <string name="cometchat_edit_link" translatable="true">Link bewerken</string>
+    <string name="cometchat_edit_message" translatable="true">Bericht bewerken</string>
+    <string name="cometchat_error_loading_members" translatable="true">Kan leden niet laden. Probeer het opnieuw.</string>
+    <string name="cometchat_file" translatable="true">Bestand</string>
+    <string name="cometchat_gallery" translatable="true">Galerij</string>
+    <string name="cometchat_go_back" translatable="true">Ga terug</string>
+    <string name="cometchat_group_members" translatable="true">Leden</string>
+    <string name="cometchat_groups_list_description" translatable="true">Groepenlijst met %1$d groepen</string>
+    <string name="cometchat_insert_link" translatable="true">Link invoegen</string>
+    <string name="cometchat_kick_member" translatable="true">Lid verwijderen</string>
+    <string name="cometchat_link" translatable="true">Link</string>
+    <string name="cometchat_link_text" translatable="true">Linktekst</string>
+    <string name="cometchat_link_url" translatable="true">URL</string>
+    <string name="cometchat_meeting" translatable="true">Vergadering</string>
+    <string name="cometchat_n_audio" translatable="true">%1$d audio</string>
+    <string name="cometchat_n_files" translatable="true">%1$d bestanden</string>
+    <string name="cometchat_n_images" translatable="true">%1$d afbeeldingen</string>
+    <string name="cometchat_n_more" translatable="true">+%1$d meer</string>
+    <string name="cometchat_n_videos" translatable="true">%1$d video\'s</string>
+    <string name="cometchat_new" translatable="true">Nieuw</string>
+    <string name="cometchat_new_message_count_plural" translatable="true">%1$d nieuwe berichten</string>
+    <string name="cometchat_new_message_count_singular" translatable="true">%1$d nieuw bericht</string>
+    <string name="cometchat_no_members_found" translatable="true">Geen leden gevonden</string>
+    <string name="cometchat_no_members_found_subtitle" translatable="true">Voeg leden toe aan de groep om ze hier te zien.</string>
+    <string name="cometchat_no_messages_yet" translatable="true">Nog geen berichten</string>
+    <string name="cometchat_no_preview_available" translatable="true">Geen voorbeeld beschikbaar</string>
+    <string name="cometchat_no_preview_subtitle" translatable="true">Dit bestandstype ondersteunt geen voorbeeld.</string>
+    <string name="cometchat_no_reactions" translatable="true">Geen reacties</string>
+    <string name="cometchat_not_selected" translatable="true">Niet geselecteerd</string>
+    <string name="cometchat_preview" translatable="true">Voorbeeld:</string>
+    <string name="cometchat_remove_group_description" translatable="true">%1$s uit selectie verwijderen</string>
+    <string name="cometchat_reply_to_message" translatable="true">Beantwoorden</string>
+    <string name="cometchat_replying_to" translatable="true">Antwoord aan %s</string>
+    <string name="cometchat_say_hi_to" translatable="true">Zeg hoi tegen %1$s 👋</string>
+    <string name="cometchat_search_empty_subtitle" translatable="true">Geen resultaten gevonden. Probeer een ander zoekwoord.</string>
+    <string name="cometchat_search_empty_title" translatable="true">Geen resultaten</string>
+    <string name="cometchat_search_in" translatable="true">Zoeken in</string>
+    <string name="cometchat_search_initial_subtitle" translatable="true">Zoek naar gesprekken of berichten door hierboven een zoekwoord te typen.</string>
+    <string name="cometchat_search_initial_title" translatable="true">Begin met zoeken</string>
+    <string name="cometchat_select_new_scope_for" translatable="true">Selecteer een nieuwe rol voor %1$s</string>
+    <string name="cometchat_selected" translatable="true">Geselecteerd</string>
+    <string name="cometchat_selected_count" translatable="true">%1$d geselecteerd</string>
+    <string name="cometchat_selected_group_item_description" translatable="true">Geselecteerde groep: %1$s</string>
+    <string name="cometchat_selected_groups_list_description" translatable="true">Lijst met geselecteerde groepen: %1$d groepen</string>
+    <string name="cometchat_selection_count" translatable="true">%d geselecteerd</string>
+    <string name="cometchat_set_the_answers" translatable="true">Antwoorden instellen</string>
+    <string name="cometchat_show_less" translatable="true">Minder weergeven</string>
+    <string name="cometchat_show_n_more" translatable="true">+%1$d meer weergeven</string>
+    <string name="cometchat_smart_replies" translatable="true">Slimme antwoorden</string>
+    <string name="cometchat_start_conversation" translatable="true">Een gesprek starten</string>
+    <string name="cometchat_submit_selection" translatable="true">Selectie bevestigen</string>
+    <string name="cometchat_submit_selection_description" translatable="true">Selectie van %1$d items bevestigen</string>
+    <string name="cometchat_text" translatable="true">Tekst</string>
+    <string name="cometchat_try_again_later" translatable="true">Probeer het later opnieuw.</string>
+    <string name="cometchat_unable_to_load_poll" translatable="true">Kan peiling niet laden</string>
+    <string name="cometchat_unread_messages" translatable="true">%1$d ongelezen berichten</string>
+    <string name="cometchat_video" translatable="true">Video</string>
+    <string name="cometchat_whiteboard" translatable="true">Whiteboard</string>
+    <plurals name="cometchat_members_count">
+        <item quantity="one">%d lid</item>
+        <item quantity="other">%d leden</item>
+    </plurals>
+    <!-- ENG-38656 (X4 round 2): conditional a11y -->
+    <string name="cometchat_a11y_item_with_state" translatable="true">%1$s, %2$s</string>
+    <string name="cometchat_a11y_creating_poll" translatable="true">Peiling wordt gemaakt, even geduld</string>
+    <string name="cometchat_a11y_send_poll" translatable="true">Peiling verzenden</string>
+    <string name="cometchat_a11y_send_poll_disabled" translatable="true">Knop voor peiling verzenden uitgeschakeld</string>
+    <string name="cometchat_a11y_media_recorder_idle" translatable="true">Mediarecorder klaar om op te nemen</string>
+    <string name="cometchat_a11y_recording_in_progress_elapsed" translatable="true">Opname bezig, %1$s verstreken</string>
+    <string name="cometchat_a11y_recording_ready" translatable="true">Opname voltooid, klaar om af te spelen of te verzenden</string>
+    <string name="cometchat_a11y_recording_paused_at" translatable="true">Opname gepauzeerd bij %1$s</string>
+    <string name="cometchat_a11y_recording_complete_duration" translatable="true">Opname voltooid, duur %1$s</string>
+    <string name="cometchat_a11y_playing_recording_time" translatable="true">Opname afspelen, %1$s</string>
+    <string name="cometchat_a11y_recording_error_msg" translatable="true">Opnamefout: %1$s</string>
+    <string name="cometchat_a11y_audio_recorder" translatable="true">Audiorecorder</string>
+    <string name="cometchat_a11y_waveform_recording_amplitude" translatable="true">Audiogolfvorm toont opnamevolume</string>
+    <string name="cometchat_a11y_waveform_playback_progress" translatable="true">Audiogolfvorm toont afspeelvoortgang</string>
+    <string name="cometchat_a11y_sticker" translatable="true">Sticker</string>
+    <string name="cometchat_a11y_downloading" translatable="true">Downloaden</string>
+    <string name="cometchat_a11y_loading_short" translatable="true">Laden</string>
+    <string name="cometchat_a11y_close_attachments" translatable="true">Bijlagen sluiten</string>
+    <string name="cometchat_a11y_open_attachments" translatable="true">Bijlagen openen</string>
+    <string name="cometchat_a11y_poll_option_text" translatable="true">Optie: %1$s</string>
+    <string name="cometchat_a11y_poll_option_stats" translatable="true">, %1$s procent, %2$s stemmen</string>
+    <string name="cometchat_a11y_poll_your_vote" translatable="true">, uw stem</string>
+    <!-- ENG-38656 (X4 round 3) -->
+    <string name="cometchat_a11y_message_in_progress" translatable="true">Bericht wordt verzonden</string>
+    <string name="cometchat_a11y_message_sent" translatable="true">Bericht verzonden</string>
+    <string name="cometchat_a11y_message_delivered" translatable="true">Bericht bezorgd</string>
+    <string name="cometchat_a11y_message_read" translatable="true">Bericht gelezen</string>
+    <string name="cometchat_a11y_message_error" translatable="true">Berichtfout</string>
+    <string name="cometchat_a11y_unsupported_attachment" translatable="true">Niet-ondersteunde bijlage</string>
+    <string name="cometchat_a11y_private_group" translatable="true">Privégroep</string>
+    <string name="cometchat_a11y_protected_group" translatable="true">Beveiligde groep</string>
+    <string name="cometchat_a11y_start_recording_full" translatable="true">Opname starten</string>
+    <string name="cometchat_a11y_pause_recording_full" translatable="true">Opname pauzeren</string>
+    <string name="cometchat_a11y_resume_recording_full" translatable="true">Opname hervatten</string>
+    <string name="cometchat_a11y_send_recording_full" translatable="true">Opname verzenden</string>
+    <string name="cometchat_a11y_hide_formatting_options" translatable="true">Opmaakopties verbergen</string>
+    <string name="cometchat_a11y_close_stickers" translatable="true">Stickers sluiten</string>
+    <string name="cometchat_a11y_open_stickers" translatable="true">Stickers openen</string>
+</resources>

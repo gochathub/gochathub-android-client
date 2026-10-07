@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="image/* video/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.PICK" />
+            <data android:mimeType="image/* video/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CHOOSER" />
+        </intent>
+    </queries>
+
+    <application
+        tools:node="merge"
+        tools:targetApi="m">
+
+        <meta-data
+            android:name="com.cometchat.chatuikit.jetpack"
+            android:value="${applicationId}" />
+
+        <provider
+            android:name="com.cometchat.uikit.compose.presentation.shared.mediaselection.CometChatComposeFileProvider"
+            android:authorities="${applicationId}.cometchat.compose.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_path" />
+        </provider>
+        
+        <!-- Call activities for outgoing/ongoing calls were removed with the calls feature -->
+
+        <!-- Image viewer activity with transparent background for drag-to-dismiss -->
+        <!-- Validates: Requirement 1.1 -->
+        <activity
+            android:name=".presentation.imageviewer.ui.CometChatImageViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JetpackUIKit.Transparent" />
+
+        <!-- In-app (non full-screen) video player -->
+        <activity
+            android:name=".presentation.imageviewer.ui.CometChatVideoViewerActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
+            android:theme="@style/Theme.JetpackUIKit.Transparent" />
+
+    </application>
+
+</manifest>

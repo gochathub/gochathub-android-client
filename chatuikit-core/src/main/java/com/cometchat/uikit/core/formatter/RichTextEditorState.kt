@@ -1,0 +1,125 @@
+package com.cometchat.uikit.core.formatter
+
+/**
+ * Observable state for the rich text editor.
+ * Holds the plain text, formatting spans, cursor/selection info,
+ * pending formats (for cursor-only toggle), and disabled formats.
+ *
+ * Platform-agnostic — shared by Jetpack Compose and Kotlin XML UI kits.
+ * UI layers observe this state and render accordingly.
+ */
+public class RichTextEditorState {
+
+    private val _spanManager = RichTextSpanManager()
+
+    /** Current plain text (no markdown markers). */
+    public var text: String = ""
+        private set
+
+    /** Current selection start (inclusive). */
+    public var selectionStart: Int = 0
+        private set
+
+    /** Current selection end (exclusive). Same as selectionStart when cursor is collapsed. */
+    public var selectionEnd: Int = 0
+        private set
+
+    /**
+     * Formats that will be applied to the next typed character when cursor is collapsed.
+     * Cleared when the user explicitly moves the cursor (not during text changes).
+     */
+    public val pendingFormats: MutableSet<RichTextFormat> = mutableSetOf()
+
+    /**
+     * Formats explicitly disabled at the cursor. When the cursor is inside a bold span
+     * and the user toggles bold off, BOLD is added here so new text won't inherit it.
+     * Cleared when the user explicitly moves the cursor.
+     */
+    public val disabledFormats: MutableSet<RichTextFormat> = mutableSetOf()
+
+    /**
+     * Consumed mention spans — mentions that were converted to plain text when
+     * code formatting (INLINE_CODE or CODE_BLOCK) was applied. Each entry stores
+     * the original mention data so it can be restored when code formatting is removed.
+     *
+     * Key: start position in the plain text.
+     * Value: the [ConsumedMentionSpan] holding original mention data.
+     */
+    public val consumedMentionSpans: MutableMap<Int, ConsumedMentionSpan> = mutableMapOf()
+
+    /** Read-only snapshot of current spans. */
+    public val spans: List<RichTextSpan> get() = _spanManager.spans
+
+    /** The underlying span manager (for direct operations). */
+    public val spanManager: RichTextSpanManager get() = _spanManager
+
+    /** True when cursor is collapsed (no selection range). */
+    public val isCursorCollapsed: Boolean get() = selectionStart == selectionEnd
+
+    /**
+     * Returns the set of formats currently "active" — either from spans at the cursor
+     * position, or from pending formats (when cursor is collapsed).
+     */
+    public val activeFormats: Set<RichTextFormat>
+        get() {
+            val spanFormats = if (isCursorCollapsed) {
+                // Check position and position-1 to handle cursor at span boundary
+                val atPos = _spanManager.getFormatsAt(selectionStart)
+                val beforePos = if (selectionStart > 0) _spanManager.getFormatsAt(selectionStart - 1) else emptySet()
+                atPos + beforePos
+            } else {
+                _spanManager.getFormatsInRange(selectionStart, selectionEnd)
+            }
+            // Active = (span formats + pending) - disabled
+            return (spanFormats + pendingFormats) - disabledFormats
+        }
+
+    /**
+     * Returns formats that should be grayed out / non-clickable in the toolbar,
+     * based on the current active formats and compatibility rules.
+     */
+    public val toolbarDisabledFormats: Set<RichTextFormat>
+        get() = FormatCompatibility.getDisabledFormats(activeFormats)
+
+    // ==================== Mutations ====================
+
+    /** Sets the text content. Does NOT adjust spans — use [RichTextEditorController] for edits. */
+    public fun setText(newText: String) {
+        text = newText
+    }
+
+    /**
+     * Updates the selection range. Clears pending/disabled formats when selection changes.
+     * Used when the user explicitly moves the cursor (not during text input).
+     */
+    public fun setSelection(start: Int, end: Int) {
+        val changed = start != selectionStart || end != selectionEnd
+        selectionStart = start
+        selectionEnd = end
+        if (changed) {
+            pendingFormats.clear()
+            disabledFormats.clear()
+        }
+    }
+
+    /**
+     * Updates the selection range WITHOUT clearing pending/disabled formats.
+     * Used internally by the controller during text change processing,
+     * where pending/disabled formats are managed explicitly.
+     */
+    public fun setSelectionInternal(start: Int, end: Int) {
+        selectionStart = start
+        selectionEnd = end
+    }
+
+    /** Resets everything to empty state. */
+    public fun clear() {
+        text = ""
+        selectionStart = 0
+        selectionEnd = 0
+        pendingFormats.clear()
+        disabledFormats.clear()
+        consumedMentionSpans.clear()
+        _spanManager.clear()
+    }
+}

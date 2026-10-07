@@ -188,6 +188,25 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
+  /users/me/password:
+    patch:
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "204":
+          description: Password changed; all sessions (including this one) revoked.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   /users/search:
     get:
       tags: [users]
@@ -280,6 +299,12 @@ paths:
       responses:
         "200":
           description: Rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
     post:
       tags: [rooms]
       security: [{ bearerAuth: [] }]
@@ -917,6 +942,18 @@ components:
           type: string
           description: Human-readable message.
 
+    ChangePasswordRequest:
+      type: object
+      required: [old_password, new_password]
+      properties:
+        old_password:
+          type: string
+          format: password
+        new_password:
+          type: string
+          format: password
+          minLength: 8
+
     LoginRequest:
       type: object
       required: [username, password]
@@ -1111,6 +1148,11 @@ components:
         updated_at:
           type: string
           format: date-time
+        archived:
+          type: boolean
+          description: >
+            Caller's member-level conversation archive flag (sidebar filter).
+            False when the room is returned without membership context.
         my_role:
           type: string
           enum: [member, admin]
@@ -1125,12 +1167,21 @@ components:
       properties:
         type:
           type: string
-          enum: [public, private]
+          enum: [public, private, direct, group_direct]
+          description: >
+            public/private rooms get a name; direct takes exactly one
+            co-member in `members` (contact or allow_private_messages);
+            group_direct takes ≥1 co-members (creator becomes admin).
         name:
           type: string
           nullable: true
         description:
           type: string
+        members:
+          type: array
+          items:
+            type: string
+          description: Co-member user ids for direct/group_direct rooms.
 
     UpdateRoomRequest:
       type: object
@@ -1198,6 +1249,11 @@ components:
           type: string
         author_id:
           type: string
+        author:
+          description: >
+            Hydrated author user payload; present when messages are returned
+            through room/message reads.
+          $ref: "#/components/schemas/User"
         body:
           type: string
         format:
