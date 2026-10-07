@@ -3,13 +3,12 @@ package com.cometchat.uikit.core.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Action
 import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
 import com.cometchat.chat.models.TypingIndicator
 import com.cometchat.chat.models.User
+import com.cometchat.uikit.core.CometChatUIKit
+import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.domain.usecase.GetGroupUseCase
 import com.cometchat.uikit.core.domain.usecase.GetUserUseCase
 import com.cometchat.uikit.core.events.CometChatEvents
@@ -75,8 +74,9 @@ open public class CometChatMessageHeaderViewModel(
     private val _errorEvent = MutableSharedFlow<CometChatException>()
     public val errorEvent: SharedFlow<CometChatException> = _errorEvent.asSharedFlow()
 
-    // Listener tag for SDK listeners
-    private var listenersTag: String? = null
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
 
     // Typing debounce job
     private var typingDebounceJob: Job? = null
@@ -171,135 +171,66 @@ open public class CometChatMessageHeaderViewModel(
     }
 
     /**
-     * Adds all CometChat SDK listeners and UIKit local event listeners.
+     * Adds GoChatHub realtime listeners and UIKit local event listeners.
      * Called during initialization if enableListeners is true.
      */
     private fun addListeners() {
-        listenersTag = "MessageHeader_${System.currentTimeMillis()}"
-
-        listenersTag?.let { tag ->
-            addSDKListeners(tag)
-            addUIKitLocalEventListeners(tag)
+        // Realtime envelope handlers — the old SDK User/Group/Message/Connection
+        // listeners' callbacks, driven by server frames instead of the closed SDK.
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope, ::handleHubEvent)
+        connectionJob = com.cometchat.uikit.core.hub.HubBridge.connection(viewModelScope) {
+            refreshMessageHeader()
         }
+        addUIKitLocalEventListeners()
     }
 
     /**
-     * Adds CometChat SDK listeners for real-time updates.
-     * Includes user presence, group events, message (typing), and connection listeners.
+     * Server envelope → the same handlers the old SDK listeners drove.
+     * Presence stamps also fire globally inside [com.cometchat.uikit.core.hub.HubBridge.events].
      */
-    private fun addSDKListeners(tag: String) {
-        // User presence listener for online/offline status
-        CometChat.addUserListener(tag, object : CometChat.UserListener() {
-            override fun onUserOnline(user: User) {
-                if (user.uid == currentId && !isBlocked(_user.value)) {
-                    _user.value = user
-                    _uiState.value = MessageHeaderUIState.UserContent(user)
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val hubEvents = com.cometchat.uikit.core.hub.HubEvents
+        val hubMappers = com.cometchat.uikit.core.hub.HubMappers
+        when (env.type) {
+            // The old UserListener's onUserOnline/onUserOffline.
+            "presence.changed" -> {
+                val userId = hubEvents.userIdOf(env) ?: return
+                val user = _user.value ?: return
+                if (user.uid != userId || isBlocked(user)) return
+                val updated = hubMappers.userWithPresence(
+                    user, hubEvents.presenceStateOf(env) ?: UIKitConstants.UserStatus.OFFLINE
+                )
+                _user.value = updated
+                _uiState.value = MessageHeaderUIState.UserContent(updated)
+            }
+            // The old GroupListener's member events — the server only carries the
+            // actor's id, so the count is re-read per event (one lightweight REST call).
+            "room.member_added", "room.member_removed" -> {
+                val roomId = env.roomId ?: return
+                if (roomId != currentId) return
+                viewModelScope.launch {
+                    try {
+                        val members = com.cometchat.uikit.core.hub.Hub.client.roomMembers(roomId)
+                        com.cometchat.uikit.core.hub.Hub.rememberMembers(roomId, members)
+                        _memberCount.value = members.size
+                        com.cometchat.uikit.core.hub.Hub.roomById(roomId)?.let { room ->
+                            val refreshed = hubMappers.group(room).apply { membersCount = members.size }
+                            _group.value = refreshed
+                            _uiState.value = MessageHeaderUIState.GroupContent(refreshed)
+                        }
+                    } catch (_: Exception) {
+                        // List refresh on the next screen stays the fallback.
+                    }
                 }
             }
-
-            override fun onUserOffline(user: User) {
-                if (user.uid == currentId && !isBlocked(_user.value)) {
-                    _user.value = user
-                    _uiState.value = MessageHeaderUIState.UserContent(user)
+            // The old MessageListener's onTypingStarted/onTypingEnded.
+            "typing.started", "typing.stopped" -> {
+                if (isBlocked(_user.value)) return
+                hubEvents.typingIndicatorOf(env)?.let {
+                    handleTypingIndicator(it, env.type == "typing.started")
                 }
             }
-        })
-
-        // Group listener for member changes
-        CometChat.addGroupListener(tag, object : CometChat.GroupListener() {
-            override fun onGroupMemberJoined(action: Action, joinedUser: User, joinedGroup: Group) {
-                if (joinedGroup.guid == currentId) {
-                    _group.value = joinedGroup
-                    _memberCount.value = joinedGroup.membersCount
-                    _uiState.value = MessageHeaderUIState.GroupContent(joinedGroup)
-                }
-            }
-
-            override fun onGroupMemberLeft(action: Action, leftUser: User, leftGroup: Group) {
-                if (leftGroup.guid == currentId) {
-                    _group.value = leftGroup
-                    _memberCount.value = leftGroup.membersCount
-                    _uiState.value = MessageHeaderUIState.GroupContent(leftGroup)
-                }
-            }
-
-            override fun onGroupMemberKicked(
-                action: Action,
-                kickedUser: User,
-                kickedBy: User,
-                kickedFrom: Group
-            ) {
-                if (kickedFrom.guid == currentId) {
-                    _group.value = kickedFrom
-                    _memberCount.value = kickedFrom.membersCount
-                    _uiState.value = MessageHeaderUIState.GroupContent(kickedFrom)
-                }
-            }
-
-            override fun onGroupMemberBanned(
-                action: Action,
-                bannedUser: User,
-                bannedBy: User,
-                bannedFrom: Group
-            ) {
-                if (bannedFrom.guid == currentId) {
-                    _group.value = bannedFrom
-                    _memberCount.value = bannedFrom.membersCount
-                    _uiState.value = MessageHeaderUIState.GroupContent(bannedFrom)
-                }
-            }
-
-            override fun onMemberAddedToGroup(
-                action: Action,
-                addedBy: User,
-                userAdded: User,
-                addedTo: Group
-            ) {
-                if (addedTo.guid == currentId) {
-                    _group.value = addedTo
-                    _memberCount.value = addedTo.membersCount
-                    _uiState.value = MessageHeaderUIState.GroupContent(addedTo)
-                }
-            }
-        })
-
-        // Message listener for typing indicators
-        CometChat.addMessageListener(tag, object : CometChat.MessageListener() {
-            override fun onTypingStarted(typingIndicator: TypingIndicator) {
-                if (!isBlocked(_user.value)) {
-                    handleTypingIndicator(typingIndicator, true)
-                }
-            }
-
-            override fun onTypingEnded(typingIndicator: TypingIndicator) {
-                if (!isBlocked(_user.value)) {
-                    handleTypingIndicator(typingIndicator, false)
-                }
-            }
-        })
-
-        // Connection listener for reconnection
-        CometChat.addConnectionListener(tag, object : CometChat.ConnectionListener {
-            override fun onConnected() {
-                refreshMessageHeader()
-            }
-
-            override fun onConnecting() {
-                // No action needed
-            }
-
-            override fun onDisconnected() {
-                // No action needed
-            }
-
-            override fun onFeatureThrottled() {
-                // No action needed
-            }
-
-            override fun onConnectionError(e: CometChatException?) {
-                // No action needed
-            }
-        })
+        }
     }
 
     /**
@@ -307,7 +238,7 @@ open public class CometChatMessageHeaderViewModel(
      * These events are emitted by other UI components (e.g., when a user is blocked).
      * Uses Flow-based event collection from CometChatEvents.
      */
-    private fun addUIKitLocalEventListeners(tag: String) {
+    private fun addUIKitLocalEventListeners() {
         // User block/unblock events
         userEventsJob = viewModelScope.launch {
             CometChatEvents.userEvents.collect { event ->
@@ -443,17 +374,13 @@ open public class CometChatMessageHeaderViewModel(
     }
 
     /**
-     * Removes all CometChat SDK listeners and cancels UIKit local event listener jobs.
+     * Removes the GoChatHub realtime jobs and cancels UIKit local event listener jobs.
      * Called when the ViewModel is cleared.
      */
     public fun removeListeners() {
-        listenersTag?.let { tag ->
-            CometChat.removeUserListener(tag)
-            CometChat.removeGroupListener(tag)
-            CometChat.removeMessageListener(tag)
-            CometChat.removeConnectionListener(tag)
-        }
-        
+        hubEventsJob?.cancel()
+        connectionJob?.cancel()
+
         // Cancel local event listener jobs
         userEventsJob?.cancel()
         groupEventsJob?.cancel()

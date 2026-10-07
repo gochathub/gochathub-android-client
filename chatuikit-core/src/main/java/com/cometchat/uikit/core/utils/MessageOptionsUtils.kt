@@ -1,7 +1,7 @@
 package com.cometchat.uikit.core.utils
 
 import android.content.Context
-import com.cometchat.chat.core.CometChat
+
 import com.cometchat.chat.models.BaseMessage
 import com.cometchat.chat.models.Group
 import com.cometchat.chat.models.User
@@ -242,7 +242,7 @@ public object MessageOptionsUtils {
             optionIds
         }
 
-        val loggedInUser = CometChat.getLoggedInUser()
+        val loggedInUser = CometChatUIKit.getLoggedInUser()
         val isMyMessage = message.sender?.uid == loggedInUser?.uid
         // Admin/Moderator/Owner. The owner is checked explicitly because a group owner's scope is
         // not always reported as "admin", which otherwise hid admin-only options from them.

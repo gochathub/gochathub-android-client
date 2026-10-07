@@ -23,17 +23,8 @@ internal object HubImpls {
         message.metadata?.optString(HubMappers.META_ROOM_ID).orEmpty()
 
     /** Resolves (or creates) the server room for a receiver per kit semantics. */
-    suspend fun roomForReceiver(receiverUid: String, receiverType: String): String {
-        if (receiverType != "user") return receiverUid
-        if (receiverUid.isEmpty()) return unsupported("sending without a receiver")
-        val rooms = Hub.client.rooms()
-        rooms.forEach { Hub.rememberRoom(it) }
-        val existing = rooms.firstOrNull { it.type == "direct" && Hub.memberPeer(it.id)?.id == receiverUid }
-        if (existing != null) return existing.id
-        return Hub.client.createRoom(
-            com.cometchat.uikit.core.hub.CreateRoomRequest(type = "direct", members = listOf(receiverUid))
-        ).id
-    }
+    suspend fun roomForReceiver(receiverUid: String, receiverType: String): String =
+        if (receiverType != "user") receiverUid else Hub.roomForPeer(receiverUid)
 
     /** Delivered receipt via the socket ack (server records it per ADR-009). */
     suspend fun delivered(message: BaseMessage) {

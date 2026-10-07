@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap
  * with the application context.
  */
 public object Hub {
-    private var store: HubStore? = null
+    public val store: HubSession by lazy { requireNotNull(_store) }
+    private var _store: HubStore? = null
     private var _client: HubClient? = null
     private var _socket: HubSocket? = null
     private lateinit var appContext: android.content.Context
@@ -45,9 +46,9 @@ public object Hub {
     public fun init(context: android.content.Context): Hub {
         appContext = context.applicationContext
         if (store == null) {
-            store = HubStore(appContext)
-            _client = HubClient(store!!)
-            _socket = HubSocket(store!!)
+            _store = HubStore(appContext)
+            _client = HubClient(_store!!)
+            _socket = HubSocket(_store!!)
         }
         return this
     }
@@ -66,7 +67,7 @@ public object Hub {
         set(value) { _me = value }
 
     public fun wipe() {
-        store?.wipe()
+        _store?.wipe()
         _socket?.close()
         _me = null
         membersCache.clear()
@@ -101,6 +102,18 @@ public object Hub {
         val state = (envelope.data["state"] as? kotlinx.serialization.json.JsonPrimitive)?.content
             ?: return
         setPresence(userId, state)
+    }
+
+    /** Resolves (or creates) the direct room for a peer user id. */
+    public suspend fun roomForPeer(peerId: String): String {
+        peerId.ifEmpty { error("empty peer id") }
+        val rooms = client.rooms()
+        rooms.forEach { rememberRoom(it) }
+        val existing = rooms.firstOrNull { it.type == "direct" && memberPeer(it.id)?.id == peerId }
+        if (existing != null) return existing.id
+        return client.createRoom(
+            com.cometchat.uikit.core.hub.CreateRoomRequest(type = "direct", members = listOf(peerId))
+        ).id
     }
 
     /** Fetches members for direct rooms missing from cache (webui parity). */

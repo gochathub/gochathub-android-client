@@ -40,8 +40,20 @@ dependencies {
     implementation(libs.constraintlayout)
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation("androidx.security:security-crypto:1.1.0")
     api(libs.androidx.lifecycle.viewmodel.ktx)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation("com.squareup.okhttp3:mockwebserver:${libs.versions.okhttp.get()}")
+}
+
+// unit tests run on the JVM with plain java.nio
+android {
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }

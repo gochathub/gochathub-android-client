@@ -3,7 +3,6 @@ package com.cometchat.uikit.core.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.GroupMembersRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.Action
@@ -92,9 +91,11 @@ open public class CometChatGroupMembersViewModel(
     private var excludeOwner: Boolean = false
     private var limit: Int = 30
     private var isFetching = false
-    private var listenersTag: String? = null
-    private var connectionListenerAttached = false
     private var groupEventsJob: Job? = null
+
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
     
     // Search debounce job - cancels pending search when new search is initiated
     private var searchJob: Job? = null
@@ -156,7 +157,7 @@ open public class CometChatGroupMembersViewModel(
         }
         
         // Add listeners if enabled
-        if (enableListeners && listenersTag == null) {
+        if (enableListeners && hubEventsJob == null) {
             addListeners()
         }
     }
@@ -239,12 +240,6 @@ open public class CometChatGroupMembersViewModel(
                         GroupMembersUIState.Empty
                     } else {
                         GroupMembersUIState.Content(_members.value)
-                    }
-                    
-                    // Attach connection listener on first successful fetch
-                    if (!connectionListenerAttached && enableListeners) {
-                        addConnectionListener()
-                        connectionListenerAttached = true
                     }
                 },
                 onFailure = { error ->
@@ -337,12 +332,6 @@ open public class CometChatGroupMembersViewModel(
                         GroupMembersUIState.Empty
                     } else {
                         GroupMembersUIState.Content(members)
-                    }
-                    
-                    // Attach connection listener on first successful fetch
-                    if (!connectionListenerAttached && enableListeners) {
-                        addConnectionListener()
-                        connectionListenerAttached = true
                     }
                 },
                 onFailure = { error ->
@@ -635,67 +624,56 @@ open public class CometChatGroupMembersViewModel(
      * Adds CometChat group and user listeners for real-time updates.
      */
     private fun addListeners() {
-        listenersTag = System.currentTimeMillis().toString()
-        
-        // Group listener — matches the original Java CometChat.addGroupListener pattern
-        CometChat.addGroupListener(listenersTag!!, object : CometChat.GroupListener() {
-            override fun onGroupMemberJoined(action: Action, joinedUser: User, joinedGroup: Group) {
-                if (joinedGroup != null && joinedGroup.guid == currentGroup?.guid) {
-                    updateGroupMember(joinedUser, isRemoved = false, isScopeUpdate = false, action = action)
-                }
-            }
-            
-            override fun onGroupMemberLeft(action: Action, leftUser: User, leftGroup: Group) {
-                if (leftGroup != null && leftGroup.guid == currentGroup?.guid) {
-                    updateGroupMember(leftUser, isRemoved = true, isScopeUpdate = false, action = action)
-                }
-            }
-            
-            override fun onGroupMemberKicked(action: Action, kickedUser: User, kickedBy: User, kickedFrom: Group) {
-                if (kickedFrom != null && kickedFrom.guid == currentGroup?.guid) {
-                    updateGroupMember(kickedUser, isRemoved = true, isScopeUpdate = false, action = action)
-                }
-            }
-            
-            override fun onGroupMemberBanned(action: Action, bannedUser: User, bannedBy: User, bannedFrom: Group) {
-                if (bannedFrom != null && bannedFrom.guid == currentGroup?.guid) {
-                    updateGroupMember(bannedUser, isRemoved = true, isScopeUpdate = false, action = action)
-                }
-            }
-            
-            override fun onGroupMemberScopeChanged(
-                action: Action,
-                updatedBy: User,
-                updatedUser: User,
-                scopeChangedTo: String,
-                scopeChangedFrom: String,
-                group: Group
-            ) {
-                if (group != null && group.guid == currentGroup?.guid) {
-                    updateGroupMember(updatedUser, isRemoved = false, isScopeUpdate = true, action = action)
-                }
-            }
-            
-            override fun onMemberAddedToGroup(action: Action, addedBy: User, userAdded: User, addedTo: Group) {
-                if (addedTo != null && addedTo.guid == currentGroup?.guid) {
-                    updateGroupMember(userAdded, isRemoved = false, isScopeUpdate = false, action = action)
-                }
-            }
-        })
-        
+        // GoChatHub realtime — the old GroupListener's member events and the
+        // UserListener's presence, driven by the server frames.
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope, ::handleHubEvent)
+        connectionJob = com.cometchat.uikit.core.hub.HubBridge.connection(viewModelScope) {
+            refreshList()
+        }
+
         // Local UIKit event listener — matches the original Java CometChatGroupEvents.addGroupListener pattern
         addLocalEventListeners()
-        
-        // User listener for online/offline status
-        CometChat.addUserListener(listenersTag!!, object : CometChat.UserListener() {
-            override fun onUserOnline(user: User) {
-                handleUserStatusChange(user, UIKitConstants.UserStatus.ONLINE)
+    }
+
+    /**
+     * Server envelope → the same [updateGroupMember]/[handleUserStatusChange]
+     * handlers the old SDK listeners drove, filtered to the displayed group.
+     */
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        when (env.type) {
+            // The old GroupListener's member events. The server carries only the actor's
+            // id; the member's name/avatar come from the hub's user caches when seen.
+            "room.member_added", "room.member_removed" -> {
+                val group = currentGroup ?: return
+                if (env.roomId != group.guid) return
+                val userId = com.cometchat.uikit.core.hub.HubEvents.userIdOf(env) ?: return
+                val removed = env.type == "room.member_removed"
+                if (removed && userId == com.cometchat.uikit.core.hub.Hub.meId()) return
+                val cached = com.cometchat.uikit.core.hub.Hub.allCachedUsers()
+                    .firstOrNull { it.id == userId }
+                // User fields ride the hub caches; a cold cache falls back to the id.
+                val user = com.cometchat.uikit.core.hub.HubMappers.user(
+                    cached ?: com.cometchat.uikit.core.hub.UserDto(
+                        id = userId, username = userId, displayName = userId, role = ""
+                    )
+                )
+                updateGroupMember(user, isRemoved = removed, isScopeUpdate = false)
             }
-            
-            override fun onUserOffline(user: User) {
-                handleUserStatusChange(user, UIKitConstants.UserStatus.OFFLINE)
+
+            // The old UserListener's onUserOnline/onUserOffline.
+            "presence.changed" -> {
+                val userId = com.cometchat.uikit.core.hub.HubEvents.userIdOf(env) ?: return
+                val state = com.cometchat.uikit.core.hub.HubEvents.presenceStateOf(env) ?: return
+                handleUserStatusChange(
+                    com.cometchat.uikit.core.hub.HubMappers.user(
+                        com.cometchat.uikit.core.hub.UserDto(
+                            id = userId, username = userId, displayName = userId, role = ""
+                        )
+                    ),
+                    state
+                )
             }
-        })
+        }
     }
     
     /**
@@ -759,53 +737,30 @@ open public class CometChatGroupMembersViewModel(
     }
     
     /**
-     * Adds connection listener to refresh list on reconnection.
-     */
-    private fun addConnectionListener() {
-        CometChat.addConnectionListener(listenersTag!!, object : CometChat.ConnectionListener {
-            override fun onConnected() {
-                refreshList()
-            }
-            
-            override fun onConnecting() {}
-            override fun onDisconnected() {}
-            override fun onFeatureThrottled() {}
-            override fun onConnectionError(e: CometChatException) {}
-        })
-    }
-    
-    /**
-     * Removes all CometChat listeners.
+     * Removes all GoChatHub realtime listeners.
      */
     private fun removeListeners() {
-        listenersTag?.let { tag ->
-            CometChat.removeGroupListener(tag)
-            CometChat.removeUserListener(tag)
-            CometChat.removeConnectionListener(tag)
-        }
+        hubEventsJob?.cancel()
+        connectionJob?.cancel()
     }
     
     // ==================== Event Handlers ====================
     
     /**
-     * Unified routing method for SDK group listener events.
-     * Matches the original Java updateGroupMember(User, boolean, boolean, Action) pattern.
+     * Unified routing method for the realtime group-member events
+     * (matches the original Java updateGroupMember(User, boolean, boolean, Action) pattern).
      *
      * @param user The user involved in the event
      * @param isRemoved true if the user was removed (left/kicked/banned)
      * @param isScopeUpdate true if this is a scope change event
-     * @param action The Action message containing scope info
      */
-    private fun updateGroupMember(user: User, isRemoved: Boolean, isScopeUpdate: Boolean, action: Action) {
+    private fun updateGroupMember(user: User, isRemoved: Boolean, isScopeUpdate: Boolean) {
         if (!isRemoved && !isScopeUpdate) {
-            // Joined or added — add to top with old scope
-            addToTop(userToGroupMember(user, isScopeUpdate = false, scope = action.oldScope))
+            // Joined or added — add to top
+            addToTop(userToGroupMember(user, isScopeUpdate = false))
         } else if (isRemoved && !isScopeUpdate) {
             // Left, kicked, or banned — remove
-            removeGroupMember(userToGroupMember(user, isScopeUpdate = false, scope = action.oldScope))
-        } else if (!isRemoved) {
-            // Scope changed — update with new scope
-            updateGroupMember(userToGroupMember(user, isScopeUpdate = true, scope = action.newScope))
+            removeGroupMember(userToGroupMember(user, isScopeUpdate = false))
         }
     }
     

@@ -3,13 +3,9 @@ package com.cometchat.uikit.core.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.GroupsRequest
 import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.models.Action
 import com.cometchat.chat.models.Group
-import com.cometchat.chat.models.GroupMember
-import com.cometchat.chat.models.User
 import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.domain.usecase.FetchGroupsUseCase
@@ -77,7 +73,10 @@ open public class CometChatGroupsViewModel(
     private var searchRequestBuilder: GroupsRequest.GroupsRequestBuilder? = null
     private var isFetching = false
     private var hasMoreData = true
-    private var listenersTag: String? = null
+
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
 
     // Local event listener job
     private var groupEventsJob: Job? = null
@@ -380,100 +379,35 @@ open public class CometChatGroupsViewModel(
      * Also subscribes to local group events via CometChatEvents flow.
      */
     private fun addListeners() {
-        listenersTag = "GroupsList_${System.currentTimeMillis()}"
-
-        listenersTag?.let { tag ->
-            // CometChat Group Listener for SDK events
-            CometChat.addGroupListener(tag, object : CometChat.GroupListener() {
-                override fun onGroupMemberJoined(
-                    action: Action,
-                    joinedUser: User,
-                    joinedGroup: Group
-                ) {
-                    if (joinedUser.uid == CometChatUIKit.getLoggedInUser()?.uid) {
-                        joinedGroup.setHasJoined(true)
+        // GoChatHub realtime: member events refresh the listed group (the server
+        // carries only the actor id, so the member count is re-read per event) plus
+        // the connection hook for reconnection refresh.
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope) { env ->
+            if (env.type == "room.member_added" || env.type == "room.member_removed") {
+                val roomId = env.roomId ?: return@events
+                viewModelScope.launch {
+                    try {
+                        val members = com.cometchat.uikit.core.hub.Hub.client.roomMembers(roomId)
+                        com.cometchat.uikit.core.hub.Hub.rememberMembers(roomId, members)
+                        val room = com.cometchat.uikit.core.hub.Hub.roomById(roomId) ?: return@launch
+                        val refreshed = com.cometchat.uikit.core.hub.HubMappers
+                            .group(room)
+                            .apply {
+                                membersCount = members.size
+                                if (env.type == "room.member_added" &&
+                                    com.cometchat.uikit.core.hub.HubEvents.userIdOf(env) ==
+                                    com.cometchat.uikit.core.hub.Hub.meId()
+                                ) setHasJoined(true)
+                            }
+                        updateGroupInList(refreshed)
+                    } catch (_: Exception) {
+                        // Refresh on reconnect covers it.
                     }
-                    updateGroupInList(joinedGroup)
                 }
-
-                override fun onGroupMemberLeft(
-                    action: Action,
-                    leftUser: User,
-                    leftGroup: Group
-                ) {
-                    updateGroupInList(leftGroup)
-                }
-
-                override fun onGroupMemberKicked(
-                    action: Action,
-                    kickedUser: User,
-                    kickedBy: User,
-                    kickedFrom: Group
-                ) {
-                    updateGroupInList(kickedFrom)
-                }
-
-                override fun onGroupMemberBanned(
-                    action: Action,
-                    bannedUser: User,
-                    bannedBy: User,
-                    bannedFrom: Group
-                ) {
-                    updateGroupInList(bannedFrom)
-                }
-
-                override fun onGroupMemberUnbanned(
-                    action: Action,
-                    unbannedUser: User,
-                    unbannedBy: User,
-                    unbannedFrom: Group
-                ) {
-                    updateGroupInList(unbannedFrom)
-                }
-
-                override fun onGroupMemberScopeChanged(
-                    action: Action,
-                    updatedBy: User,
-                    updatedUser: User,
-                    scopeChangedTo: String,
-                    scopeChangedFrom: String,
-                    group: Group
-                ) {
-                    updateGroupInList(group)
-                }
-
-                override fun onMemberAddedToGroup(
-                    action: Action,
-                    addedBy: User,
-                    userAdded: User,
-                    addedTo: Group
-                ) {
-                    updateGroupInList(addedTo)
-                }
-            })
-
-            // Connection listener for reconnection handling
-            CometChat.addConnectionListener(tag, object : CometChat.ConnectionListener {
-                override fun onConnected() {
-                    refreshList()
-                }
-
-                override fun onConnecting() {
-                    // No action needed
-                }
-
-                override fun onDisconnected() {
-                    // No action needed
-                }
-
-                override fun onFeatureThrottled() {
-                    // No action needed
-                }
-
-                override fun onConnectionError(error: CometChatException?) {
-                    // No action needed
-                }
-            })
+            }
+        }
+        connectionJob = com.cometchat.uikit.core.hub.HubBridge.connection(viewModelScope) {
+            refreshList()
         }
 
         // Subscribe to local group events via CometChatEvents flow
@@ -620,10 +554,8 @@ open public class CometChatGroupsViewModel(
      * Removes all CometChat SDK listeners and cancels local event jobs.
      */
     private fun removeListeners() {
-        listenersTag?.let { tag ->
-            CometChat.removeGroupListener(tag)
-            CometChat.removeConnectionListener(tag)
-        }
+        hubEventsJob?.cancel()
+        connectionJob?.cancel()
         groupEventsJob?.cancel()
         groupEventsJob = null
     }

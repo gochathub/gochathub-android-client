@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GoChatHub mark: white-on-transparent for status-bar tinting (vector from the logo SVG) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp"
+    android:viewportWidth="512" android:viewportHeight="512">
+    <!-- hub spokes + node dots -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M244,82 h24 v61 h-24 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M118,131 l21,-12 30,52 -21,12 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M373,119 l21,12 -30,52 -21,-12 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M118,381 l21,12 30,-52 -21,-12 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M373,393 l21,-12 -30,-52 -21,12 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M244,369 h24 v61 h-24 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M256,32 a34,34 0 1,0 0.1,0 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M112,99 a34,34 0 1,0 0.1,0 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M400,99 a34,34 0 1,0 0.1,0 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M112,345 a34,34 0 1,0 0.1,0 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M400,345 a34,34 0 1,0 0.1,0 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M256,412 a34,34 0 1,0 0.1,0 Z"/>
+    <!-- chat bubble shell + conversation dots, evenOdd cut-out (status-bar legible) -->
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd"
+        android:pathData="M173,165 L339,165 C377,165 401,188 401,226 L401,286 C401,324 377,347 339,347 L238,347 L183,392 L183,347 L173,347 C135,347 111,324 111,286 L111,226 C111,188 135,165 173,165 Z M207,241 a15,15 0 1,0 0.1,0 Z M256,241 a15,15 0 1,0 0.1,0 Z M305,241 a15,15 0 1,0 0.1,0 Z"/>
+</vector>

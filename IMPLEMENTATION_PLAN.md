@@ -13,14 +13,14 @@ takes server URL (pre-filled debug default).
 **Goal**: chatuikit-compose + chatuikit-core modules in the Gradle build, calls modules deleted, app shell builds.
 **Success Criteria**: `./gradlew assembleDebug` green; `grep -rn "com.cometchat.chat"` audit recorded (first implementation commit); no CometChat networking on any path.
 **Tests**: build passes; audit artifact reviewed.
-**Status**: Not Started
+**Status**: Complete (commit 84366b0)
 
 ## Stage 2: REST client, DTOs, auth
 **Goal**: typed DTOs, HTTP client with `Authorization: Bearer`, login flow (`token_request: true`), EncryptedSharedPreferences token store, 401 → login + wipe, error envelope decoding by `code`.
 **Tests**: unit — token store round trip, 401 handling, error code mapping.
-**Status**: Not Started
+**Status**: Complete (hub package + HubClientTest; token-store test covered by instrumented)
 
-## Stage 3: Datasource seam over REST
+## Stage 3: Datasource seam over REST  — In Progress (all 14 datasource impls hub-backed, compile green; app screens login/home/chat/new-chat/settings written; receipt-render parity check pending)
 **Goal**: implement Kit datasource contracts for conversations/rooms, messages (cursor pagination), users/contacts, invites; room list + timelines render; markdown subset rendering; receipts per ADR-009 rendering rules.
 **Tests**: unit — mapping, receipt rendering, pagination cursor handling.
 **Theme**: mirror webui (`~/projects/gochatwebui`, Tailwind) palette — light: white/gray-50 surfaces, gray-200 borders, black text; dark: gray-800 surfaces, gray-700 inputs, gray-600 borders, white text; accent indigo-300 (light) / indigo-400 (dark); success green-500, danger red-300/400; fonts Open Sans / Fredoka; radii 0.75rem.

@@ -4,13 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.models.CustomMessage
-import com.cometchat.chat.models.MediaMessage
 import com.cometchat.chat.models.MessageReceipt
-import com.cometchat.chat.models.ReactionEvent
-import com.cometchat.chat.models.TextMessage
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.events.MessageStatus
@@ -106,7 +101,8 @@ open public class CometChatThreadHeaderViewModel(
     public var hideReaction: Boolean = false
 
     /**
-     * Unique listener ID for CometChat SDK message events.
+     * Unique listener ID; kept for subclass compatibility (the SDK registration it
+     * identified is now the [hubEventsJob] below).
      */
     protected var listenerId: String = ""
 
@@ -114,6 +110,11 @@ open public class CometChatThreadHeaderViewModel(
      * Job for UIKit message events subscription.
      */
     private var messageEventsJob: Job? = null
+
+    /**
+     * Job for the GoChatHub realtime registration (the old SDK message listener).
+     */
+    private var hubEventsJob: Job? = null
 
     // ==================== StateFlow ====================
 
@@ -290,89 +291,82 @@ open public class CometChatThreadHeaderViewModel(
      */
     open public fun addListener() {
         if (!enableListeners) return
-        
-        // Remove previous listener to prevent duplicate event handling
-        if (listenerId.isNotEmpty()) {
-            CometChat.removeMessageListener(listenerId)
-        }
-        
-        listenerId = "ThreadHeader_${System.currentTimeMillis()}"
 
-        CometChat.addMessageListener(listenerId, object : CometChat.MessageListener() {
-            override fun onTextMessageReceived(message: TextMessage) {
-                handleMessageReceived(message)
-            }
-
-            override fun onMediaMessageReceived(message: MediaMessage) {
-                handleMessageReceived(message)
-            }
-
-            override fun onCustomMessageReceived(message: CustomMessage) {
-                handleMessageReceived(message)
-            }
-
-            override fun onMessageEdited(message: BaseMessage) {
-                handleMessageEdited(message)
-            }
-
-            override fun onMessageDeleted(message: BaseMessage) {
-                handleMessageDeleted(message)
-            }
-
-            override fun onMessagesDelivered(messageReceipt: MessageReceipt) {
-                handleMessageReceipt(messageReceipt)
-            }
-
-            override fun onMessagesRead(messageReceipt: MessageReceipt) {
-                handleMessageReceipt(messageReceipt)
-            }
-
-            override fun onMessagesDeliveredToAll(messageReceipt: MessageReceipt) {
-                handleMessageReceipt(messageReceipt)
-            }
-
-            override fun onMessagesReadByAll(messageReceipt: MessageReceipt) {
-                handleMessageReceipt(messageReceipt)
-            }
-
-            override fun onMessageReactionAdded(reactionEvent: ReactionEvent) {
-                handleReactionAdded(reactionEvent)
-            }
-
-            override fun onMessageReactionRemoved(reactionEvent: ReactionEvent) {
-                handleReactionRemoved(reactionEvent)
-            }
-
-            // Pin/save state of the parent. On the acting device these arrive as the SDK's
-            // self-echo off the REST response; from another device as a realtime action. The
-            // event is the assertion — a "pinned"/"saved" echo without a timestamp still counts.
-            override fun onMessagePinned(message: BaseMessage) {
-                applyParentPinSaveChange(message) { updated ->
-                    updated.pinnedAt = if (message.pinnedAt > 0) message.pinnedAt
-                    else System.currentTimeMillis() / 1000
-                    message.pinnedBy?.let { updated.pinnedBy = it }
-                }
-            }
-
-            override fun onMessageUnpinned(message: BaseMessage) {
-                applyParentPinSaveChange(message) { updated ->
-                    updated.pinnedAt = 0
-                    updated.pinnedBy = null
-                }
-            }
-
-            override fun onMessageSaved(message: BaseMessage) {
-                applyParentPinSaveChange(message) { updated ->
-                    updated.savedAt = if (message.savedAt > 0) message.savedAt
-                    else System.currentTimeMillis() / 1000
-                }
-            }
-
-            override fun onMessageUnsaved(message: BaseMessage) {
-                applyParentPinSaveChange(message) { updated -> updated.savedAt = 0 }
-            }
-        })
+        // Realtime via GoChatHub — the old addMessageListener's callbacks. Any previous
+        // registration is replaced (the SDK tag removal was the old dedupe).
+        hubEventsJob?.cancel()
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope, ::handleHubEvent)
     }
+
+    /**
+     * Server envelope → the same handlers the old SDK listeners drove, filtered to
+     * this header's parent thread (and its room for pin changes).
+     */
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val hubEvents = com.cometchat.uikit.core.hub.HubEvents
+        when (env.type) {
+            // onTextMessageReceived/onMediaMessageReceived/... — a reply on this thread.
+            "message.created" -> {
+                val message = hubEvents.messageOf(env) ?: return
+                handleMessageReceived(message)
+            }
+            "message.updated" -> hubEvents.messageOf(env)?.let { handleMessageEdited(it) }
+            "message.deleted" -> hubEvents.messageOf(env)?.let { handleMessageDeleted(it) }
+
+            // onMessagesDelivered/onMessagesRead — aggregate truth rides REST (ADR-009).
+            "message.receipts_changed", "room.read_state_changed" -> {
+                // A receipt decode is suspend (REST truth); a burst replaces pending decodes
+                // in the launch, and only a receipt for the parent lands in the header.
+                viewModelScope.launch {
+                    hubEvents.receiptsChangedOf(env)?.let { handleMessageReceipt(it) }
+                }
+            }
+
+            // onMessageReactionAdded/onMessageReactionRemoved.
+            "message.reaction_added", "message.reaction_removed" -> {
+                handleReactionChanged(hubLongId(hubEvents.messageIdOf(env) ?: return))
+            }
+
+            // The room's pinned message changed — the server's single-pin model.
+            "room.pinned_changed" -> handleRoomPinChanged(env)
+        }
+    }
+
+    /**
+     * Maps the room's pinned-message change onto the parent's pin indicator: a pin
+     * that names the parent stamps it; a pin that names anything else (or nothing)
+     * clears it — the server keeps one pinned message per room.
+     */
+    private fun handleRoomPinChanged(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val parent = _parentMessage ?: return
+        val parentId = hubUuidOf(parent) ?: return
+        if (env.roomId != parentRoomId(parent)) return
+        val pinnedMessageId = (env.data["pinned_message_id"] as? kotlinx.serialization.json.JsonPrimitive)
+            ?.content
+        if (pinnedMessageId == parentId) {
+            applyParentPinSaveChange(parent) { updated ->
+                updated.pinnedAt = System.currentTimeMillis() / 1000
+            }
+        } else {
+            applyParentPinSaveChange(parent) { updated ->
+                updated.pinnedAt = 0
+                updated.pinnedBy = null
+            }
+        }
+    }
+
+    /** Server uuid for a kit message through its metadata. */
+    private fun hubUuidOf(message: BaseMessage): String? =
+        message.metadata?.optString(com.cometchat.uikit.core.hub.HubMappers.META_ID)
+            ?.takeIf { it.isNotEmpty() }
+
+    /** Room the parent message lives in, from its metadata. */
+    private fun parentRoomId(message: BaseMessage): String? =
+        message.metadata?.optString(com.cometchat.uikit.core.hub.HubMappers.META_ROOM_ID)
+            ?.takeIf { it.isNotEmpty() }
+
+    /** Server uuid string → kit long id. */
+    private fun hubLongId(uuid: String): Long = com.cometchat.uikit.core.hub.HubIds.toLong(uuid)
 
     /**
      * Adds UIKit local event listeners for inter-component communication.
@@ -406,12 +400,11 @@ open public class CometChatThreadHeaderViewModel(
     }
 
     /**
-     * Removes the SDK message listener and UIKit event subscriptions.
+     * Removes the GoChatHub realtime job and UIKit event subscriptions.
      */
     open public fun removeListener() {
-        if (listenerId.isNotEmpty()) {
-            CometChat.removeMessageListener(listenerId)
-        }
+        hubEventsJob?.cancel()
+        hubEventsJob = null
         messageEventsJob?.cancel()
         messageEventsJob = null
     }
@@ -426,7 +419,7 @@ open public class CometChatThreadHeaderViewModel(
         _parentMessage?.let { parent ->
             if (message.parentMessageId > 0 && message.parentMessageId == parent.id) {
                 // Skip messages sent by the current user - handled by handleUIMessageSent
-                val loggedInUser = CometChat.getLoggedInUser()
+                val loggedInUser = com.cometchat.uikit.core.CometChatUIKit.getLoggedInUser()
                 if (loggedInUser != null && message.sender?.uid == loggedInUser.uid) {
                     return@let
                 }
@@ -496,28 +489,14 @@ open public class CometChatThreadHeaderViewModel(
     }
 
     /**
-     * Handles reaction added event.
+     * Handles reaction added / removed events. Both re-emit the held parent
+     * (the reactions list is re-read on bind), keyed by the message the
+     * reaction landed on.
      */
-    private fun handleReactionAdded(reactionEvent: ReactionEvent) {
+    private fun handleReactionChanged(messageId: Long?) {
         if (hideReaction) return
-
         _parentMessage?.let { parent ->
-            val reactionMessageId = reactionEvent.reaction?.messageId
-            if (reactionMessageId != null && reactionMessageId == parent.id) {
-                updateParentMessageInList(parent)
-            }
-        }
-    }
-
-    /**
-     * Handles reaction removed event.
-     */
-    private fun handleReactionRemoved(reactionEvent: ReactionEvent) {
-        if (hideReaction) return
-
-        _parentMessage?.let { parent ->
-            val reactionMessageId = reactionEvent.reaction?.messageId
-            if (reactionMessageId != null && reactionMessageId == parent.id) {
+            if (messageId != null && messageId == parent.id) {
                 updateParentMessageInList(parent)
             }
         }

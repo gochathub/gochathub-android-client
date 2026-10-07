@@ -5,10 +5,8 @@ import androidx.annotation.RawRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.ConversationsRequest
 import com.cometchat.chat.exceptions.CometChatException
-import com.cometchat.chat.helpers.CometChatHelper
 import com.cometchat.chat.models.Action
 import com.cometchat.chat.models.Conversation
 import com.cometchat.chat.models.Group
@@ -119,8 +117,11 @@ open public class CometChatConversationsViewModel(
     private var disableReceipt = false
     private var disableSoundForMessages = false
     @RawRes private var customSoundForMessage: Int = 0
-    private var listenersTag: String? = null
     private var soundManager: CometChatSoundManager? = null
+
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
     
     // Local event listener jobs
     private var conversationEventsJob: Job? = null
@@ -272,20 +273,10 @@ open public class CometChatConversationsViewModel(
         onSuccess: (() -> Unit)? = null,
         onError: ((com.cometchat.chat.exceptions.CometChatException?) -> Unit)? = null
     ) {
-        val with = conversationWith(conversation) ?: return
-        com.cometchat.chat.core.CometChat.pinConversation(
-            with,
-            conversation.conversationType,
-            object : com.cometchat.chat.core.CometChat.CallbackListener<Conversation>() {
-                override fun onSuccess(updated: Conversation) {
-                    applyConversationPinned(updated)
-                    onSuccess?.invoke()
-                }
-
-                override fun onError(e: com.cometchat.chat.exceptions.CometChatException?) {
-                    onError?.invoke(e)
-                }
-            }
+        // ponytail: the server has no conversation-pin endpoint (only a pinned
+        // message per room) — the pin reports unsupported so the UI can surface it.
+        onError?.invoke(
+            CometChatException("hub_unsupported", "Conversation pinning is not on the server")
         )
     }
 
@@ -295,80 +286,7 @@ open public class CometChatConversationsViewModel(
      * pinned block at the head of the list.
      */
     public fun unpinConversation(conversation: Conversation, onSuccess: (() -> Unit)? = null) {
-        val with = conversationWith(conversation) ?: return
-        com.cometchat.chat.core.CometChat.unpinConversation(
-            with,
-            conversation.conversationType,
-            object : com.cometchat.chat.core.CometChat.CallbackListener<Conversation>() {
-                override fun onSuccess(updated: Conversation) {
-                    applyConversationUnpinned(updated)
-                    onSuccess?.invoke()
-                }
-
-                override fun onError(e: com.cometchat.chat.exceptions.CometChatException?) {}
-            }
-        )
-    }
-
-    /**
-     * Applies a pin to the list: the conversation moves to the top, carrying the pin state from
-     * [updated] onto the loaded instance (see [withPinState] for why the response object is not
-     * swapped in wholesale). A conversation this list hasn't loaded is inserted as delivered —
-     * a pin elsewhere must surface it at the top here.
-     *
-     * Shared by the REST success path and the SDK [ConversationListener] events, so the acting
-     * device (which receives both — the SDK self-echoes conversation pin with no suppression
-     * registry) applies them idempotently: remove-by-id + insert lands in the same position with
-     * the same state the second time.
-     */
-    private fun applyConversationPinned(updated: Conversation) {
-        val list = _conversations.value.toMutableList()
-        val idx = list.indexOfFirst { it.conversationId == updated.conversationId }
-        val pinned = if (idx >= 0) withPinState(list.removeAt(idx), updated) else updated
-        list.add(0, pinned)
-        _conversations.value = list
-    }
-
-    /**
-     * Applies an unpin to the list: the conversation moves to the top of the unpinned section
-     * (leaving it in place would strand it inside the pinned block). Unknown conversations are
-     * ignored — there is nothing to reposition. Shares [applyConversationPinned]'s idempotency
-     * contract.
-     */
-    private fun applyConversationUnpinned(updated: Conversation) {
-        val list = _conversations.value.toMutableList()
-        val idx = list.indexOfFirst { it.conversationId == updated.conversationId }
-        if (idx >= 0) {
-            val unpinned = withPinState(list.removeAt(idx), updated)
-            list.add(firstUnpinnedIndex(list), unpinned)
-            _conversations.value = list
-        }
-    }
-
-    /**
-     * Copies the pin attributes from a pin/unpin API response onto the conversation already in the
-     * list, returning a fresh instance so the list emits an identity change.
-     *
-     * The SDK builds the response conversation with Conversation.fromJSON() over that endpoint's
-     * payload alone, so every field the endpoint omits comes back at its default rather than at the
-     * value the fetched conversation carried. Swapping the response object into the list therefore
-     * silently drops state — most visibly Group.hasJoined, which defaults to false and makes an
-     * unpinned group open with the composer replaced by the "no longer a member" notice.
-     */
-    private fun withPinState(existing: Conversation, response: Conversation): Conversation {
-        return existing.clone().apply {
-            pinnedAt = response.pinnedAt
-            pinnedBy = response.pinnedBy
-        }
-    }
-
-    /** The peer uid (1-1) or group guid (group) that identifies the conversation on the pin API. */
-    private fun conversationWith(conversation: Conversation): String? {
-        return when (val entity = conversation.conversationWith) {
-            is com.cometchat.chat.models.User -> entity.uid
-            is com.cometchat.chat.models.Group -> entity.guid
-            else -> null
-        }
+        // ponytail: no conversation-pin endpoint on the server; mirror [pinConversation].
     }
 
     public fun deleteConversation(conversation: Conversation) {
@@ -581,205 +499,125 @@ open public class CometChatConversationsViewModel(
      * Adds CometChat listeners for real-time updates.
      */
     private fun addListeners() {
-        listenersTag = "ConversationList_${System.currentTimeMillis()}"
-        
-        listenersTag?.let { tag ->
-            // Conversation pin/unpin — from this device (SDK self-echo on REST success), and from
-            // a second device / another surface once the backend emits the realtime frame. Routed
-            // through the same apply helpers as this VM's own pin/unpin calls, which are
-            // idempotent, so the acting device receiving both is harmless.
-            CometChat.addConversationListener(tag, object : CometChat.ConversationListener() {
-                override fun onConversationPinned(conversation: Conversation) {
-                    applyConversationPinned(conversation)
-                }
-
-                override fun onConversationUnpinned(conversation: Conversation) {
-                    applyConversationUnpinned(conversation)
-                }
-            })
-
-            // Message listener for real-time message updates
-            CometChat.addMessageListener(tag, object : CometChat.MessageListener() {
-                override fun onTextMessageReceived(message: TextMessage) {
-                    checkAndUpdateConversation(message, true)
-                }
-                
-                override fun onMediaMessageReceived(message: MediaMessage) {
-                    checkAndUpdateConversation(message, true)
-                }
-                
-                override fun onCustomMessageReceived(message: CustomMessage) {
-                    checkAndUpdateConversation(message, true)
-                }
-
-                override fun onCardMessageReceived(message: com.cometchat.chat.models.CardMessage) {
-                    checkAndUpdateConversation(message, true)
-                }
-
-                override fun onAIAssistantMessageReceived(message: com.cometchat.chat.models.AIAssistantMessage) {
-                    checkAndUpdateConversation(message, true)
-                }
-                
-                override fun onMessageEdited(message: BaseMessage) {
-                    val conversation = CometChatHelper.getConversationFromMessage(message)
-                    if (conversation != null) {
-                        updateConversation(conversation, isActionMessage = false)
-                    }
-                }
-                
-                override fun onMessageDeleted(message: BaseMessage) {
-                    val conversation = CometChatHelper.getConversationFromMessage(message)
-                    if (conversation != null) {
-                        updateConversation(conversation, isActionMessage = false)
-                    }
-                }
-                
-                override fun onMessagesDelivered(messageReceipt: MessageReceipt) {
-                    if (!disableReceipt) {
-                        updateDeliveredReceipts(messageReceipt)
-                    }
-                }
-                
-                override fun onMessagesRead(messageReceipt: MessageReceipt) {
-                    if (!disableReceipt) {
-                        updateReadReceipts(messageReceipt)
-                    }
-                }
-                
-                override fun onTypingStarted(typingIndicator: TypingIndicator) {
-                    addTypingIndicator(typingIndicator)
-                }
-                
-                override fun onTypingEnded(typingIndicator: TypingIndicator) {
-                    removeTypingIndicator(typingIndicator)
-                }
-            })
-            
-            // User listener for online/offline status
-            CometChat.addUserListener(tag, object : CometChat.UserListener() {
-                override fun onUserOnline(user: User) {
-                    updateUserStatus(user)
-                }
-                
-                override fun onUserOffline(user: User) {
-                    updateUserStatus(user)
-                }
-            })
-            
-            // Group listener for group updates
-            CometChat.addGroupListener(tag, object : CometChat.GroupListener() {
-                override fun onGroupMemberJoined(
-                    action: Action,
-                    joinedUser: User,
-                    joinedGroup: Group
-                ) {
-                    updateConversationForGroupAction(action, false)
-                }
-                
-                override fun onGroupMemberLeft(
-                    action: Action,
-                    leftUser: User,
-                    leftGroup: Group
-                ) {
-                    val isCurrentUser = isCurrentUser(leftUser)
-                    updateConversationForGroupAction(action, isCurrentUser)
-                }
-                
-                override fun onGroupMemberKicked(
-                    action: Action,
-                    kickedUser: User,
-                    kickedBy: User,
-                    kickedFrom: Group
-                ) {
-                    val isCurrentUser = isCurrentUser(kickedUser)
-                    updateConversationForGroupAction(action, isCurrentUser)
-                }
-                
-                override fun onMemberAddedToGroup(
-                    action: Action,
-                    addedby: User,
-                    userAdded: User,
-                    addedTo: Group
-                ) {
-                    // If current user was added, update the group scope
-                    if (isCurrentUser(userAdded)) {
-                        addedTo.scope = CometChatConstants.SCOPE_PARTICIPANT
-                        addedTo.setHasJoined(true)
-                        action.actionFor = addedTo
-                    } else {
-                        // Get existing group from conversation if available
-                        val existingGroup = getGroupFromConversation(addedTo.guid)
-                        if (existingGroup != null) {
-                            action.actionFor = existingGroup
-                        } else {
-                            addedTo.setHasJoined(true)
-                            addedTo.scope = CometChatConstants.SCOPE_PARTICIPANT
-                            action.actionFor = addedTo
-                        }
-                    }
-                    updateConversationForGroupAction(action, false)
-                }
-
-                override fun onGroupMemberScopeChanged(
-                    action: Action?,
-                    updatedBy: User?,
-                    updatedUser: User?,
-                    scopeChangedTo: String?,
-                    scopeChangedFrom: String?,
-                    group: Group?
-                ) {
-                    if (action != null && updatedUser != null && group != null && scopeChangedTo != null) {
-                        // If current user's scope changed, update the group
-                        if (isCurrentUser(updatedUser)) {
-                            group.scope = scopeChangedTo
-                            group.setHasJoined(true)
-                            updateGroupInConversation(group)
-                        }
-                        updateConversationForGroupAction(action, false)
-                    }
-                }
-
-                override fun onGroupMemberBanned(
-                    action: Action?,
-                    bannedUser: User?,
-                    bannedBy: User?,
-                    group: Group?
-                ) {
-                    if (action != null && bannedUser != null) {
-                        val isCurrentUser = isCurrentUser(bannedUser)
-                        updateConversationForGroupAction(action, isCurrentUser)
-                    }
-                }
-            })
-            
-            // Connection listener for reconnection
-            CometChat.addConnectionListener(tag, object : CometChat.ConnectionListener {
-                override fun onConnected() {
-                    refreshList()
-                }
-                
-                override fun onConnecting() {
-                    // No action needed
-                }
-                
-                override fun onDisconnected() {
-                    // No action needed
-                }
-                
-                override fun onFeatureThrottled() {
-                    // No action needed
-                }
-                
-                override fun onConnectionError(error: CometChatException?) {
-                    // No action needed
-                }
-            })
+        // GoChatHub realtime — the old Conversation/Message/Connection listeners'
+        // callbacks, driven by server frames. Conversation-level pin/unpin has no
+        // frame (the hub's pinned frame is the room's pinned message; the server has
+        // no conversation-pin endpoint), so only this VM's own pin calls apply state.
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope, ::handleHubEvent)
+        connectionJob = com.cometchat.uikit.core.hub.HubBridge.connection(viewModelScope) {
+            refreshList()
         }
-        
+
         // Add local event listeners
         addLocalEventListeners()
     }
-    
+
+    /** Suspended receipts decode (REST truth) → the old receipt handlers. */
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val hubEvents = com.cometchat.uikit.core.hub.HubEvents
+        when (env.type) {
+            // The old MessageListener's on*MessageReceived/onMessageEdited/onMessageDeleted.
+            "message.created", "message.updated", "message.deleted" -> handleMessageEnvelope(env)
+
+            // The old onMessagesDelivered/onMessagesRead. A receipt decode is suspend
+            // (REST truth); a burst replaces the pending decode instead of queueing.
+            "message.receipts_changed", "room.read_state_changed" -> {
+                if (disableReceipt) return
+                viewModelScope.launch {
+                    hubEvents.receiptsChangedOf(env)?.let { receipt ->
+                        if (receipt.receiptType == MessageReceipt.RECEIPT_TYPE_READ ||
+                            receipt.receiptType == MessageReceipt.RECEIPT_TYPE_READ_BY_ALL
+                        ) {
+                            updateReadReceipts(receipt)
+                        } else {
+                            updateDeliveredReceipts(receipt)
+                        }
+                    }
+                }
+            }
+
+            // The old onTypingStarted/onTypingEnded.
+            "typing.started", "typing.stopped" ->
+                hubEvents.typingIndicatorOf(env)?.let { indicator ->
+                    if (env.type == "typing.started") addTypingIndicator(indicator)
+                    else removeTypingIndicator(indicator)
+                }
+
+            // The old UserListener's onUserOnline/onUserOffline.
+            "presence.changed" -> {
+                val userId = hubEvents.userIdOf(env) ?: return
+                val state = hubEvents.presenceStateOf(env) ?: return
+                val conversationUser = _conversations.value.firstOrNull { conversation ->
+                    conversation.conversationType == UIKitConstants.ConversationType.USERS &&
+                        (conversation.conversationWith as? User)?.uid == userId
+                }?.conversationWith as? User ?: return
+                updateUserStatus(com.cometchat.uikit.core.hub.HubMappers.userWithPresence(conversationUser, state))
+            }
+
+            // The old GroupListener's member events — the update rides the room cache
+            // (the frame only names the actor); the acting user keeps hasJoined.
+            "room.member_added", "room.member_removed" -> {
+                val hub = com.cometchat.uikit.core.hub.Hub
+                val roomId = env.roomId ?: return
+                hub.roomById(roomId) ?: return
+                if (env.type == "room.member_added" && hubEvents.userIdOf(env) == hub.meId()) {
+                    hubGroupFromList(roomId)?.setHasJoined(true)
+                } else if (env.type == "room.member_removed" && hubEvents.userIdOf(env) == hub.meId()) {
+                    // My own removal — drop the row (the old listener removed me via the action).
+                    _conversations.value = _conversations.value.filter { it.conversationId != roomId }
+                    updateUIStateFromList()
+                    return
+                }
+                updateConversationForRoomAction(roomId)
+            }
+            // `room.pinned_changed` is the room's pinned MESSAGE (the server has no
+            // conversation-pin frame), so there is no arm for it here — the panel VMs
+            // own that frame.
+        }
+    }
+
+    /** Server message frame → the checkAndUpdateConversation paths. */
+    private fun handleMessageEnvelope(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val message = com.cometchat.uikit.core.hub.HubEvents.messageOf(env) ?: return
+        if (env.type == "message.created") {
+            checkAndUpdateConversation(message, true)
+        } else {
+            conversationFromMessage(message)?.let { updateConversation(it, isActionMessage = false) }
+        }
+    }
+
+    /**
+     * Room-membership frame → the old [updateConversationForGroupAction] path:
+     * update (or drop, handled in [handleHubEvent]) the conversation for the touched room.
+     */
+    private fun updateConversationForRoomAction(roomId: String) {
+        val hub = com.cometchat.uikit.core.hub.Hub
+        val room = hub.roomById(roomId) ?: return
+        val conversation = com.cometchat.uikit.core.hub.HubMappers.conversation(room)
+        conversation.lastMessage = listOfConversationLastMessage(room.id) ?: return
+        if (com.cometchat.uikit.core.CometChatUIKit.getConversationUpdateSettings().shouldUpdateOnGroupActions()) {
+            updateConversation(conversation, isActionMessage = true)
+        }
+    }
+
+    /** The list's current last message for a conversation id (frames carry none). */
+    private fun listOfConversationLastMessage(conversationId: String?): com.cometchat.chat.models.BaseMessage? =
+        _conversations.value.firstOrNull { it.conversationId == conversationId }?.lastMessage
+
+    /**
+     * Local stand-in for the closed SDK's CometChatHelper.getConversationFromMessage:
+     * keys the room off the message's hub metadata and rebuilds the conversation from
+     * the room cache, with [message] as its last message.
+     */
+    private fun conversationFromMessage(message: BaseMessage): Conversation? {
+        val roomId = message.metadata?.optString(com.cometchat.uikit.core.hub.HubMappers.META_ROOM_ID)
+            ?.takeIf { it.isNotEmpty() }
+        val room = roomId?.let { com.cometchat.uikit.core.hub.Hub.roomById(it) } ?: return null
+        val conversation = com.cometchat.uikit.core.hub.HubMappers.conversation(room)
+        conversation.lastMessage = message
+        conversation.updatedAt = message.sentAt
+        return conversation
+    }
     /**
      * Adds local event listeners for UI-triggered events.
      * These events are emitted by other UI components (e.g., when a message is sent from MessageComposer).
@@ -903,17 +741,11 @@ open public class CometChatConversationsViewModel(
     }
     
     /**
-     * Removes all CometChat listeners.
+     * Removes the GoChatHub realtime listeners.
      */
     private fun removeListeners() {
-        listenersTag?.let { tag ->
-            CometChat.removeConversationListener(tag)
-            CometChat.removeMessageListener(tag)
-            CometChat.removeUserListener(tag)
-            CometChat.removeGroupListener(tag)
-            CometChat.removeConnectionListener(tag)
-            CometChat.removeCallListener(tag)
-        }
+        hubEventsJob?.cancel()
+        connectionJob?.cancel()
     }
     
 
@@ -1203,15 +1035,7 @@ open public class CometChatConversationsViewModel(
             null
         }
     }
-    
-    /**
-     * Checks if the given user is the current logged-in user.
-     */
-    private fun isCurrentUser(user: User?): Boolean {
-        val loggedInUser = getLoggedInUserSafe() ?: return false
-        return user?.uid?.equals(loggedInUser.uid, ignoreCase = true) == true
-    }
-    
+
     /**
      * Gets a group from the conversation list by GUID.
      */
@@ -1226,14 +1050,10 @@ open public class CometChatConversationsViewModel(
         }
         return null
     }
+
+    /** The list's Group for a room id (frames replace an existing row's group). */
+    private fun hubGroupFromList(roomId: String): Group? = getGroupFromConversation(roomId)
     
-    /**
-     * Updates conversation for group actions (member joined, left, kicked, banned, etc.).
-     * Converts the action to a conversation and updates the list.
-     * 
-     * @param action The group action message
-     * @param isRemove Whether to remove the conversation (e.g., current user left/kicked/banned)
-     */
     /**
      * Fetches the conversation from the server and updates the conversation list.
      * Used for group action events (member added/kicked/banned/etc.) where the
@@ -1245,41 +1065,17 @@ open public class CometChatConversationsViewModel(
      */
     private fun refreshConversationFromServer(id: String, type: String) {
         viewModelScope.launch {
-            CometChat.getConversation(id, type, object : CometChat.CallbackListener<Conversation>() {
-                override fun onSuccess(conversation: Conversation) {
-                    if (conversation.lastMessage != null) {
-                        updateConversation(conversation, isActionMessage = true)
-                    }
-                }
-                override fun onError(e: CometChatException?) {
-                    CometChatLogger.e("CometChatConvListVM", "Failed to refresh conversation: ${e?.message}")
-                }
-            })
-        }
-    }
-
-    private fun updateConversationForGroupAction(action: Action, isRemove: Boolean) {
-        viewModelScope.launch {
-            // Null safety check - ensure action has required fields before calling SDK
-            // The SDK's CometChatHelper.getConversationFromMessage can crash if receiverType is null
-            if (action.receiverType.isNullOrEmpty() || action.receiverUid.isNullOrEmpty()) {
-                return@launch
-            }
-            
-            val conversation = try {
-                CometChatHelper.getConversationFromMessage(action)
-            } catch (e: Exception) {
-                CometChatLogger.e("CometChatConvListVM", "Error getting conversation from action: ${e.message}")
-                null
-            } ?: return@launch
-            
-            if (isRemove) {
-                removeConversation(conversation)
-            } else {
-                // Only update if settings allow group actions
-                if (CometChatUIKit.getConversationUpdateSettings().shouldUpdateOnGroupActions()) {
+            try {
+                val conversation = com.cometchat.uikit.core.data.repository.MessageListRepositoryImpl()
+                    .getConversation(id, type)
+                    .getOrNull()
+                if (conversation != null && conversation.lastMessage != null) {
                     updateConversation(conversation, isActionMessage = true)
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                CometChatLogger.e("CometChatConvListVM", "Failed to refresh conversation: ${e.message}")
             }
         }
     }
@@ -1390,43 +1186,48 @@ open public class CometChatConversationsViewModel(
         if (markAsDeliver) {
             processMessage(message)
         } else {
-            val conversation = CometChatHelper.getConversationFromMessage(message)
+            val conversation = conversationFromMessage(message)
             if (conversation != null) {
                 updateConversation(conversation, isActionMessage = false)
             }
         }
     }
-    
+
     /**
      * Processes an incoming message by marking it as delivered and updating the conversation.
      * Matches the Java implementation's processMessage() method.
-     * 
+     *
      * @param message The message to process
      */
     private fun processMessage(message: BaseMessage) {
         markAsDeliverInternally(message)
-        val conversation = CometChatHelper.getConversationFromMessage(message)
+        val conversation = conversationFromMessage(message)
         if (conversation != null) {
             updateConversation(conversation, isActionMessage = false)
         }
         playIncomingMessageSound()
     }
-    
+
     /**
      * Marks a message as delivered internally if conditions are met.
      * Only marks as delivered if:
      * - The message sender is not the logged-in user
      * - Receipts are not disabled
      * Matches the Java implementation's markAsDeliverInternally() method.
-     * 
+     *
      * @param message The message to mark as delivered
      */
     private fun markAsDeliverInternally(message: BaseMessage) {
         val loggedInUser = getLoggedInUserSafe() ?: return
         val senderUid = message.sender?.uid ?: return
-        
+
         if (!senderUid.equals(loggedInUser.uid, ignoreCase = true) && !disableReceipt) {
-            CometChat.markAsDelivered(message)
+            // Delivered rides the socket ack (ADR-009) — the hub-backed datasource path.
+            viewModelScope.launch {
+                runCatching {
+                    com.cometchat.uikit.core.data.datasource.HubImpls.delivered(message)
+                }
+            }
         }
     }
     

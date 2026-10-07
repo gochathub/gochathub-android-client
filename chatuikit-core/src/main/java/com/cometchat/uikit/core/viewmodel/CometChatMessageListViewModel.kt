@@ -5,16 +5,15 @@ import androidx.annotation.RawRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.MessagesRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.Action
 import com.cometchat.chat.models.BaseMessage
-import com.cometchat.chat.core.Call
 import com.cometchat.chat.models.CustomMessage
 import com.cometchat.chat.models.Group
 import com.cometchat.chat.models.MediaMessage
 import com.cometchat.chat.models.MessageReceipt
+import com.cometchat.chat.models.Reaction
 import com.cometchat.chat.models.ReactionEvent
 import com.cometchat.chat.models.TextMessage
 import com.cometchat.chat.models.TypingIndicator
@@ -22,11 +21,15 @@ import com.cometchat.chat.models.User
 import com.cometchat.chat.models.AIAssistantBaseEvent
 import com.cometchat.chat.models.AIAssistantMessage
 import com.cometchat.uikit.core.CometChatAIStreamService
+import com.cometchat.uikit.core.CometChatUIKit
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.domain.model.StreamMessage
 import com.cometchat.uikit.core.domain.model.StreamingState
 import com.cometchat.uikit.core.domain.model.CometChatMessageOption
 import com.cometchat.uikit.core.domain.repository.MessageListRepository
+import com.cometchat.uikit.core.hub.Hub
+import com.cometchat.uikit.core.hub.HubBridge
+import com.cometchat.uikit.core.hub.HubEvents
 import com.cometchat.uikit.core.events.CometChatConversationEvent
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatGroupEvent
@@ -34,7 +37,6 @@ import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.events.CometChatThreadEvent
 import com.cometchat.uikit.core.events.CometChatUIEvent
 import com.cometchat.uikit.core.events.MessageStatus
-import com.cometchat.chat.helpers.CometChatHelper
 import com.cometchat.chat.models.Conversation
 import com.cometchat.uikit.core.resources.soundmanager.CometChatSoundManager
 import com.cometchat.uikit.core.resources.soundmanager.Sound
@@ -54,10 +56,7 @@ import com.cometchat.uikit.core.utils.getDefaultMessagesTypes
 import java.util.Collections
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -565,9 +564,19 @@ open public class CometChatMessageListViewModel(
 
     /** Job for UIKit group events subscription. */
     private var groupEventsJob: Job? = null
-    
+
     /** Job for UIKit call events subscription. */
-    
+
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
+
+    /**
+     * The room this list last subscribed on the hub socket ([setUser]/[setGroup]);
+     * unsubscribed on the next bind and on clear.
+     */
+    private var subscribedRoomId: String? = null
+
     // ========================================
     // Navigation State
     // ========================================
@@ -1053,69 +1062,17 @@ open public class CometChatMessageListViewModel(
     /**
      * Translates a message using the CometChat message translation extension.
      *
-     * Calls the `message-translation` extension via [CometChat.callExtension] to
-     * translate the message text. On success, updates the message metadata with
-     * the `translated_message` field and emits the updated message via
-     * [messageTranslated] and updates it in the message list.
-     *
-     * @param message The [BaseMessage] to translate.
-     *
-     * @see messageTranslated
+     * // ponytail: the server has no extension API — translation surfaces the
+     * kit's error path with the same shape (translated_message would land in
+     * metadata the same way once a server endpoint exists).
      */
     private fun translateMessage(message: BaseMessage) {
         if (message !is TextMessage) return
 
         viewModelScope.launch {
-            try {
-                val body = org.json.JSONObject()
-                body.put("msgId", message.id)
-                body.put("text", message.text)
-                body.put("languages", org.json.JSONArray().put(java.util.Locale.getDefault().language))
-
-                val result = suspendCancellableCoroutine { cont ->
-                    CometChat.callExtension(
-                        "message-translation",
-                        "POST",
-                        "/v2/translate",
-                        body,
-                        object : CometChat.CallbackListener<org.json.JSONObject>() {
-                            override fun onSuccess(response: org.json.JSONObject) {
-                                cont.resume(response)
-                            }
-
-                            override fun onError(e: CometChatException) {
-                                cont.resumeWithException(e)
-                            }
-                        }
-                    )
-                }
-
-                val translations = result
-                    .optJSONObject("data")
-                    ?.optJSONArray("translations")
-
-                if (translations != null && translations.length() > 0) {
-                    val translatedText = translations
-                        .getJSONObject(0)
-                        .optString("message_translated", "")
-
-                    if (translatedText.isNotEmpty()) {
-                        val metadata = message.metadata ?: org.json.JSONObject()
-                        metadata.put("translated_message", translatedText)
-                        message.metadata = metadata
-
-                        updateMessage(message)
-                        _messageTranslated.emit(message)
-                    }
-                }
-            } catch (e: Exception) {
-                _onError.emit(
-                    e as? CometChatException ?: CometChatException(
-                        "TRANSLATION_ERROR",
-                        e.message ?: "Translation failed"
-                    )
-                )
-            }
+            _onError.emit(
+                CometChatException("hub_unsupported", "Message translation is not on the server")
+            )
         }
     }
 
@@ -1166,7 +1123,8 @@ open public class CometChatMessageListViewModel(
         repository.configureForUser(user, effectiveTypes, effectiveCategories, parentMessageId, messagesRequestBuilder)
 
         adoptEffectiveFilter(effectiveTypes, effectiveCategories)
-        
+        bindRoomSocket()
+
         // Always subscribe to UIKit local events (these don't depend on SDK)
         removeLocalEventListeners()
         if (enableListeners) {
@@ -1245,7 +1203,8 @@ open public class CometChatMessageListViewModel(
         repository.configureForGroup(group, effectiveTypes, effectiveCategories, parentMessageId, messagesRequestBuilder)
 
         adoptEffectiveFilter(effectiveTypes, effectiveCategories)
-        
+        bindRoomSocket()
+
         // Always subscribe to UIKit local events (these don't depend on SDK)
         removeLocalEventListeners()
         if (enableListeners) {
@@ -1630,44 +1589,12 @@ open public class CometChatMessageListViewModel(
      */
     public fun fetchSmartReplies() {
         if (!enableSmartReplies) return
-        
-        val receiverId = user?.uid ?: group?.guid ?: return
-        val receiverType = if (user != null) {
-            CometChatConstants.RECEIVER_TYPE_USER
-        } else {
-            CometChatConstants.RECEIVER_TYPE_GROUP
-        }
-        
-        _smartRepliesUIState.value = SmartRepliesUIState.Loading
-        
-        viewModelScope.launch {
-            try {
-                val result = suspendCancellableCoroutine<HashMap<String, String>> { continuation ->
-                    CometChat.getSmartReplies(
-                        receiverId,
-                        receiverType,
-                        null, // configuration - use default
-                        object : CometChat.CallbackListener<HashMap<String, String>>() {
-                            override fun onSuccess(response: HashMap<String, String>) {
-                                continuation.resume(response)
-                            }
-                            
-                            override fun onError(exception: CometChatException) {
-                                continuation.resumeWithException(exception)
-                            }
-                        }
-                    )
-                }
-                
-                // Extract values from the HashMap as a list
-                val replies = result.values.toList()
-                _smartReplies.value = replies
-                _smartRepliesUIState.value = SmartRepliesUIState.Loaded(replies)
-                
-            } catch (e: CometChatException) {
-                _smartRepliesUIState.value = SmartRepliesUIState.Error(e)
-            }
-        }
+
+        // ponytail: smart replies were a cloud-AI extension; the server has no
+        // equivalent so the kit's Error state is surfaced (same shape, no SDK call).
+        _smartRepliesUIState.value = SmartRepliesUIState.Error(
+            CometChatException("hub_unsupported", "Smart replies are not on the server")
+        )
     }
     
     /**
@@ -1769,45 +1696,14 @@ open public class CometChatMessageListViewModel(
      */
     public fun fetchConversationStarter() {
         if (!enableConversationStarter) return
-        
+
         // Only fetch in main conversation
         if (parentMessageId != -1L) return
-        
-        val receiverId = user?.uid ?: group?.guid ?: return
-        val receiverType = if (user != null) {
-            CometChatConstants.RECEIVER_TYPE_USER
-        } else {
-            CometChatConstants.RECEIVER_TYPE_GROUP
-        }
-        
-        _conversationStarterUIState.value = ConversationStarterUIState.Loading
-        
-        viewModelScope.launch {
-            try {
-                val result = suspendCancellableCoroutine<List<String>> { continuation ->
-                    CometChat.getConversationStarter(
-                        receiverId,
-                        receiverType,
-                        null, // configuration - use default
-                        object : CometChat.CallbackListener<List<String>>() {
-                            override fun onSuccess(response: List<String>) {
-                                continuation.resume(response)
-                            }
-                            
-                            override fun onError(exception: CometChatException) {
-                                continuation.resumeWithException(exception)
-                            }
-                        }
-                    )
-                }
-                
-                _conversationStarterReplies.value = result
-                _conversationStarterUIState.value = ConversationStarterUIState.Loaded(result)
-                
-            } catch (e: CometChatException) {
-                _conversationStarterUIState.value = ConversationStarterUIState.Error(e)
-            }
-        }
+
+        // ponytail: conversation starters were a cloud-AI extension; no server equivalent.
+        _conversationStarterUIState.value = ConversationStarterUIState.Error(
+            CometChatException("hub_unsupported", "Conversation starters are not on the server")
+        )
     }
     
     /**
@@ -1892,44 +1788,14 @@ open public class CometChatMessageListViewModel(
      */
     public fun fetchConversationSummary() {
         if (!enableConversationSummary) return
-        
+
         // Only fetch in main conversation
         if (parentMessageId != -1L) return
-        
-        val receiverId = user?.uid ?: group?.guid ?: return
-        val receiverType = if (user != null) {
-            CometChatConstants.RECEIVER_TYPE_USER
-        } else {
-            CometChatConstants.RECEIVER_TYPE_GROUP
-        }
-        
-        _conversationSummaryUIState.value = ConversationSummaryUIState.Loading
-        
-        viewModelScope.launch {
-            try {
-                val result = suspendCancellableCoroutine<String> { continuation ->
-                    CometChat.getConversationSummary(
-                        receiverId,
-                        receiverType,
-                        object : CometChat.CallbackListener<String>() {
-                            override fun onSuccess(response: String) {
-                                continuation.resume(response)
-                            }
-                            
-                            override fun onError(exception: CometChatException) {
-                                continuation.resumeWithException(exception)
-                            }
-                        }
-                    )
-                }
-                
-                _conversationSummary.value = result
-                _conversationSummaryUIState.value = ConversationSummaryUIState.Loaded(result)
-                
-            } catch (e: CometChatException) {
-                _conversationSummaryUIState.value = ConversationSummaryUIState.Error(e)
-            }
-        }
+
+        // ponytail: the conversation summary was a cloud-AI extension; no server equivalent.
+        _conversationSummaryUIState.value = ConversationSummaryUIState.Error(
+            CometChatException("hub_unsupported", "Conversation summaries are not on the server")
+        )
     }
     
     /**
@@ -2019,25 +1885,13 @@ open public class CometChatMessageListViewModel(
 
         viewModelScope.launch {
             try {
-                val request = MessagesRequest.MessagesRequestBuilder()
-                    .setUID(currentUser.uid)
-                    .hideReplies(true)
-                    .hideDeletedMessages(true)
-                    .setTypes(messagesTypes)
-                    .setCategories(messagesCategories)
-                    .setLimit(30)
-                    .build()
-
-                val fetchedMessages = suspendCancellableCoroutine<List<BaseMessage>> { cont ->
-                    request.fetchPrevious(object : CometChat.CallbackListener<List<BaseMessage>>() {
-                        override fun onSuccess(messages: List<BaseMessage>) {
-                            cont.resume(messages)
-                        }
-                        override fun onError(e: CometChatException) {
-                            cont.resumeWithException(e)
-                        }
-                    })
-                }
+                // Fetch rides a private hub-backed repository instance — configured like the
+                // VM's own, without touching its pagination state.
+                // ponytail: the datasource ignores hideReplies/hideDeletedMessages (the
+                // server has no such filters); the newest page decides the active thread.
+                val repo = com.cometchat.uikit.core.data.repository.MessageListRepositoryImpl()
+                repo.configureForUser(currentUser, messagesTypes, messagesCategories, -1, null)
+                val fetchedMessages = repo.fetchPreviousMessages().getOrThrow()
 
                 // Only true session starters (parentMessageId == 0) qualify as conversations.
                 val sessionStarters = fetchedMessages.filter { it.parentMessageId == 0L }
@@ -2119,21 +1973,15 @@ open public class CometChatMessageListViewModel(
 
                     // For agent chats with parentMessageId, fetch and prepend the parent message
                     // so the user's original question appears at the top of the thread
-                    if (firstFetch && isAgentChat && parentMessageId > 0 
+                    if (firstFetch && isAgentChat && parentMessageId > 0
                         && _messages.value.none { it.id.toLong() == parentMessageId }) {
                         try {
-                            val parentMessage = kotlinx.coroutines.suspendCancellableCoroutine<BaseMessage?> { cont ->
-                                CometChat.getMessageDetails(
-                                    parentMessageId,
-                                    object : CometChat.CallbackListener<BaseMessage>() {
-                                        override fun onSuccess(message: BaseMessage) {
-                                            if (cont.isActive) cont.resume(message)
-                                        }
-                                        override fun onError(e: CometChatException) {
-                                            if (cont.isActive) cont.resume(null)
-                                        }
-                                    }
-                                )
+                            // // ponytail: one hub REST refetch by the threaded parent; when the
+                            // id is unknown in this session the placeholder is skipped (best-effort,
+                            // as before).
+                            val parentUuid = com.cometchat.uikit.core.hub.HubIds.toStringId(parentMessageId)
+                            val parentMessage = parentUuid?.let {
+                                com.cometchat.uikit.core.data.datasource.HubImpls.refetchMessage(it)
                             }
                             if (parentMessage != null) {
                                 _messages.value = listOf(parentMessage) + _messages.value
@@ -2777,52 +2625,6 @@ open public class CometChatMessageListViewModel(
     }
 
     /**
-     * Applies a real-time moderation verdict to the matching message.
-     *
-     * On a successful swap the change is pushed through both [_messages] (drives
-     * Compose recomposition) and [_messageUpdated] (guarantees the RecyclerView
-     * adapter rebinds the row even though StateFlow conflation might otherwise
-     * suppress the emission).
-     *
-     * @param message The moderated [BaseMessage] delivered by
-     * [com.cometchat.chat.core.CometChat.MessageListener.onMessageModerated].
-     */
-    private fun updateModeratedMessage(message: BaseMessage) {
-        val matches: (BaseMessage) -> Boolean = { current ->
-            (!message.muid.isNullOrEmpty() && current.muid == message.muid) ||
-                (message.id > 0 && current.id == message.id)
-        }
-
-        val existing = _messages.value.firstOrNull(matches) ?: return
-
-        // Once blocked, stay blocked — don't let a later verdict re-enable the message.
-        if (isMessageDisapproved(existing)) return
-
-        // A moderation verdict describes content, not the viewer's pin/save or thread-subscription
-        // state — both are carried forward from the loaded copy, which the verdict omits.
-        val moderated = carryThreadSubscriptionForward(
-            existing,
-            PinSaveUtils.carryPinSaveForward(existing, message)
-        )
-        if (updateItem(moderated, matches)) {
-            viewModelScope.launch { _messageUpdated.emit(moderated) }
-        }
-    }
-
-    /**
-     * Returns `true` when [message] carries a `DISAPPROVED` moderation status.
-     * Only [TextMessage] and [MediaMessage] can be moderated.
-     */
-    private fun isMessageDisapproved(message: BaseMessage): Boolean {
-        val statusName = when (message) {
-            is TextMessage -> message.moderationStatus?.name
-            is MediaMessage -> message.moderationStatus?.name
-            else -> null
-        }
-        return statusName?.lowercase() == UIKitConstants.ModerationConstants.DISAPPROVED
-    }
-
-    /**
      * Removes a message from the list.
      *
      * Finds and removes the message by ID. If the list becomes empty after
@@ -3109,7 +2911,7 @@ open public class CometChatMessageListViewModel(
      * @see setDisableReceipt
      */
     public fun markMessageAsRead(message: BaseMessage) {
-        if (!disableReceipt && message.sender?.uid != CometChat.getLoggedInUser()?.uid) {
+        if (!disableReceipt && message.sender?.uid != CometChatUIKit.getLoggedInUser()?.uid) {
             viewModelScope.launch {
                 repository.markAsRead(message)
             }
@@ -3253,7 +3055,7 @@ open public class CometChatMessageListViewModel(
      *
      * This method:
      * 1. Gets the last message in the current message list
-     * 2. Calls [CometChat.markAsRead] on that message
+     * 2. Marks that message read through the hub-backed repository
      * 3. On success, resets [unreadCount] to 0
      *
      * The UI should observe [unreadCount] to update the scroll-to-bottom button's
@@ -3355,29 +3157,15 @@ open public class CometChatMessageListViewModel(
     public fun fetchMessageSender(message: BaseMessage?) {
         val senderUid = message?.sender?.uid
         if (senderUid.isNullOrEmpty()) return
-        
+
         viewModelScope.launch {
             try {
-                val user = suspendCancellableCoroutine<User> { continuation ->
-                    CometChat.getUser(
-                        senderUid,
-                        object : CometChat.CallbackListener<User>() {
-                            override fun onSuccess(user: User) {
-                                continuation.resume(user)
-                            }
-                            
-                            override fun onError(exception: CometChatException) {
-                                continuation.resumeWithException(exception)
-                            }
-                        }
-                    )
-                }
-                
-                _messageSenderFetched.emit(user)
-                
-            } catch (e: CometChatException) {
-                // Handle error gracefully - log or ignore
-                // The UI can observe messageSenderFetched for successful fetches
+                // Full user details ride the hub REST client, mapped to the kit model.
+                val dto = com.cometchat.uikit.core.hub.Hub.client.user(senderUid)
+                _messageSenderFetched.emit(com.cometchat.uikit.core.hub.HubMappers.user(dto))
+            } catch (e: Exception) {
+                // Handle error gracefully — the UI can observe messageSenderFetched
+                // for successful fetches
             }
         }
     }
@@ -3565,33 +3353,24 @@ open public class CometChatMessageListViewModel(
      * @param call The [Call] from the event.
      * @return `true` if the call is for the current conversation, `false` otherwise.
      */
-    private fun isCallForCurrentChat(call: Call): Boolean {
+    private fun isCallForCurrentChat(call: BaseMessage): Boolean {
         // Only process in main conversation (not thread view)
         if (parentMessageId != -1L) return false
-        
+        // ponytail: BaseMessage-shaped now; the hub carries no call frames, so this
+        // only ever guards leftover call-category rows from a fetch.
         return when {
             user != null -> {
-                // For user conversations, check if call involves the configured user
-                val callReceiverId = call.receiverUid
-                val callInitiator = call.callInitiator as? User
-                val callSenderId = callInitiator?.uid
-                val currentUserId = user?.uid
-                val loggedInUserId = getLoggedInUserUid()
-                
-                // Call is for current chat if:
-                // - Receiver is the configured user, OR
-                // - Sender is the configured user and receiver is logged-in user
-                callReceiverId == currentUserId || 
-                (callSenderId == currentUserId && callReceiverId == loggedInUserId)
+                // For user conversations, check if the call involves the configured user
+                call.receiverUid == user?.uid ||
+                    (call.sender?.uid == user?.uid && call.receiverUid == getLoggedInUserUid())
             }
             group != null -> {
-                // For group conversations, check if call is for the configured group
+                // For group conversations, check if the call is for the configured group
                 call.receiverUid == group?.guid
             }
             else -> false
         }
     }
-    
     /**
      * Determines the alignment for a message in the UI.
      *
@@ -3616,7 +3395,7 @@ open public class CometChatMessageListViewModel(
         return when {
             message.category == CometChatConstants.CATEGORY_ACTION -> MessageAlignment.CENTER
             message.category == CometChatConstants.CATEGORY_CALL -> MessageAlignment.CENTER
-            message.sender?.uid == CometChat.getLoggedInUser()?.uid -> MessageAlignment.RIGHT
+            message.sender?.uid == CometChatUIKit.getLoggedInUser()?.uid -> MessageAlignment.RIGHT
             else -> MessageAlignment.LEFT
         }
     }
@@ -3679,7 +3458,7 @@ open public class CometChatMessageListViewModel(
      */
     protected open fun getLoggedInUserUid(): String? {
         return try {
-            CometChat.getLoggedInUser()?.uid
+            CometChatUIKit.getLoggedInUser()?.uid
         } catch (e: Exception) {
             // SDK not initialized, treat as no logged-in user
             null
@@ -4105,7 +3884,7 @@ open public class CometChatMessageListViewModel(
      */
     private fun addStreamMessage(textMessage: TextMessage) {
         val agentUser = user ?: return
-        val loggedInUser = CometChat.getLoggedInUser() ?: return
+        val loggedInUser = CometChatUIKit.getLoggedInUser() ?: return
 
         // Create StreamMessage WITHOUT RUN_STARTED metadata.
         // The metadata is stamped later by activateStreamMessage() — either
@@ -4377,7 +4156,7 @@ open public class CometChatMessageListViewModel(
     // ========================================
     
     /**
-     * Adds CometChat listeners for real-time updates.
+     * Adds the GoChatHub realtime listeners for this room.
      */
     private fun addListeners() {
         listenersTag = "MessageList_${System.currentTimeMillis()}"
@@ -4400,256 +4179,191 @@ open public class CometChatMessageListViewModel(
             }
         }
 
-        listenersTag?.let { tag ->
-            // Message listener
-            CometChat.addMessageListener(tag, object : CometChat.MessageListener() {
-                override fun onTextMessageReceived(message: TextMessage) {
-                    handleIncomingMessage(message)
-                }
+        // Realtime: the old MessageListener's callbacks off the server frames.
+        hubEventsJob?.cancel()
+        hubEventsJob = HubBridge.events(viewModelScope, ::handleHubEvent)
 
-                override fun onMediaMessageReceived(message: MediaMessage) {
-                    handleIncomingMessage(message)
-                }
-
-                override fun onCustomMessageReceived(message: CustomMessage) {
-                    handleIncomingMessage(message)
-                }
-
-                override fun onCardMessageReceived(message: com.cometchat.chat.models.CardMessage) {
-                    handleIncomingMessage(message)
-                }
-
-                override fun onAIAssistantMessageReceived(message: com.cometchat.chat.models.AIAssistantMessage) {
-                    if (!isAgentChat) {
-                        handleIncomingMessage(message)
-                    }
-                }
-                
-                override fun onMessageEdited(message: BaseMessage) {
-                    if (isMessageForCurrentChat(message)) {
-                        reconcileEditedMessageSubscription(message)
-                        // The edit frame carries the new content but not the viewer's pin/save
-                        // state; carry it over from the loaded copy so the rebind keeps the
-                        // indicator (the list swap and the rebind emission must agree).
-                        val edited = reconcilePinSaveOnReplace(message)
-                        CometChatLogger.d("CometChatMsgListVM", "━━━ onMessageEdited ━━━ msgId=${message.id}, type=${message.type}, moderationStatus=${(message as? com.cometchat.chat.models.TextMessage)?.moderationStatus?.name ?: (message as? com.cometchat.chat.models.MediaMessage)?.moderationStatus?.name ?: "N/A"}")
-                        updateMessage(edited)
-                        // Emit via SharedFlow to bypass StateFlow conflation
-                        // This ensures moderation status changes trigger UI rebind in real-time
-                        viewModelScope.launch {
-                            CometChatLogger.d("CometChatMsgListVM", "onMessageEdited: emitting _messageUpdated for msgId=${message.id}")
-                            _messageUpdated.emit(edited)
-                        }
-                    } else {
-                        CometChatLogger.d("CometChatMsgListVM", "onMessageEdited: IGNORED (not for current chat) msgId=${message.id}")
-                    }
-                }
-
-                override fun onMessageModerated(message: BaseMessage) {
-                    if (isMessageForCurrentChat(message)) {
-                        updateModeratedMessage(message)
-                    }
-                }
-
-                override fun onMessageDeleted(message: BaseMessage) {
-                    if (isMessageForCurrentChat(message)) {
-                        if (hideDeleteMessage || isAgentChat) {
-                            removeMessage(message)
-                        } else {
-                            updateMessage(message)
-                        }
-                    }
-                }
-
-                // Pin/Save realtime → rebind the in-list bubble (indicator) and fan the event out on
-                // the UIKit bus so the Pinned/Saved panels + other consumers stay in sync. On the
-                // acting device these arrive via the SDK's self-echo off the REST response; from
-                // another device they arrive as a realtime action. Either way the delivered message
-                // may be partial, so applyPinSaveEcho merges onto the loaded copy — see its KDoc.
-                override fun onMessagePinned(message: BaseMessage) {
-                    applyPinSaveEcho(
-                        echo = message,
-                        applyTo = { updated ->
-                            // "Pinned" is the assertion; pinnedAt is only its representation
-                            // (isPinned() == pinnedAt > 0). If the echo omits the timestamp, stamp
-                            // one so the indicator shows — the next fetch supplies the real value.
-                            updated.pinnedAt = if (message.pinnedAt > 0) message.pinnedAt
-                            else System.currentTimeMillis() / 1000
-                            // Only copy pinnedBy when the echo carries it: it drives isSystemPinned(),
-                            // and inventing an identity here would misreport who pinned the message.
-                            message.pinnedBy?.let { updated.pinnedBy = it }
-                        },
-                        event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessagePinned(it) }
-                    )
-                }
-
-                override fun onMessageUnpinned(message: BaseMessage) {
-                    applyPinSaveEcho(
-                        echo = message,
-                        // Clear outright rather than copying: the event itself is the assertion, so
-                        // this holds even if the echo omits the pin fields entirely.
-                        applyTo = { updated ->
-                            updated.pinnedAt = 0
-                            updated.pinnedBy = null
-                        },
-                        event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessageUnpinned(it) }
-                    )
-                }
-
-                override fun onMessageSaved(message: BaseMessage) {
-                    applyPinSaveEcho(
-                        echo = message,
-                        applyTo = { updated ->
-                            updated.savedAt = if (message.savedAt > 0) message.savedAt
-                            else System.currentTimeMillis() / 1000
-                        },
-                        event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessageSaved(it) }
-                    )
-                }
-
-                override fun onMessageUnsaved(message: BaseMessage) {
-                    applyPinSaveEcho(
-                        echo = message,
-                        applyTo = { updated -> updated.savedAt = 0 },
-                        event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessageUnsaved(it) }
-                    )
-                }
-
-                override fun onMessagesDelivered(messageReceipt: MessageReceipt) {
-                    handleMessageReceipt(messageReceipt)
-                }
-
-                override fun onMessagesRead(messageReceipt: MessageReceipt) {
-                    handleMessageReceipt(messageReceipt)
-                }
-
-                override fun onMessagesDeliveredToAll(messageReceipt: MessageReceipt) {
-                    handleMessageReceipt(messageReceipt)
-                }
-
-                override fun onMessagesReadByAll(messageReceipt: MessageReceipt) {
-                    handleMessageReceipt(messageReceipt)
-                }
-                
-                override fun onTypingStarted(typingIndicator: TypingIndicator) {
-                    handleTypingStarted(typingIndicator)
-                }
-                
-                override fun onTypingEnded(typingIndicator: TypingIndicator) {
-                    handleTypingEnded(typingIndicator)
-                }
-                
-                override fun onMessageReactionAdded(reactionEvent: ReactionEvent) {
-                    handleReactionAdded(reactionEvent)
-                }
-                
-                override fun onMessageReactionRemoved(reactionEvent: ReactionEvent) {
-                    handleReactionRemoved(reactionEvent)
-                }
-            })
-            
-            // Group listener
-            CometChat.addGroupListener(tag, object : CometChat.GroupListener() {
-                override fun onGroupMemberJoined(action: Action, joinedUser: User, joinedGroup: Group) {
-                    if (isMessageForCurrentChat(action)) {
-                        addMessage(action)
-                    }
-                }
-                
-                override fun onGroupMemberLeft(action: Action, leftUser: User, leftGroup: Group) {
-                    if (isMessageForCurrentChat(action)) {
-                        addMessage(action)
-                    }
-                }
-                
-                override fun onGroupMemberKicked(action: Action, kickedUser: User, kickedBy: User, kickedFrom: Group) {
-                    if (isMessageForCurrentChat(action)) {
-                        addMessage(action)
-                    }
-                }
-                
-                override fun onGroupMemberBanned(action: Action?, bannedUser: User?, bannedBy: User?, group: Group?) {
-                    action?.let {
-                        if (isMessageForCurrentChat(it)) {
-                            addMessage(it)
-                        }
-                    }
-                }
-                
-                override fun onGroupMemberScopeChanged(
-                    action: Action?,
-                    updatedBy: User?,
-                    updatedUser: User?,
-                    scopeChangedTo: String?,
-                    scopeChangedFrom: String?,
-                    group: Group?
-                ) {
-                    action?.let {
-                        if (isMessageForCurrentChat(it)) {
-                            addMessage(it)
-                        }
-                    }
-                }
-            })
-            
-            // Call listener
-            CometChat.addCallListener(tag, object : CometChat.CallListener() {
-                override fun onIncomingCallReceived(call: Call) {
-                    // Call actions are handled via message listener
-                }
-                
-                override fun onOutgoingCallAccepted(call: Call) {
-                    // Call actions are handled via message listener
-                }
-                
-                override fun onOutgoingCallRejected(call: Call) {
-                    // Call actions are handled via message listener
-                }
-                
-                override fun onIncomingCallCancelled(call: Call) {
-                    // Call actions are handled via message listener
-                }
-                
-                override fun onCallEndedMessageReceived(call: Call) {
-                    if (isMessageForCurrentChat(call)) {
-                        addMessage(call)
-                    }
-                }
-            })
-            
-            // Connection listener
-            CometChat.addConnectionListener(tag, object : CometChat.ConnectionListener {
-                override fun onConnected() {
-                    // Fetch missed messages on reconnection
-                    // Only call fetchMissedMessages if we have existing messages
-                    // Otherwise, use fetchMessages for initial load
-                    if (_messages.value.isNotEmpty()) {
-                        fetchMissedMessages()
-                    } else if (!(isAgentChat && parentMessageId == -1L)) {
-                        fetchMessages()
-                    }
-                }
-                
-                override fun onConnecting() {}
-                override fun onDisconnected() {}
-                override fun onFeatureThrottled() {}
-                override fun onConnectionError(error: CometChatException?) {}
-            })
+        // Connection: the old ConnectionListener's onConnected — resync the open room.
+        connectionJob?.cancel()
+        connectionJob = HubBridge.connection(viewModelScope) {
+            if (_messages.value.isNotEmpty()) {
+                fetchMissedMessages()
+            } else if (!(isAgentChat && parentMessageId == -1L)) {
+                fetchMessages()
+            }
         }
+    }
+
+    /**
+     * Server envelope → the same handlers the old SDK listeners drove, filtered
+     * to the current chat by [isMessageForCurrentChat] where the old code did.
+     */
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        when (env.type) {
+            // onTextMessageReceived/onMediaMessageReceived/onCustomMessageReceived/...
+            "message.created" -> HubEvents.messageOf(env)?.let { handleIncomingMessage(it) }
+
+            // onMessageEdited.
+            "message.updated" -> {
+                val message = HubEvents.messageOf(env) ?: return
+                if (!isMessageForCurrentChat(message)) {
+                    CometChatLogger.d("CometChatMsgListVM", "message.updated: IGNORED (not for current chat) msgId=${message.id}")
+                    return
+                }
+                reconcileEditedMessageSubscription(message)
+                // The edit frame carries the new content but not the viewer's pin/save
+                // state; carry it over from the loaded copy so the rebind keeps the
+                // indicator (the list swap and the rebind emission must agree).
+                val edited = reconcilePinSaveOnReplace(message)
+                CometChatLogger.d("CometChatMsgListVM", "message.updated ━━━ msgId=${message.id}")
+                updateMessage(edited)
+                // Emit via SharedFlow to bypass StateFlow conflation
+                // This ensures moderation status changes trigger UI rebind in real-time
+                viewModelScope.launch {
+                    _messageUpdated.emit(edited)
+                }
+            }
+
+            // onMessageDeleted.
+            "message.deleted" -> {
+                val message = HubEvents.messageOf(env) ?: return
+                if (!isMessageForCurrentChat(message)) return
+                if (hideDeleteMessage || isAgentChat) {
+                    removeMessage(message)
+                } else {
+                    updateMessage(message)
+                }
+            }
+
+            // onMessageModerated — no moderation frames on this server (un-ported).
+
+            // onMessagePinned/onMessageUnpinned — the server's single-pin model: the
+            // room's pinned message changed; the pin state is asserted per message.
+            "room.pinned_changed" -> handleHubRoomPinChanged(env)
+
+            // onMessageSaved/onMessageUnsaved — no server frame (un-ported).
+
+            // onMessagesDelivered/onMessagesRead(/ToAll/ByAll) — aggregate truth is a
+            // suspend REST decode, so a burst replaces the pending decode.
+            "message.receipts_changed", "room.read_state_changed" -> {
+                if (disableReceipt) return
+                viewModelScope.launch {
+                    HubEvents.receiptsChangedOf(env)?.let { handleMessageReceipt(it) }
+                }
+            }
+
+            // onTypingStarted/onTypingEnded.
+            "typing.started" -> HubEvents.typingIndicatorOf(env)?.let { handleTypingStarted(it) }
+            "typing.stopped" -> HubEvents.typingIndicatorOf(env)?.let { handleTypingEnded(it) }
+
+            // onMessageReactionAdded/onMessageReactionRemoved.
+            "message.reaction_added" -> handleHubReaction(env, added = true)
+            "message.reaction_removed" -> handleHubReaction(env, added = false)
+
+            // Group member frames carry no action-message model on this server
+            // (the old GroupListener built Action messages for the timeline — un-ported),
+            // and there are no call frames (the call scope was removed with the calls module).
+        }
+    }
+
+    /** Reaction frame → the old [handleReactionAdded]/[handleReactionRemoved] handlers. */
+    private fun handleHubReaction(env: com.cometchat.uikit.core.hub.WsEnvelope, added: Boolean) {
+        val uuid = HubEvents.messageIdOf(env) ?: return
+        val event = ReactionEvent().apply {
+            receiverType = user?.let { UIKitConstants.ReceiverType.USER }
+                ?: group?.let { UIKitConstants.ReceiverType.GROUP }
+            receiverId = user?.uid ?: group?.guid ?: env.roomId
+            conversationId = env.roomId
+            reaction = Reaction().apply {
+                messageId = try { com.cometchat.uikit.core.hub.HubIds.toLong(uuid) } catch (_: Exception) { return }
+                this.reaction = HubEvents.emojiOf(env).orEmpty()
+            }
+        }
+        if (added) handleReactionAdded(event) else handleReactionRemoved(event)
+    }
+
+    /**
+     * Maps the room's pinned-message change onto the list's pin echoes: a pin that
+     * names a message of this chat rebinds it pinned; a clear (or a pin naming some
+     * other message) clears every currently-pinned row of this chat — the server
+     * keeps one pinned message per room.
+     */
+    private fun handleHubRoomPinChanged(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        val roomId = currentRoomId() ?: return
+        if (env.roomId != roomId) return
+        val pinnedMessageId = (env.data["pinned_message_id"] as? kotlinx.serialization.json.JsonPrimitive)?.content
+        if (pinnedMessageId.isNullOrEmpty() || pinnedMessageId == "null") {
+            _messages.value
+                .filter { it.isPinned() && isMessageForCurrentChat(it) }
+                .forEach { echoPinSave(it, cleared = true) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val pinned = com.cometchat.uikit.core.data.datasource.HubImpls.refetchMessage(pinnedMessageId)
+                if (isMessageForCurrentChat(pinned)) echoPinSave(pinned, cleared = false)
+            } catch (_: Exception) {
+                // Next fetch supplies the fresh pin stamp.
+            }
+        }
+    }
+
+    /** Pin echo for one row through the old [applyPinSaveEcho] path. */
+    private fun echoPinSave(message: BaseMessage, cleared: Boolean) {
+        if (cleared) {
+            applyPinSaveEcho(
+                echo = message,
+                applyTo = { updated ->
+                    updated.pinnedAt = 0
+                    updated.pinnedBy = null
+                },
+                event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessageUnpinned(it) }
+            )
+        } else {
+            applyPinSaveEcho(
+                echo = message,
+                applyTo = { updated ->
+                    // "Pinned" is the assertion; pinnedAt is only its representation —
+                    // stamp one, the next fetch supplies the real value.
+                    updated.pinnedAt = System.currentTimeMillis() / 1000
+                },
+                event = { com.cometchat.uikit.core.events.CometChatMessageEvent.MessagePinned(it) }
+            )
+        }
+    }
+
+    /** Room id of the configured receiver (group guid; the direct room for the peer uid). */
+    private fun currentRoomId(): String? {
+        group?.guid?.let { return it }
+        val peer = user?.uid ?: return null
+        return Hub.roomsCache.values
+            .firstOrNull { it.type == "direct" && Hub.memberPeer(it.id)?.id == peer }?.id
+    }
+
+    /**
+     * Room-open subscription (the closed SDK delivered all frames itself): the hub
+     * socket only fans out to subscribed rooms, so bind this VM's room on open (and
+     * move off the previous one on a switch). A direct room the session hasn't seen
+     * yet is left to the caller's screen-level subscription (ChatScreen does this).
+     */
+    private fun bindRoomSocket() {
+        val roomId = currentRoomId() ?: return
+        if (roomId == subscribedRoomId) return
+        subscribedRoomId?.let { runCatching { Hub.socket.unsubscribe(it) } }
+        subscribedRoomId = roomId
+        runCatching { Hub.socket.subscribe(roomId) }
     }
     
     /**
-     * Removes all CometChat listeners.
+     * Removes all GoChatHub realtime listeners.
      */
     private fun removeListeners() {
         threadEventsJob?.cancel()
         threadEventsJob = null
-        listenersTag?.let { tag ->
-            CometChat.removeMessageListener(tag)
-            CometChat.removeGroupListener(tag)
-            CometChat.removeCallListener(tag)
-            CometChat.removeConnectionListener(tag)
-        }
+        hubEventsJob?.cancel()
+        hubEventsJob = null
+        connectionJob?.cancel()
+        connectionJob = null
     }
     
     /**
@@ -4757,7 +4471,7 @@ open public class CometChatMessageListViewModel(
         // update the parent message's reply count but don't add the message to the list.
         // Skip own messages — reply count is already updated by handleMessageSentEvent
         if (parentMessageId == -1L && message.parentMessageId > 0) {
-            val loggedInUser = CometChat.getLoggedInUser()
+            val loggedInUser = CometChatUIKit.getLoggedInUser()
             if (loggedInUser != null && message.sender?.uid == loggedInUser.uid) {
                 return
             }
@@ -4970,6 +4684,8 @@ open public class CometChatMessageListViewModel(
         streamListenerJob?.cancel()
         activeStreamMessages.clear()
         processedStreamingRunIds.clear()
+        subscribedRoomId?.let { runCatching { Hub.socket.unsubscribe(it) } }
+        subscribedRoomId = null
         aiStreamService?.detachListener(listenersTag ?: "")
         // Only clear the singleton if it still points to THIS ViewModel's instance.
         // During navigation transitions (e.g., "New Chat"), the new ViewModel's

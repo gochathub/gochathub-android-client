@@ -37,10 +37,10 @@ public sealed interface HubSocketState {
  * subscribers resync via REST on [onReconnected].
  */
 public class HubSocket(
-    private val store: HubStore,
+    private val store: HubSession,
     private val http: OkHttpClient = OkHttpClient(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
-    private val json: Json = Json { ignoreUnknownKeys = true; explicitNulls = false }
+    private val json: Json = JSON
 ) {
     private var socket: WebSocket? = null
     private var reconnectJob: Job? = null

@@ -1,3 +1,14 @@
+configurations.all {
+    // UnifiedPush connector needs tink-android; force the -android flavor everywhere.
+    resolutionStrategy {
+        force("com.google.crypto.tink:tink-android:1.17.0")
+        dependencySubstitution {
+            substitute(module("com.google.crypto.tink:tink"))
+                .using(module("com.google.crypto.tink:tink-android:1.17.0"))
+        }
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -20,7 +31,7 @@ android {
     buildTypes {
         debug {
             // ponytail: default points at the dev deployment; override with -Pbase_url
-            val defaultBaseUrl = project.findProperty("base_url") as String? ?: "https://gochathub.briantafoya.com"
+            val defaultBaseUrl = project.findProperty("base_url") as String? ?: "http://192.0.2.10:8080"
             buildConfigField("String", "DEFAULT_BASE_URL", "\"$defaultBaseUrl\"")
         }
     }
@@ -52,4 +63,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    implementation("org.unifiedpush.android:connector:3.0.10")
+
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:core:1.6.1")
 }

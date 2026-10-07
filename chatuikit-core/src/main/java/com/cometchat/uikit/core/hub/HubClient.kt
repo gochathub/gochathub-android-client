@@ -27,7 +27,8 @@ public class HubApiException(
 /** Transport failure (DNS, TLS, timeouts) — no envelope available. */
 public class HubNetworkException(cause: IOException) : Exception(cause)
 
-private val JSON = Json { ignoreUnknownKeys = true; explicitNulls = false }
+// encodeDefaults: LoginRequest.token_request must ride the wire even when true is the default.
+internal val JSON = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = true }
 private val JSON_MEDIA = "application/json".toMediaType()
 private val EMPTY_BODY = ByteArray(0).toRequestBody(null)
 
@@ -35,7 +36,10 @@ private val EMPTY_BODY = ByteArray(0).toRequestBody(null)
  * GoChatHub REST client (api/openapi.yaml snapshot). Bearer token rides from
  * [HubStore]; non-2xx decodes the error envelope and throws [HubApiException].
  */
-public class HubClient(private val store: HubStore, private val http: OkHttpClient = OkHttpClient()) {
+public class HubClient(private val store: HubSession, private val http: OkHttpClient = OkHttpClient()) {
+
+    /** Fired on any 401 (session revoked server-side); app drops to login. */
+    public var onUnauthorized: (() -> Unit)? = null
 
     /** Swap the deployment (login screen field); empty until first login. */
     public var baseUrl: String
@@ -82,6 +86,7 @@ public class HubClient(private val store: HubStore, private val http: OkHttpClie
                 }
             }
         } catch (_: Exception) { /* non-JSON error body */ }
+        if (status == 401) onUnauthorized?.invoke()
         throw HubApiException(status, code, message, retryAfter)
     }
 

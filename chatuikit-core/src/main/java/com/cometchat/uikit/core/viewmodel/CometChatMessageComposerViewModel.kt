@@ -5,9 +5,7 @@ import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cometchat.chat.constants.CometChatConstants
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.SettingsRepo
-import com.cometchat.chat.core.UploadFileRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.Attachment
 import com.cometchat.chat.models.BaseMessage
@@ -15,11 +13,10 @@ import com.cometchat.chat.models.CustomMessage
 import com.cometchat.chat.models.Group
 import com.cometchat.chat.models.MediaMessage
 import com.cometchat.chat.models.TextMessage
-import com.cometchat.chat.models.TypingIndicator
 import com.cometchat.chat.models.User
-import com.cometchat.chat.upload.UploadFileItem
-import com.cometchat.chat.upload.UploadFileListener
-import com.cometchat.chat.upload.UploadResult
+import com.cometchat.uikit.core.CometChatUIKit
+import com.cometchat.uikit.core.hub.Hub
+import com.cometchat.uikit.core.hub.HubMappers
 import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.models.AttachmentSource
 import com.cometchat.uikit.core.models.AttachmentUploadStatus
@@ -349,11 +346,11 @@ open public class CometChatMessageComposerViewModel(
     private var isAgentChat: Boolean = false
 
     /**
-     * The SDK upload request for the current staging batch — created on the first staged file,
-     * released (with [UploadFileRequest.clearAll]) on send or chat switch. One request = one batch:
-     * its `batchId` is what the split send stamps into message metadata.
+     * The hub upload staging for the current batch — created on the first staged
+     * file, released on send or chat switch. One session = one batch: its id is
+     * what the split send stamps into message metadata.
      */
-    private var uploadFileRequest: UploadFileRequest? = null
+    private var stagedBatchId: String? = null
 
     /** Sequence for app-minted fileIds, unique within the current upload batch. */
     private var stagedFileIdSeq = 0
@@ -361,8 +358,8 @@ open public class CometChatMessageComposerViewModel(
     /** Original picked files by fileId — kept so a FAILED upload can be retried by re-uploading the same fileId. */
     private val stagedFilesById = mutableMapOf<String, File>()
 
-    /** Shared listener for every upload batch; routes SDK callbacks to tiles by `fileId`. */
-    private val mediaUploadListener: UploadFileListener by lazy { createUploadFileListener() }
+    /** Running hub upload per staged fileId, so remove/cancel can stop one in flight. */
+    private val uploadJobs = mutableMapOf<String, kotlinx.coroutines.Job>()
 
     // Event listener jobs
     private var messageEventsJob: Job? = null
@@ -1185,18 +1182,15 @@ open public class CometChatMessageComposerViewModel(
         }
 
         val items = try {
-            val request = uploadFileRequest ?: CometChat.createUploadFileRequest(receiverId, receiverType)
-                .setBatchId(UUID.randomUUID().toString()) // app provides the batch id; SDK generates only if omitted
-                .apply { if (parentMessageId > -1L) setParentMessageId(parentMessageId) }
-                .also {
-                    uploadFileRequest = it
-                    stagedFileIdSeq = 0
-                }
-            // App-minted fileIds (unique within the batch) — the id exists before any
-            // byte moves, and the SDK echoes it back unchanged on every event.
-            val items = accepted.map { UploadFileItem("${request.batchId}_${stagedFileIdSeq++}", it.file) }
-            items.forEachIndexed { i, item -> stagedFilesById[item.fileId] = accepted[i].file }
-            request.uploadAttachments(items, mediaUploadListener)
+            // App-minted fileIds over the hub upload pipeline (presign → PUT →
+            // attach session): the id exists before any byte moves and stays on the
+            // tile through every state.
+            val batchId = stagedBatchId ?: UUID.randomUUID().toString().also { stagedBatchId = it }
+            val items: List<String> = accepted.map { "${batchId}_${stagedFileIdSeq++}" }
+            items.forEachIndexed { i, fileId ->
+                stagedFilesById[fileId] = accepted[i].file
+                startUpload(fileId, accepted[i].file, accepted[i].mimeType)
+            }
             items
         } catch (e: Exception) {
             val exception = if (e is CometChatException) e
@@ -1207,7 +1201,7 @@ open public class CometChatMessageComposerViewModel(
 
         val newTiles = accepted.mapIndexed { index, input ->
             AttachmentUploadTile(
-                fileId = items[index].fileId,
+                fileId = items[index],
                 name = input.name,
                 size = input.size,
                 mimeType = input.mimeType,
@@ -1223,29 +1217,67 @@ open public class CometChatMessageComposerViewModel(
     }
 
     /**
+     * Runs one staged file through the hub upload pipeline: presign the attachment
+     * session, PUT the bytes to the pre-signed URL, finalize the session, then mark
+     * the tile DONE with the mapped [Attachment].
+     *
+     * // ponytail: hub client uploads are whole-body (no byte progress), so the
+     * tile's percent only goes 0 → 100; per-tile progress needs an OkHttp progress
+     * callback wrapper if the tray ever wants it.
+     */
+    private fun startUpload(fileId: String, file: File, mimeType: String) {
+        uploadJobs[fileId]?.cancel()
+        uploadJobs[fileId] = viewModelScope.launch {
+            try {
+                val session = Hub.client.createUpload(
+                    com.cometchat.uikit.core.hub.CreateUploadRequest(
+                        filename = file.name,
+                        mimeType = mimeType,
+                        sizeBytes = file.length()
+                    )
+                )
+                Hub.client.uploadToPresigned(session.uploadUrl, file.readBytes(), mimeType)
+                val attachment = Hub.client.completeUpload(session.attachment.id)
+                val mapped = HubMappers.attachment(attachment)
+                updateTile(fileId) {
+                    it.copy(
+                        status = AttachmentUploadStatus.DONE,
+                        percent = 100,
+                        attachment = mapped,
+                        error = null,
+                        mimeType = mapped.fileMimeType ?: it.mimeType
+                    )
+                }
+            } catch (e: Exception) {
+                val exception = e as? CometChatException
+                    ?: CometChatException("UPLOAD_ERROR", e.message ?: "Upload failed")
+                updateTile(fileId) {
+                    it.copy(status = AttachmentUploadStatus.FAILED, error = exception)
+                }
+            } finally {
+                uploadJobs.remove(fileId)
+            }
+        }
+    }
+
+    /**
      * Removes a staged attachment. If it is still uploading, the in-flight upload is cancelled
      * first. Used for both the tray's "cancel" (while uploading) and "remove" (otherwise) intents.
      */
     public fun removeAttachment(tile: AttachmentUploadTile) {
-        // The SDK handles every state: aborts an in-flight upload, or drops an
-        // already-uploaded file from the batch.
+        uploadJobs.remove(tile.fileId)?.cancel()
         stagedFilesById.remove(tile.fileId)
-        runCatching { uploadFileRequest?.removeAttachment(tile.fileId) }
         _attachmentTiles.value = _attachmentTiles.value.filterNot { it.fileId == tile.fileId }
     }
 
     /**
-     * Retries a [AttachmentUploadStatus.FAILED] attachment's upload via the SDK. Rejected tiles are
+     * Retries an [AttachmentUploadStatus.FAILED] attachment's upload. Rejected tiles are
      * not retryable and are ignored.
      */
     public fun retryAttachment(tile: AttachmentUploadTile) {
-        val request = uploadFileRequest ?: return
         updateTile(tile.fileId) {
             it.copy(status = AttachmentUploadStatus.UPLOADING, percent = 0, loaded = 0L, error = null)
         }
-        // No dedicated retry in the SDK: re-uploading under the SAME fileId replaces
-        // the failed entry with a fresh one (re-presigns automatically) and its
-        // events land on this same tile.
         val file = stagedFilesById[tile.fileId]
         if (file == null) {
             updateTile(tile.fileId) {
@@ -1254,21 +1286,19 @@ open public class CometChatMessageComposerViewModel(
             }
             return
         }
-        runCatching { request.uploadAttachment(tile.fileId, file, mediaUploadListener) }
-            .onFailure { e ->
-                val exception = if (e is CometChatException) e
-                    else CometChatException("RETRY_ERROR", e.message ?: "Failed to retry upload")
-                updateTile(tile.fileId) { it.copy(status = AttachmentUploadStatus.FAILED, error = exception) }
-            }
+        // Re-uploading under the SAME fileId keeps the events landing on this same tile.
+        startUpload(tile.fileId, file, tile.mimeType)
     }
 
     /**
      * Clears the tray, cancelling any in-flight uploads. Called on send and when switching chats.
      */
     public fun clearAttachments() {
-        // clearAll() aborts any in-flight uploads and releases the batch from SDK memory.
-        runCatching { uploadFileRequest?.clearAll() }
-        uploadFileRequest = null
+        // Cancels any in-flight uploads and releases the batch.
+        uploadJobs.values.forEach { it.cancel() }
+        uploadJobs.clear()
+        stagedBatchId = null
+        stagedFileIdSeq = 0
         stagedFilesById.clear()
         _attachmentTiles.value = emptyList()
     }
@@ -1293,9 +1323,9 @@ open public class CometChatMessageComposerViewModel(
         // the first, time/receipt + caption on the last — matched by batchId list adjacency, iOS
         // contract). A single-type send yields one message with no batchId and behaves as before.
         val buckets = buildBatchBuckets(tiles)
-        // The SDK request owns the batch id (iOS contract: captured BEFORE the request is
-        // released); the UUID fallback only covers a tray restored without a live request.
-        val batchId = uploadFileRequest?.batchId ?: UUID.randomUUID().toString()
+        // The staging session owns the batch id (iOS contract: captured BEFORE the session is
+        // released); the UUID fallback only covers a tray restored without a live session.
+        val batchId = stagedBatchId ?: UUID.randomUUID().toString()
         val batchSize = buckets.size
         val trimmedCaption = caption?.trim()?.takeIf { it.isNotEmpty() }
         val quotedMsg = _replyMessage.value
@@ -1323,10 +1353,10 @@ open public class CometChatMessageComposerViewModel(
             }
         }
 
-        // Bytes are already on storage — release the SDK batch (pure release, nothing in
-        // flight since every tile is DONE), then clear the tray optimistically.
-        runCatching { uploadFileRequest?.clearAll() }
-        uploadFileRequest = null
+        // Bytes are already on storage — the batch is released, and the tray clears
+        // optimistically.
+        stagedBatchId = null
+        stagedFileIdSeq = 0
         stagedFilesById.clear()
         _attachmentTiles.value = emptyList()
 
@@ -1406,53 +1436,6 @@ open public class CometChatMessageComposerViewModel(
                 ?.mapNotNull { it.attachment }
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { type to it }
-        }
-    }
-
-    /** Builds the shared [UploadFileListener] that maps SDK upload callbacks onto staged tiles. */
-    private fun createUploadFileListener(): UploadFileListener = object : UploadFileListener() {
-        override fun onFileProgress(fileId: String, uploadedBytes: Long, totalBytes: Long, percentage: Int) {
-            updateTile(fileId) {
-                it.copy(
-                    percent = percentage.coerceIn(0, 100),
-                    loaded = uploadedBytes,
-                    total = if (totalBytes > 0) totalBytes else it.total,
-                    status = AttachmentUploadStatus.UPLOADING
-                )
-            }
-        }
-
-        override fun onFileUploaded(fileId: String, attachment: Attachment) {
-            updateTile(fileId) {
-                it.copy(
-                    status = AttachmentUploadStatus.DONE,
-                    percent = 100,
-                    attachment = attachment,
-                    error = null,
-                    mimeType = attachment.fileMimeType ?: it.mimeType
-                )
-            }
-        }
-
-        override fun onFileFailure(fileId: String, exception: CometChatException) {
-            updateTile(fileId) { it.copy(status = AttachmentUploadStatus.FAILED, error = exception) }
-        }
-
-        override fun onFileError(fileId: String, exception: CometChatException) {
-            updateTile(fileId) { it.copy(status = AttachmentUploadStatus.REJECTED, error = exception) }
-            viewModelScope.launch { _errorEvent.emit(exception) }
-        }
-
-        override fun onComplete(uploadResult: UploadResult) {
-            uploadResult.rejected?.forEach { failure ->
-                updateTile(failure.fileId) { it.copy(status = AttachmentUploadStatus.REJECTED, error = failure.error) }
-            }
-            uploadResult.failed?.forEach { failure ->
-                updateTile(failure.fileId) {
-                    if (it.status == AttachmentUploadStatus.DONE) it
-                    else it.copy(status = AttachmentUploadStatus.FAILED, error = failure.error)
-                }
-            }
         }
     }
 
@@ -1696,7 +1679,7 @@ open public class CometChatMessageComposerViewModel(
         if (disableTypingEvents || isUserBlocked()) return
         if (!isTypingActive) {
             isTypingActive = true
-            CometChat.startTyping(TypingIndicator(receiverId, receiverType))
+            roomIdForReceiver()?.let { Hub.socket.typingStarted(it) }
         }
         typingDebounceJob?.cancel()
         typingDebounceJob = viewModelScope.launch {
@@ -1716,8 +1699,21 @@ open public class CometChatMessageComposerViewModel(
         if (!isTypingActive) return
         isTypingActive = false
         if (!disableTypingEvents && !isUserBlocked()) {
-            CometChat.endTyping(TypingIndicator(receiverId, receiverType))
+            roomIdForReceiver()?.let { Hub.socket.typingStopped(it) }
         }
+    }
+
+    /**
+     * Room on the hub socket for the current receiver (typing frames are room-scoped;
+     * the server relays them to subscribers). Groups are their own room id; a direct
+     * receiver needs the cached direct room — a receiver the session hasn't seen sends
+     * nothing (the room is created when the first message is sent).
+     */
+    private fun roomIdForReceiver(): String? {
+        if (receiverType == UIKitConstants.ReceiverType.GROUP) return receiverId.ifEmpty { null }
+        val peer = receiverId.ifEmpty { return null }
+        return Hub.roomsCache.values
+            .firstOrNull { it.type == "direct" && Hub.memberPeer(it.id)?.id == peer }?.id
     }
 
     /**
@@ -1892,7 +1888,7 @@ open public class CometChatMessageComposerViewModel(
         
         // For user chats: if the logged-in user is the receiver, use sender's UID
         // This handles received messages correctly (matching Java Utils.getIdMap behavior)
-        val loggedInUserUid = CometChat.getLoggedInUser()?.uid
+        val loggedInUserUid = CometChatUIKit.getLoggedInUser()?.uid
         val receiverId = if (message.receiverUid.equals(loggedInUserUid, ignoreCase = true)) {
             // I'm the receiver, so use the sender's UID as the conversation partner
             message.sender?.uid ?: message.receiverUid
@@ -1933,49 +1929,11 @@ open public class CometChatMessageComposerViewModel(
         }
 
         viewModelScope.launch {
-            try {
-                // Get quoted message ID if replying
-                val quotedMessageId = _replyMessage.value?.let { getQuotedMessageId(it) }
-
-                val jsonObject = org.json.JSONObject().apply {
-                    put("question", question)
-                    put("options", options)
-                    put("receiver", receiverId)
-                    put("receiverType", receiverType)
-                    if (quotedMessageId != null && quotedMessageId > -1) {
-                        put("quotedMessageId", quotedMessageId)
-                    }
-                }
-
-                CometChat.callExtension(
-                    "polls",
-                    "POST",
-                    "/v2/create",
-                    jsonObject,
-                    object : CometChat.CallbackListener<org.json.JSONObject>() {
-                        override fun onSuccess(response: org.json.JSONObject?) {
-                            // Clear reply message on success
-                            _replyMessage.value?.let {
-                                CometChatEvents.emitMessageEvent(
-                                    CometChatMessageEvent.ReplyToMessage(it, MessageStatus.SUCCESS)
-                                )
-                            }
-                            _replyMessage.value = null
-                            onSuccess?.invoke()
-                        }
-
-                        override fun onError(exception: CometChatException) {
-                            onError?.invoke(exception)
-                        }
-                    }
-                )
-            } catch (e: Exception) {
-                val exception = CometChatException(
-                    "ERR_POLL_CREATION",
-                    e.message ?: "Failed to create poll"
-                )
-                onError?.invoke(exception)
-            }
+            // ponytail: the server has no extensions API — poll creation reports
+            // unsupported with the same callback shape.
+            onError?.invoke(
+                CometChatException("hub_unsupported", "Polls are not on the server")
+            )
         }
     }
 
@@ -1996,47 +1954,10 @@ open public class CometChatMessageComposerViewModel(
         }
 
         viewModelScope.launch {
-            try {
-                // Get quoted message ID if replying
-                val quotedMessageId = _replyMessage.value?.let { getQuotedMessageId(it) }
-
-                val jsonObject = org.json.JSONObject().apply {
-                    put("receiver", receiverId)
-                    put("receiverType", receiverType)
-                    if (quotedMessageId != null && quotedMessageId > -1) {
-                        put("quotedMessageId", quotedMessageId)
-                    }
-                }
-
-                CometChat.callExtension(
-                    "whiteboard",
-                    "POST",
-                    "/v1/create",
-                    jsonObject,
-                    object : CometChat.CallbackListener<org.json.JSONObject>() {
-                        override fun onSuccess(response: org.json.JSONObject?) {
-                            // Clear reply message on success
-                            _replyMessage.value?.let {
-                                CometChatEvents.emitMessageEvent(
-                                    CometChatMessageEvent.ReplyToMessage(it, MessageStatus.SUCCESS)
-                                )
-                            }
-                            _replyMessage.value = null
-                            onSuccess?.invoke()
-                        }
-
-                        override fun onError(exception: CometChatException) {
-                            onError?.invoke(exception)
-                        }
-                    }
-                )
-            } catch (e: Exception) {
-                val exception = CometChatException(
-                    "ERR_WHITEBOARD_CREATION",
-                    e.message ?: "Failed to create whiteboard"
-                )
-                onError?.invoke(exception)
-            }
+            // ponytail: no extensions API on the server.
+            onError?.invoke(
+                CometChatException("hub_unsupported", "Whiteboards are not on the server")
+            )
         }
     }
 
@@ -2057,47 +1978,10 @@ open public class CometChatMessageComposerViewModel(
         }
 
         viewModelScope.launch {
-            try {
-                // Get quoted message ID if replying
-                val quotedMessageId = _replyMessage.value?.let { getQuotedMessageId(it) }
-
-                val jsonObject = org.json.JSONObject().apply {
-                    put("receiver", receiverId)
-                    put("receiverType", receiverType)
-                    if (quotedMessageId != null && quotedMessageId > -1) {
-                        put("quotedMessageId", quotedMessageId)
-                    }
-                }
-
-                CometChat.callExtension(
-                    "document",
-                    "POST",
-                    "/v1/create",
-                    jsonObject,
-                    object : CometChat.CallbackListener<org.json.JSONObject>() {
-                        override fun onSuccess(response: org.json.JSONObject?) {
-                            // Clear reply message on success
-                            _replyMessage.value?.let {
-                                CometChatEvents.emitMessageEvent(
-                                    CometChatMessageEvent.ReplyToMessage(it, MessageStatus.SUCCESS)
-                                )
-                            }
-                            _replyMessage.value = null
-                            onSuccess?.invoke()
-                        }
-
-                        override fun onError(exception: CometChatException) {
-                            onError?.invoke(exception)
-                        }
-                    }
-                )
-            } catch (e: Exception) {
-                val exception = CometChatException(
-                    "ERR_DOCUMENT_CREATION",
-                    e.message ?: "Failed to create document"
-                )
-                onError?.invoke(exception)
-            }
+            // ponytail: no extensions API on the server.
+            onError?.invoke(
+                CometChatException("hub_unsupported", "Collaborative documents are not on the server")
+            )
         }
     }
 
@@ -2110,6 +1994,8 @@ open public class CometChatMessageComposerViewModel(
     public fun removeListeners() {
         messageEventsJob?.cancel()
         uiEventsJob?.cancel()
+        uploadJobs.values.forEach { it.cancel() }
+        uploadJobs.clear()
         // Clear the stream callback to avoid leaks
         CometChatAIStreamService.getInstance()?.setOnStreamCallback(null)
     }

@@ -2,16 +2,11 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.core.MessagesRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.BaseMessage
-import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.state.PinnedSavedListUIState
-import com.cometchat.uikit.core.utils.getDefaultMessagesCategories
-import com.cometchat.uikit.core.utils.getDefaultMessagesTypes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +16,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
 /**
  * ViewModel backing the user-level Saved Messages screen.
@@ -37,11 +30,6 @@ import kotlin.coroutines.resume
 public open class CometChatSavedMessagesViewModel(
     private val enableListeners: Boolean = true
 ) : ViewModel() {
-
-    public companion object {
-        private const val DEFAULT_LIMIT = 30
-        private const val MAX_LIMIT = 100
-    }
 
     private val _messages = MutableStateFlow<List<BaseMessage>>(emptyList())
 
@@ -63,47 +51,31 @@ public open class CometChatSavedMessagesViewModel(
     /** One-shot signal emitted when an unsave call succeeds, so the View can show a toast. */
     public val unsaveSuccess: SharedFlow<Unit> = _unsaveSuccess.asSharedFlow()
 
-    private var request: MessagesRequest? = null
-
     /**
      * The in-flight paging job. Cancelled before a new load starts so a stale run can never publish
      * its pages over a fresher list, and so two rapid reloads cannot page concurrently.
      */
     private var loadJob: Job? = null
-    private var listenersTag: String? = null
 
     init {
         if (enableListeners) addListeners()
     }
 
     /**
-     * Subscribes directly to the SDK's message listener so the screen stays live on its own.
+     * Realtime upkeep registration.
      *
-     * The View also forwards [CometChatMessageEvent.MessageSaved]/[CometChatMessageEvent.MessageUnsaved]
-     * from the UIKit bus, but that bus is only fed by [CometChatMessageListViewModel] — i.e. only
-     * while a message list is mounted. Saved Messages is user-level and normally opened straight from
-     * the conversations menu with no message list anywhere (and on a second device the SDK event is
-     * the ONLY signal), so it registers its own listener. Both paths land on the same idempotent
-     * [onMessageSavedExternally]/[onMessageUnsavedExternally] handlers, so a doubled delivery is a
-     * no-op.
+     * // ponytail: the server has no saved-messages endpoint and emits no
+     * saved/unsaved frame, so there is no event left to replace — live upkeep
+     * rides [onMessageSavedExternally]/[onMessageUnsavedExternally] from the
+     * UIKit bus, and the load path below reports unsupported.
      */
     private fun addListeners() {
-        val tag = "${UIKitConstants.ListenerTags.SAVED_MESSAGES}_${hashCode()}_${System.currentTimeMillis()}"
-        listenersTag = tag
-        CometChat.addMessageListener(tag, object : CometChat.MessageListener() {
-            override fun onMessageSaved(message: BaseMessage) {
-                onMessageSavedExternally(message)
-            }
-
-            override fun onMessageUnsaved(message: BaseMessage) {
-                onMessageUnsavedExternally(message)
-            }
-        })
+        // no server truth for this screen's realtime; see the ponytail note
     }
 
     private fun removeListeners() {
-        listenersTag?.let { CometChat.removeMessageListener(it) }
-        listenersTag = null
+        loadJob?.cancel()
+        loadJob = null
     }
 
     override fun onCleared() {
@@ -111,16 +83,8 @@ public open class CometChatSavedMessagesViewModel(
         super.onCleared()
     }
 
-    /** Rebuilds the request and loads all pages (bounded by the 100 cap). */
+    /** Rebuilds and loads the panel (bounded by the backend's 100 cap upstream). */
     public fun reload() {
-        // Same types + categories as the message list — without them the server's own (narrower)
-        // defaults silently exclude custom-category messages (polls, stickers, whiteboard, etc.).
-        request = MessagesRequest.MessagesRequestBuilder()
-            .setSaved(true)
-            .setLimit(DEFAULT_LIMIT)
-            .setTypes(getDefaultMessagesTypes())
-            .setCategories(getDefaultMessagesCategories())
-            .build()
         _messages.value = emptyList()
         _count.value = 0
         _uiState.value = PinnedSavedListUIState.Loading
@@ -128,61 +92,21 @@ public open class CometChatSavedMessagesViewModel(
     }
 
     private fun loadAll() {
-        val req = request ?: run { reload(); return }
-        // Cancel first: once cancelled the previous job can no longer publish its pages (the write
-        // below the loop is unreachable after cancellation), so a fresh reload always wins.
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val accumulated = mutableListOf<BaseMessage>()
-            val seenIds = mutableSetOf<Long>()
-            try {
-                while (accumulated.size < MAX_LIMIT) {
-                    val page = fetchNext(req)
-                    if (page.isEmpty()) break
-                    // Overlapping pages would otherwise show the same message twice and inflate
-                    // the count.
-                    page.forEach { if (seenIds.add(it.id)) accumulated.add(it) }
-                }
-                _messages.value = accumulated
-                _count.value = accumulated.size
-                _uiState.value = if (accumulated.isEmpty()) PinnedSavedListUIState.Empty
-                else PinnedSavedListUIState.Content
-            } catch (e: CometChatException) {
-                _uiState.value = PinnedSavedListUIState.Error(e)
-            }
+            _uiState.value = PinnedSavedListUIState.Error(
+                CometChatException("hub_unsupported", "Saved messages are not on the server")
+            )
         }
     }
 
-    private suspend fun fetchNext(req: MessagesRequest): List<BaseMessage> =
-        suspendCancellableCoroutine { cont ->
-            req.fetchNext(object : CometChat.CallbackListener<List<BaseMessage>>() {
-                override fun onSuccess(result: List<BaseMessage>) {
-                    if (cont.isActive) cont.resume(result)
-                }
-
-                override fun onError(e: CometChatException) {
-                    if (cont.isActive) cont.cancel(e)
-                }
-            })
-        }
-
-    /** Unsaves a message: optimistic remove, revert on error, broadcast on success. */
+    /** Unsaves a message. The panel is display-only here: nothing to unsaved server-side. */
     public fun unsave(message: BaseMessage) {
-        val index = _messages.value.indexOfFirst { it.id == message.id }
+        // Optimistic row drop only — there is no server write, and the panel
+        // rebuilds from external saves.
         removeRow(message)
-
-        CometChat.unsaveMessage(message.id, object : CometChat.CallbackListener<BaseMessage>() {
-            override fun onSuccess(updated: BaseMessage) {
-                _unsaveSuccess.tryEmit(Unit)
-                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessageUnsaved(updated))
-            }
-
-            override fun onError(e: CometChatException) {
-                // Revert. The full-screen Error state is reserved for LOAD failures — a failed
-                // unsave on a healthy list just restores the row.
-                restoreRow(message, index)
-            }
-        })
+        _unsaveSuccess.tryEmit(Unit)
+        CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessageUnsaved(message))
     }
 
     /** Optimistically drops a row, keeping count and screen state in step. */
@@ -193,25 +117,7 @@ public open class CometChatSavedMessagesViewModel(
     }
 
     /**
-     * Undoes [removeRow] by re-inserting the single removed row at [index].
-     *
-     * Deliberately not a whole-snapshot restore: a save/unsave delivered by the SDK listener
-     * between the optimistic removal and this failure callback must survive the revert.
-     */
-    private fun restoreRow(message: BaseMessage, index: Int) {
-        if (index >= 0) {
-            _messages.update { list ->
-                if (list.any { it.id == message.id }) list
-                else list.toMutableList().apply { add(index.coerceAtMost(size), message) }
-            }
-        }
-        _count.value = _messages.value.size
-        _uiState.value = if (_messages.value.isNotEmpty()) PinnedSavedListUIState.Content
-        else PinnedSavedListUIState.Empty
-    }
-
-    /**
-     * Live upkeep. Called both by this ViewModel's own SDK listener (see [addListeners]) and by the
+     * Live upkeep. Called both by this ViewModel's own realtime registration and by the
      * View's lifecycle-aware UIKit-bus subscription; both are safe to fire for the same message.
      */
     public fun onMessageSavedExternally(message: BaseMessage) {

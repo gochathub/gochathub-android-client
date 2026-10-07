@@ -2,7 +2,6 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.core.UsersRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.User
@@ -71,11 +70,14 @@ open public class CometChatUsersViewModel(
     private var usersRequest: UsersRequest? = null
     private var usersRequestBuilder: UsersRequest.UsersRequestBuilder? = null
     private var searchUsersRequestBuilder: UsersRequest.UsersRequestBuilder? = null
-    private var listenersTag: String? = null
     private val limit = 30
-    
+
     // Local event listener jobs
     private var userEventsJob: Job? = null
+
+    // GoChatHub realtime + connection jobs (the old SDK listener registrations)
+    private var hubEventsJob: Job? = null
+    private var connectionJob: Job? = null
     
     // Search debounce job - cancels pending search when new search is initiated
     private var searchJob: Job? = null
@@ -430,53 +432,36 @@ open public class CometChatUsersViewModel(
     // ==================== Listeners ====================
     
     /**
-     * Adds CometChat listeners for real-time updates.
+     * Adds the GoChatHub realtime listeners for presence and reconnection.
      */
     private fun addListeners() {
-        listenersTag = "UsersList_${System.currentTimeMillis()}"
-        
-        listenersTag?.let { tag ->
-            // User listener for online/offline status
-            CometChat.addUserListener(tag, object : CometChat.UserListener() {
-                override fun onUserOnline(user: User) {
-                    if (!isBlocked(user)) {
-                        moveUserToTop(user)
-                    }
-                }
-                
-                override fun onUserOffline(user: User) {
-                    if (!isBlocked(user)) {
-                        updateUser(user)
-                    }
-                }
-            })
-            
-            // Connection listener for reconnection
-            CometChat.addConnectionListener(tag, object : CometChat.ConnectionListener {
-                override fun onConnected() {
-                    refreshList()
-                }
-                
-                override fun onConnecting() {
-                    // No action needed
-                }
-                
-                override fun onDisconnected() {
-                    // No action needed
-                }
-                
-                override fun onFeatureThrottled() {
-                    // No action needed
-                }
-                
-                override fun onConnectionError(error: CometChatException?) {
-                    // No action needed
-                }
-            })
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope, ::handleHubEvent)
+        connectionJob = com.cometchat.uikit.core.hub.HubBridge.connection(viewModelScope) {
+            refreshList()
         }
-        
         // Add local event listeners
         addLocalEventListeners()
+    }
+
+    /**
+     * Server envelope → the same handlers the old SDK listeners drove.
+     * The Users screen shows presence for loaded users only.
+     */
+    private fun handleHubEvent(env: com.cometchat.uikit.core.hub.WsEnvelope) {
+        when (env.type) {
+            // The old addUserListener's onUserOnline/onUserOffline.
+            "presence.changed" -> {
+                val userId = com.cometchat.uikit.core.hub.HubEvents.userIdOf(env) ?: return
+                val state = com.cometchat.uikit.core.hub.HubEvents.presenceStateOf(env) ?: return
+                val existing = _users.value.firstOrNull { it.uid == userId } ?: return
+                val updated = com.cometchat.uikit.core.hub.HubMappers.userWithPresence(existing, state)
+                if (state == UIKitConstants.UserStatus.ONLINE) {
+                    if (!isBlocked(updated)) moveUserToTop(updated)
+                } else if (!isBlocked(updated)) {
+                    updateUser(updated)
+                }
+            }
+        }
     }
     
     /**
@@ -498,13 +483,11 @@ open public class CometChatUsersViewModel(
     }
     
     /**
-     * Removes all CometChat listeners.
+     * Removes the GoChatHub realtime listeners.
      */
     private fun removeListeners() {
-        listenersTag?.let { tag ->
-            CometChat.removeUserListener(tag)
-            CometChat.removeConnectionListener(tag)
-        }
+        hubEventsJob?.cancel()
+        connectionJob?.cancel()
         userEventsJob?.cancel()
     }
     

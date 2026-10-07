@@ -2,28 +2,21 @@ package com.cometchat.uikit.core.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cometchat.chat.core.CometChat
-import com.cometchat.chat.core.MessagesRequest
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.BaseMessage
-import com.cometchat.uikit.core.constants.UIKitConstants
 import com.cometchat.uikit.core.events.CometChatEvents
 import com.cometchat.uikit.core.events.CometChatMessageEvent
 import com.cometchat.uikit.core.state.PinnedSavedListUIState
-import com.cometchat.uikit.core.utils.getDefaultMessagesCategories
-import com.cometchat.uikit.core.utils.getDefaultMessagesTypes
+import com.cometchat.uikit.core.utils.PinSaveUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.cometchat.uikit.core.utils.PinSaveUtils
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
 /**
  * ViewModel backing the per-conversation Pinned Messages panel.
@@ -37,11 +30,6 @@ import kotlin.coroutines.resume
 public open class CometChatPinnedMessagesViewModel(
     private val enableListeners: Boolean = true
 ) : ViewModel() {
-
-    public companion object {
-        private const val DEFAULT_LIMIT = 30
-        private const val MAX_LIMIT = 100
-    }
 
     private val _messages = MutableStateFlow<List<BaseMessage>>(emptyList())
 
@@ -65,15 +53,15 @@ public open class CometChatPinnedMessagesViewModel(
 
     private var uid: String? = null
     private var guid: String? = null
-    private var request: MessagesRequest? = null
 
     /**
-     * The in-flight paging job. Cancelled before a new load starts so a conversation switch can
-     * never let the previous conversation's pages land under the new conversation's header, and so
-     * two rapid reloads cannot page concurrently into the same list.
+     * The in-flight load job; refreshed on every [reload] so a conversation switch can
+     * never let a previous conversation's result land under the new header.
      */
     private var loadJob: Job? = null
-    private var listenersTag: String? = null
+
+    /** The GoChatHub realtime registration (the old SDK message listener). */
+    private var hubEventsJob: Job? = null
 
     init {
         if (enableListeners) addListeners()
@@ -89,67 +77,83 @@ public open class CometChatPinnedMessagesViewModel(
         reload()
     }
 
-    /** Rebuilds the request and loads all pages (bounded by the 100 cap). */
+    /** Loads the conversation's pinned message (the server pins one per room). */
     public fun reload() {
-        // Same types + categories as the message list: without them the server's own (narrower)
-        // defaults apply and custom-category messages — polls, stickers, whiteboard/document,
-        // meetings, cards — are silently absent from the panel (ENG-38060 scope).
-        val builder = MessagesRequest.MessagesRequestBuilder()
-            .setPinned(true)
-            .setLimit(DEFAULT_LIMIT)
-            .setTypes(getDefaultMessagesTypes())
-            .setCategories(getDefaultMessagesCategories())
-        uid?.let { builder.setUID(it) }
-        guid?.let { builder.setGUID(it) }
-        request = builder.build()
         _messages.value = emptyList()
         _count.value = 0
         _uiState.value = PinnedSavedListUIState.Loading
-        loadAll()
-    }
-
-    /**
-     * Fetches every page and accumulates them, so the count is exact. Bounded by MAX_LIMIT pages of
-     * data because the backend caps a conversation at 100 pinned messages.
-     */
-    private fun loadAll() {
-        val req = request ?: return
-        // Cancel first: the previous job captured the previous request, and once cancelled it can
-        // no longer publish its pages (the write below the loop is unreachable after cancellation).
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val accumulated = mutableListOf<BaseMessage>()
-            val seenIds = mutableSetOf<Long>()
             try {
-                while (accumulated.size < MAX_LIMIT) {
-                    val page = fetchNext(req)
-                    if (page.isEmpty()) break
-                    // Overlapping pages would otherwise show the same message twice and inflate
-                    // the count.
-                    page.forEach { if (seenIds.add(it.id)) accumulated.add(it) }
+                val roomId = resolveRoomId() ?: run {
+                    _uiState.value = PinnedSavedListUIState.Empty
+                    return@launch
                 }
-                _messages.value = accumulated
-                _count.value = accumulated.size
-                _uiState.value = if (accumulated.isEmpty()) PinnedSavedListUIState.Empty
-                else PinnedSavedListUIState.Content
+                val room = com.cometchat.uikit.core.hub.Hub.roomById(roomId)
+                    ?: com.cometchat.uikit.core.hub.Hub.client.room(roomId)
+                        .also { com.cometchat.uikit.core.hub.Hub.rememberRoom(it) }
+                val pinnedUuid = room.pinnedMessageId
+                if (pinnedUuid.isNullOrEmpty()) {
+                    _uiState.value = PinnedSavedListUIState.Empty
+                    return@launch
+                }
+                val (type, receiverUid) = com.cometchat.uikit.core.hub.Hub.receiverOf(room)
+                val message = com.cometchat.uikit.core.hub.HubMappers.message(
+                    com.cometchat.uikit.core.hub.Hub.client.message(pinnedUuid), type, receiverUid
+                )
+                _messages.value = listOf(message)
+                _count.value = 1
+                _uiState.value = PinnedSavedListUIState.Content
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: CometChatException) {
                 _uiState.value = PinnedSavedListUIState.Error(e)
+            } catch (e: Exception) {
+                _uiState.value = PinnedSavedListUIState.Error(
+                    e as? CometChatException ?: CometChatException(
+                        "hub_unsupported", e.message ?: "Failed to load pinned messages"
+                    )
+                )
             }
         }
     }
 
-    private suspend fun fetchNext(req: MessagesRequest): List<BaseMessage> =
-        suspendCancellableCoroutine { cont ->
-            req.fetchNext(object : CometChat.CallbackListener<List<BaseMessage>>() {
-                override fun onSuccess(result: List<BaseMessage>) {
-                    if (cont.isActive) cont.resume(result)
-                }
-
-                override fun onError(e: CometChatException) {
-                    if (cont.isActive) cont.cancel(e)
-                }
-            })
+    /** Room of the configured conversation: the group guid, or the direct room for the peer uid. */
+    private suspend fun resolveRoomId(): String? {
+        val hub = com.cometchat.uikit.core.hub.Hub
+        guid?.takeIf { it.isNotEmpty() }?.let { guid ->
+            return guid
         }
+        val peerUid = uid ?: return null
+        // Direct room for the peer: member caches are warm whenever a chat has been
+        // opened (the screen this panel opens from); a cold cache costs one rooms
+        // refresh plus members for the user's direct rooms.
+        // // ponytail: rooms listing carries no member ids, so matching needs the
+        // per-room members call — upgrade to a server-side peer→room lookup if the
+        // API ever grows one.
+        directRoomIdForPeer(peerUid)?.let { return it }
+        try {
+            hub.client.rooms().forEach { hub.rememberRoom(it) }
+            val directRooms = hub.roomsCache.values.filter { it.type == "direct" }
+            for (room in directRooms) {
+                if (hub.memberPeer(room.id) != null) continue
+                runCatching {
+                    hub.rememberMembers(room.id, hub.client.roomMembers(room.id))
+                }
+            }
+        } catch (_: Exception) {
+            // fall through to the (unchanged) cache
+        }
+        return directRoomIdForPeer(peerUid)
+    }
+
+    /** Cached direct room id whose member peer is [peerUid] (null when unknown). */
+    private fun directRoomIdForPeer(peerUid: String): String? {
+        val hub = com.cometchat.uikit.core.hub.Hub
+        return hub.roomsCache.values
+            .firstOrNull { it.type == "direct" && hub.memberPeer(it.id)?.id == peerUid }
+            ?.id
+    }
 
     /**
      * Unpins a message. Optimistically removes it from the panel, then reverts on error. On success
@@ -157,20 +161,95 @@ public open class CometChatPinnedMessagesViewModel(
      */
     public fun unpin(message: BaseMessage) {
         val index = _messages.value.indexOfFirst { it.id == message.id }
+        val uuid = com.cometchat.uikit.core.hub.HubMappers.toUuid(message) ?: return
         removeRow(message)
 
-        CometChat.unpinMessage(message.id, object : CometChat.CallbackListener<BaseMessage>() {
-            override fun onSuccess(updated: BaseMessage) {
-                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessageUnpinned(updated))
-            }
-
-            override fun onError(e: CometChatException) {
+        viewModelScope.launch {
+            try {
+                val roomId = resolveRoomId() ?: throw CometChatException("hub_unsupported", "No room for this conversation")
+                com.cometchat.uikit.core.hub.Hub.client.unpinMessage(roomId)
+                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessageUnpinned(message))
+            } catch (e: CometChatException) {
                 // Revert. The full-screen Error state is reserved for LOAD failures — a failed
                 // action on a healthy list just restores the row and surfaces a toast.
                 restoreRow(message, index)
                 _actionResult.tryEmit(pinFailureResult(e))
             }
-        })
+        }
+    }
+
+    /**
+     * Pins a message. On success broadcasts on the UIKit bus so the main list bubble updates.
+     * (On the pinned panel every row is already pinned, so this is rarely reachable — wired for
+     * completeness / robustness.)
+     */
+    public fun pin(message: BaseMessage) {
+        val uuid = com.cometchat.uikit.core.hub.HubMappers.toUuid(message) ?: return
+
+        viewModelScope.launch {
+            try {
+                val roomId = resolveRoomId() ?: throw CometChatException("hub_unsupported", "No room for this conversation")
+                com.cometchat.uikit.core.hub.Hub.client.pinMessage(roomId, uuid)
+                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessagePinned(message))
+                _actionResult.tryEmit(PinnedActionResult.PINNED)
+            } catch (e: CometChatException) {
+                _actionResult.tryEmit(pinFailureResult(e))
+            }
+        }
+    }
+
+    /**
+     * Deletes a message. Optimistically removes it from the panel, reverts on error. Mirrors the
+     * [unpin] pattern.
+     */
+    public fun delete(message: BaseMessage) {
+        val index = _messages.value.indexOfFirst { it.id == message.id }
+        val uuid = com.cometchat.uikit.core.hub.HubMappers.toUuid(message) ?: return
+        removeRow(message)
+
+        viewModelScope.launch {
+            try {
+                val roomId = resolveRoomId() ?: throw CometChatException("hub_unsupported", "No room for this conversation")
+                val tombstone = com.cometchat.uikit.core.hub.Hub.client.deleteMessage(uuid)
+                val (type, receiverUid) = com.cometchat.uikit.core.hub.Hub.receiverOf(
+                    com.cometchat.uikit.core.hub.Hub.roomById(roomId)
+                )
+                // Broadcast so an open message list (and conversations preview) swaps the bubble
+                // to its deleted tombstone immediately — same event the list's own delete emits.
+                CometChatEvents.emitMessageEvent(
+                    CometChatMessageEvent.MessageDeleted(
+                        com.cometchat.uikit.core.hub.HubMappers.message(tombstone, type, receiverUid)
+                    )
+                )
+                _actionResult.tryEmit(PinnedActionResult.DELETED)
+            } catch (e: CometChatException) {
+                restoreRow(message, index)
+                _actionResult.tryEmit(PinnedActionResult.DELETE_FAILED)
+            }
+        }
+    }
+
+    /**
+     * Maps a pin/unpin failure to its toast: an RBAC denial gets the shared "you don't have
+     * permission" message (pin/unpin is offered to every member, the server enforces the policy),
+     * everything else the generic failure.
+     */
+    private fun pinFailureResult(e: CometChatException): PinnedActionResult =
+        when (PinSaveUtils.classifyFailure(e)) {
+            PinSaveUtils.Failure.PermissionDenied -> PinnedActionResult.PERMISSION_DENIED
+            is PinSaveUtils.Failure.LimitReached -> PinnedActionResult.PIN_LIMIT_REACHED
+            is PinSaveUtils.Failure.Other -> PinnedActionResult.PIN_FAILED
+        }
+
+    /**
+     * Translates a message via the message-translation extension.
+     *
+     * // ponytail: the server has no extension API — the action reports failed
+     * with the same toast the kit shows on a translation error.
+     */
+    public fun translate(message: BaseMessage) {
+        if (message !is com.cometchat.chat.models.TextMessage) return
+        _actionResult.tryEmit(PinnedActionResult.TRANSLATE_FAILED)
     }
 
     /** Optimistically drops a row, keeping count and screen state in step. */
@@ -199,149 +278,42 @@ public open class CometChatPinnedMessagesViewModel(
     }
 
     /**
-     * Maps a pin/unpin failure to its toast: an RBAC denial gets the shared "you don't have
-     * permission" message (pin/unpin is offered to every member, the server enforces the policy),
-     * everything else the generic failure.
-     */
-    private fun pinFailureResult(e: CometChatException): PinnedActionResult =
-        when (PinSaveUtils.classifyFailure(e)) {
-            PinSaveUtils.Failure.PermissionDenied -> PinnedActionResult.PERMISSION_DENIED
-            is PinSaveUtils.Failure.LimitReached -> PinnedActionResult.PIN_LIMIT_REACHED
-            is PinSaveUtils.Failure.Other -> PinnedActionResult.PIN_FAILED
-        }
-
-    /**
-     * Pins a message. On success broadcasts on the UIKit bus so the main list bubble updates.
-     * (On the pinned panel every row is already pinned, so this is rarely reachable — wired for
-     * completeness / robustness.)
-     */
-    public fun pin(message: BaseMessage) {
-        CometChat.pinMessage(message.id, object : CometChat.CallbackListener<BaseMessage>() {
-            override fun onSuccess(updated: BaseMessage) {
-                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessagePinned(updated))
-                _actionResult.tryEmit(PinnedActionResult.PINNED)
-            }
-
-            override fun onError(e: CometChatException) {
-                _actionResult.tryEmit(pinFailureResult(e))
-            }
-        })
-    }
-
-    /**
-     * Deletes a message. Optimistically removes it from the panel, reverts on error. Mirrors the
-     * [unpin] pattern.
-     */
-    public fun delete(message: BaseMessage) {
-        val index = _messages.value.indexOfFirst { it.id == message.id }
-        removeRow(message)
-
-        CometChat.deleteMessage(message.id, object : CometChat.CallbackListener<BaseMessage>() {
-            override fun onSuccess(deleted: BaseMessage) {
-                // Broadcast so an open message list (and conversations preview) swaps the bubble
-                // to its deleted tombstone immediately — same event the list's own delete emits.
-                CometChatEvents.emitMessageEvent(CometChatMessageEvent.MessageDeleted(deleted))
-                _actionResult.tryEmit(PinnedActionResult.DELETED)
-            }
-
-            override fun onError(e: CometChatException) {
-                restoreRow(message, index)
-                _actionResult.tryEmit(PinnedActionResult.DELETE_FAILED)
-            }
-        })
-    }
-
-    /**
-     * Translates a text message into the device language via the message-translation extension —
-     * the same call the message list makes. The translated text lands in the message metadata
-     * ("translated_message", which the text bubble renders) on a CLONE that replaces the row:
-     * BaseMessage equality is identity, so an in-place mutation would be suppressed by the
-     * StateFlow and the bubble would never re-render.
-     */
-    public fun translate(message: BaseMessage) {
-        if (message !is com.cometchat.chat.models.TextMessage) return
-        viewModelScope.launch {
-            try {
-                val body = org.json.JSONObject()
-                body.put("msgId", message.id)
-                body.put("text", message.text)
-                body.put("languages", org.json.JSONArray().put(java.util.Locale.getDefault().language))
-
-                val result = suspendCancellableCoroutine { cont ->
-                    CometChat.callExtension(
-                        "message-translation",
-                        "POST",
-                        "/v2/translate",
-                        body,
-                        object : CometChat.CallbackListener<org.json.JSONObject>() {
-                            override fun onSuccess(response: org.json.JSONObject) {
-                                if (cont.isActive) cont.resume(response)
-                            }
-
-                            override fun onError(e: CometChatException) {
-                                if (cont.isActive) cont.cancel(e)
-                            }
-                        }
-                    )
-                }
-
-                val translatedText = result
-                    .optJSONObject("data")
-                    ?.optJSONArray("translations")
-                    ?.takeIf { it.length() > 0 }
-                    ?.getJSONObject(0)
-                    ?.optString("message_translated", "")
-                    .orEmpty()
-
-                if (translatedText.isNotEmpty()) {
-                    val updated = message.clone().apply {
-                        // Copy into a fresh JSONObject: clone() is shallow, so mutating the
-                        // existing metadata in place would also mutate the original message's.
-                        val source = this.metadata
-                        val copy = org.json.JSONObject()
-                        source?.keys()?.forEach { key -> copy.put(key, source.get(key)) }
-                        copy.put("translated_message", translatedText)
-                        this.metadata = copy
-                    }
-                    _messages.update { list ->
-                        list.map { if (it.id == message.id) updated else it }
-                    }
-                }
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _actionResult.tryEmit(PinnedActionResult.TRANSLATE_FAILED)
-            }
-        }
-    }
-
-    /**
-     * Subscribes directly to the SDK's message listener so the panel stays live on its own.
-     *
-     * The View also forwards [CometChatMessageEvent.MessagePinned]/[CometChatMessageEvent.MessageUnpinned]
-     * from the UIKit bus, but that bus is only fed by [CometChatMessageListViewModel] — i.e. only
-     * while a message list is mounted. This panel is regularly opened without one (and on a second
-     * device the SDK event is the ONLY signal), so it registers its own listener. Both paths land on
-     * the same idempotent [onMessagePinnedExternally]/[onMessageUnpinnedExternally] handlers, so a
-     * doubled delivery is a no-op.
+     * Realtime upkeep via GoChatHub: the server's single-pin model rides
+     * `room.pinned_changed` for this room. (Saved/unpin echoes for other rows
+     * arrive from the UIKit bus; there is no server event for user-level saves.)
      */
     private fun addListeners() {
-        val tag = "${UIKitConstants.ListenerTags.PINNED_MESSAGES}_${hashCode()}_${System.currentTimeMillis()}"
-        listenersTag = tag
-        CometChat.addMessageListener(tag, object : CometChat.MessageListener() {
-            override fun onMessagePinned(message: BaseMessage) {
-                onMessagePinnedExternally(message)
+        hubEventsJob = com.cometchat.uikit.core.hub.HubBridge.events(viewModelScope) { env ->
+            if (env.type != "room.pinned_changed") return@events
+            val roomId = env.roomId ?: return@events
+            viewModelScope.launch {
+                val pinnedMessageId = (env.data["pinned_message_id"] as? kotlinx.serialization.json.JsonPrimitive)
+                    ?.content
+                if (pinnedMessageId.isNullOrEmpty() || pinnedMessageId == "null") {
+                    onMessageUnpinnedExternally(null)
+                    return@launch
+                }
+                try {
+                    com.cometchat.uikit.core.hub.Hub.roomById(roomId) ?: return@launch
+                    val (type, receiverUid) = com.cometchat.uikit.core.hub.Hub.receiverOf(
+                        com.cometchat.uikit.core.hub.Hub.roomById(roomId)
+                    )
+                    val pinned = com.cometchat.uikit.core.hub.HubMappers.message(
+                        com.cometchat.uikit.core.hub.Hub.client.message(pinnedMessageId),
+                        type,
+                        receiverUid
+                    )
+                    onMessagePinnedExternally(pinned)
+                } catch (_: Exception) {
+                    // The panel's next load re-reads the room pin.
+                }
             }
-
-            override fun onMessageUnpinned(message: BaseMessage) {
-                onMessageUnpinnedExternally(message)
-            }
-        })
+        }
     }
 
     private fun removeListeners() {
-        listenersTag?.let { CometChat.removeMessageListener(it) }
-        listenersTag = null
+        hubEventsJob?.cancel()
+        hubEventsJob = null
     }
 
     override fun onCleared() {
@@ -350,7 +322,7 @@ public open class CometChatPinnedMessagesViewModel(
     }
 
     /**
-     * Live upkeep. Called both by this ViewModel's own SDK listener (see [addListeners]) and by the
+     * Live upkeep. Called both by this ViewModel's own realtime registration and by the
      * View's lifecycle-aware UIKit-bus subscription; both are safe to fire for the same message.
      */
     public fun onMessagePinnedExternally(message: BaseMessage) {
@@ -364,10 +336,20 @@ public open class CometChatPinnedMessagesViewModel(
         }
     }
 
-    /** Removes a row when a message is unpinned elsewhere (see [onMessagePinnedExternally]). */
-    public fun onMessageUnpinnedExternally(message: BaseMessage) {
-        if (_messages.value.any { it.id == message.id }) {
-            removeRow(message)
+    /**
+     * Removes a row when the message is unpinned elsewhere (UIKit bus) — or, for a null
+     * [message], when the room's single pin is cleared (`room.pinned_changed` with no
+     * message): the server keeps one pinned message per room, so every row goes.
+     */
+    public fun onMessageUnpinnedExternally(message: BaseMessage?) {
+        if (message != null) {
+            if (_messages.value.any { it.id == message.id }) {
+                removeRow(message)
+            }
+        } else if (_messages.value.isNotEmpty()) {
+            _messages.value = emptyList()
+            _count.value = 0
+            _uiState.value = PinnedSavedListUIState.Empty
         }
     }
 
@@ -395,7 +377,7 @@ public open class CometChatPinnedMessagesViewModel(
                 // user; matching on the peer alone would also accept a message the peer sent to
                 // somebody else. Falls back to the looser check only if the session has no user
                 // (tests/previews), where dropping every event would be worse.
-                val me = CometChat.getLoggedInUser()?.uid
+                val me = com.cometchat.uikit.core.CometChatUIKit.getLoggedInUser()?.uid
                 if (me == null) {
                     message.receiverUid == u || message.sender?.uid == u
                 } else {

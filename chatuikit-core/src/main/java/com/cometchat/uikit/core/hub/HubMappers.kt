@@ -31,6 +31,9 @@ public object HubMappers {
         metadata = JSONObject().apply { dto.timezone?.let { put("timezone", it) } }
     }
 
+    /** Clone of [user] with the new presence [state] ("online"/"offline") stamped in. */
+    public fun userWithPresence(user: User, state: String): User = user.clone().apply { status = state }
+
     public fun group(dto: RoomDto): Group = Group(
         dto.id,
         dto.name,

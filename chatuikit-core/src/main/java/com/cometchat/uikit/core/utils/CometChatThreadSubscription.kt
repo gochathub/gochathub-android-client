@@ -1,6 +1,5 @@
 package com.cometchat.uikit.core.utils
 
-import com.cometchat.chat.core.CometChat
 import com.cometchat.chat.exceptions.CometChatException
 import com.cometchat.chat.models.BaseMessage
 import com.cometchat.uikit.core.CometChatUIKit
@@ -114,24 +113,15 @@ public object CometChatThreadSubscription {
         lastToggleAt[rootId] = now
 
         val desired = !currentlySubscribed
-        // Optimistic: flip every surface now, undo below if the server refuses.
+        // Optimistic: flip every surface now; the toggle is session-local below.
         publish(rootId, desired)
 
-        val callback = object : CometChat.CallbackListener<String>() {
-            override fun onSuccess(result: String?) {
-                inFlight.remove(rootId)
-                onResult(ToggleResult.Success(rootId, desired))
-            }
-
-            override fun onError(e: CometChatException?) {
-                inFlight.remove(rootId)
-                publish(rootId, currentlySubscribed)
-                onResult(ToggleResult.Failure(rootId, e))
-            }
-        }
-
-        if (desired) CometChat.subscribeToThread(rootId, callback)
-        else CometChat.unsubscribeFromThread(rootId, callback)
+        // ponytail: the server models single-level replies with no follow flag and
+        // has no thread-subscribe endpoint — the toggle publishes locally and wins
+        // (no server truth exists to contradict it; a fetched flag later wins per
+        // the KDoc contract). A server endpoint lands where the SDK write was.
+        inFlight.remove(rootId)
+        onResult(ToggleResult.Success(rootId, desired))
     }
 
     /**
