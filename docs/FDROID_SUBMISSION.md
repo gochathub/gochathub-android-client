@@ -27,7 +27,10 @@ Status as of 2026-10-07. Sources: F-Droid [Inclusion Policy](https://f-droid.org
 
 1. Test invites (and contacts) on device.
 2. Decide what to do about the open findings below (none is an F-Droid policy blocker).
-3. Tag `v1.0.0` on the commit whose `versionName`/`versionCode` are `1.0.0` / `1`.
+3. Tag `v1.0.0` on the commit whose `versionName`/`versionCode` are `1.0.0` / `1`. Pushing the tag also
+   publishes the signed GitHub release APK via `.github/workflows/release.yml` (needs the four
+   `RELEASE_KEYSTORE*` repository secrets). Device checks were reported complete on 2026-10-08;
+   retake the five phone screenshots first, since they predate the light-theme rework.
 4. Public demo server for reviewers (credentials go in the MR description).
 5. Push both repos.
 6. Create `metadata/com.gochathub.gochathubclient.yml` in the `fdroiddata` fork (draft below) and run, from the fdroiddata directory:
