@@ -24,7 +24,6 @@ import com.gochathub.chat.models.Group
 import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.messagecomposer.ui.CometChatMessageComposer
 import com.cometchat.uikit.compose.presentation.messageheader.ui.CometChatMessageHeader
-import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle
 import com.cometchat.uikit.compose.presentation.messagelist.ui.CometChatMessageList
 import com.cometchat.uikit.core.hub.Hub
 import com.cometchat.uikit.core.hub.HubMappers
@@ -71,18 +70,18 @@ public fun ChatScreen(
             val u = user
             val g = group
             if (u != null) {
-                CometChatMessageHeader(user = u, onBackPress = onBackPress)
+                CometChatMessageHeader(user = u, onBackPress = onBackPress, style = hubHeaderStyle())
                 CometChatMessageList(
                     user = u,
-                    style = CometChatMessageListStyle.default(),
+                    style = hubMessageListStyle(),
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 )
                 CometChatMessageComposer(user = u)
             } else if (g != null) {
-                CometChatMessageHeader(group = g, onBackPress = onBackPress)
+                CometChatMessageHeader(group = g, onBackPress = onBackPress, style = hubHeaderStyle())
                 CometChatMessageList(
                     group = g,
-                    style = CometChatMessageListStyle.default(),
+                    style = hubMessageListStyle(),
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 )
                 CometChatMessageComposer(group = g)

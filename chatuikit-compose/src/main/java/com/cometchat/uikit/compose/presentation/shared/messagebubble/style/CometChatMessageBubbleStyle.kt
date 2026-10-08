@@ -213,11 +213,12 @@ open public class CometChatMessageBubbleStyle(
          */
         @Composable
         public fun outgoing(
-            messagePreviewStyle: CometChatMessagePreviewStyle? = null
+            messagePreviewStyle: CometChatMessagePreviewStyle? = null,
+            backgroundColor: Color = CometChatTheme.colorScheme.primary
         ): CometChatMessageBubbleStyle {
             val timestampColor = Color.White.copy(alpha = 0.8f)
             return default(
-                backgroundColor = CometChatTheme.colorScheme.primary,
+                backgroundColor = backgroundColor,
                 timestampTextColor = timestampColor,
                 // The neutral receipt ticks follow the timestamp so the footer reads as one unit;
                 // left at the default they inherit the neutral icon tint and sit grey on the

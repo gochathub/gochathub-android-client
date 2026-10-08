@@ -55,6 +55,7 @@ public fun SettingsScreen(onBackPress: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = hubTopBarColors(),
                 title = { Text("Settings", style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = {
                     IconButton(onClick = onBackPress) {

@@ -1,6 +1,9 @@
 package com.gochathub.gochathubclient.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -86,10 +89,15 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // the logo's "GoChat" is white: always sit it on the charcoal band
         Image(
-            painter = painterResource(R.drawable.gochathub_login),
+            painter = painterResource(R.drawable.gochathub_login_dark),
             contentDescription = null,
-            modifier = Modifier.fillMaxWidth().height(96.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(GoChatHubColors.charcoal)
         )
         Spacer(Modifier.height(32.dp))
 

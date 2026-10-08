@@ -1,12 +1,27 @@
 package com.gochathub.gochathubclient.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.ui.Modifier
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.cometchat.uikit.compose.presentation.conversations.style.CometChatConversationsStyle
+import com.cometchat.uikit.compose.presentation.messageheader.style.CometChatMessageHeaderStyle
+import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessageListStyle
+import com.cometchat.uikit.compose.presentation.shared.messagebubble.style.CometChatMessageBubbleStyle
 import com.cometchat.uikit.compose.theme.CometChatColorScheme
 import com.cometchat.uikit.compose.theme.CometChatTheme
 import com.cometchat.uikit.compose.theme.darkColorScheme
@@ -39,7 +54,25 @@ public object GoChatHubColors {
     public val gray800: Color = Color(0xFF1F2937)
     public val gray900: Color = Color(0xFF111827)
     public val white: Color = Color(0xFFFFFFFF)
+
+    // light theme: tinted canvas under white rows, charcoal bar, AA-contrast accent
+    public val canvas: Color = Color(0xFFEDF0F4)
+    public val container: Color = Color(0xFFE3E8EE)
+    public val stroke: Color = Color(0xFFD5DBE2)
+    public val indigo600: Color = Color(0xFF4F46E5)
+    public val indigoSoft: Color = Color(0xFFE0E7FF)
+    public val strokeStrong: Color = Color(0xFFB4BEC9) // card borders
+    public val text2: Color = Color(0xFF566372)
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+public fun hubTopBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+    containerColor = GoChatHubColors.charcoal,
+    titleContentColor = GoChatHubColors.white,
+    navigationIconContentColor = GoChatHubColors.white,
+    actionIconContentColor = GoChatHubColors.white
+)
 
 @Composable
 public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
@@ -80,34 +113,34 @@ public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
         )
     } else {
         lightColorScheme(
-            primary = c.indigo300,
-            neutralColor50 = c.white,
-            neutralColor100 = c.gray100,
-            neutralColor200 = c.gray200,
-            neutralColor300 = c.gray300,
+            primary = c.indigo600,
+            neutralColor50 = c.canvas,
+            neutralColor100 = c.white,
+            neutralColor200 = c.container,
+            neutralColor300 = c.stroke,
             neutralColor400 = c.gray300,
-            neutralColor500 = c.gray500,
-            neutralColor600 = c.gray500,
+            neutralColor500 = c.text2,
+            neutralColor600 = c.text2,
             neutralColor700 = c.gray600,
             neutralColor800 = c.gray700,
             neutralColor900 = c.gray900,
-            backgroundColor1 = c.white,
-            backgroundColor2 = c.gray100,
-            backgroundColor3 = c.gray200,
-            backgroundColor4 = c.gray300,
-            strokeColorDefault = c.gray200,
-            strokeColorLight = c.gray200,
-            strokeColorDark = c.gray300,
+            backgroundColor1 = c.canvas,
+            backgroundColor2 = c.white,
+            backgroundColor3 = c.container,
+            backgroundColor4 = c.stroke,
+            strokeColorDefault = c.stroke,
+            strokeColorLight = c.stroke,
+            strokeColorDark = c.strokeStrong,
             textColorPrimary = c.gray900,
             textColorSecondary = c.gray600,
-            textColorTertiary = c.gray500,
+            textColorTertiary = c.text2,
             textColorDisabled = c.gray300,
-            textColorHighlight = c.indigo400,
+            textColorHighlight = c.indigo600,
             iconTintPrimary = c.gray800,
-            iconTintSecondary = c.gray500,
+            iconTintSecondary = c.text2,
             iconTintTertiary = c.slate,
-            iconTintHighlight = c.indigo400,
-            primaryButtonBackgroundColor = c.indigo300,
+            iconTintHighlight = c.indigo600,
+            primaryButtonBackgroundColor = c.indigo600,
             primaryButtonTextColor = c.white,
             successColor = c.green500,
             errorColor = c.red400
@@ -123,17 +156,20 @@ public fun GoChatHubTheme(content: @Composable () -> Unit) {
         primary = c.indigo400, onPrimary = c.white,
         secondary = c.slate, onSecondary = c.white,
         background = c.darkBackground, onBackground = c.white,
+        secondaryContainer = c.gray700, onSecondaryContainer = c.white, // selected chips
         surface = c.gray800, onSurface = c.white,
         surfaceVariant = c.gray700, onSurfaceVariant = c.gray300,
         outline = c.gray600, outlineVariant = c.gray700,
         error = c.red400, onError = c.white
     ) else androidx.compose.material3.lightColorScheme(
-        primary = c.indigo300, onPrimary = c.white,
+        primary = c.indigo600, onPrimary = c.white,
         secondary = c.slate, onSecondary = c.white,
-        background = c.white, onBackground = c.gray900,
-        surface = c.gray100, onSurface = c.gray900,
-        surfaceVariant = c.gray200, onSurfaceVariant = c.gray600,
-        outline = c.gray300, outlineVariant = c.gray200,
+        background = c.canvas, onBackground = c.gray900,
+        surface = c.white, onSurface = c.gray900,
+        surfaceVariant = c.container, onSurfaceVariant = c.text2,
+        secondaryContainer = c.indigoSoft, onSecondaryContainer = c.gray900, // selected chips
+        surfaceContainerHighest = c.container, // switch off-track
+        outline = c.gray300, outlineVariant = c.stroke,
         error = c.red400, onError = c.white
     )
     MaterialTheme(colorScheme = material) {
@@ -142,7 +178,42 @@ public fun GoChatHubTheme(content: @Composable () -> Unit) {
             modifier = androidx.compose.ui.Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            CometChatTheme(colorScheme = hubColorScheme(dark), content = content)
+            Box {
+                CometChatTheme(colorScheme = hubColorScheme(dark), content = content)
+                // light icons stay readable on every screen: charcoal behind the status bar
+                Spacer(
+                    Modifier.fillMaxWidth()
+                        .windowInsetsTopHeight(WindowInsets.statusBars)
+                        .background(c.charcoal)
+                )
+            }
         }
     }
 }
+
+/** Kit message header on the same charcoal as the app bars. */
+@Composable
+public fun hubHeaderStyle(): CometChatMessageHeaderStyle = CometChatMessageHeaderStyle.default().copy(
+    backgroundColor = GoChatHubColors.charcoal,
+    titleTextColor = GoChatHubColors.white,
+    subtitleTextColor = GoChatHubColors.lightSlate,
+    backIconTint = GoChatHubColors.white,
+    menuIconTint = GoChatHubColors.white
+)
+
+/** Conversation rows are white cards on the tinted canvas (card shape lives in ConversationListContent). */
+@Composable
+public fun hubConversationsStyle(): CometChatConversationsStyle = CometChatConversationsStyle.default().let {
+    it.copy(
+        itemStyle = it.itemStyle.copy(
+            backgroundColor = CometChatTheme.colorScheme.backgroundColor2,
+            separatorColor = CometChatTheme.colorScheme.strokeColorDark // card border
+        )
+    )
+}
+
+/** Own-message bubble is indigo400 in both modes (light would otherwise get the deeper primary). */
+@Composable
+public fun hubMessageListStyle(): CometChatMessageListStyle = CometChatMessageListStyle.default().copy(
+    outgoingMessageBubbleStyle = CometChatMessageBubbleStyle.outgoing(backgroundColor = GoChatHubColors.indigo400)
+)

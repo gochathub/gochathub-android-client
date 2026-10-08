@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -33,6 +34,7 @@ public fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = hubTopBarColors(),
                 title = { Text("goChatHub") },
                 actions = {
                     IconButton(onClick = onNewChat) {
@@ -41,7 +43,10 @@ public fun HomeScreen(
                     IconButton(onClick = onSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
-                    TextButton(onClick = { scope.launch { Auth.logout(); onSignedOut() } }) {
+                    TextButton(
+                        onClick = { scope.launch { Auth.logout(); onSignedOut() } },
+                        colors = ButtonDefaults.textButtonColors(contentColor = GoChatHubColors.white)
+                    ) {
                         Text("Sign out")
                     }
                 }
@@ -51,6 +56,8 @@ public fun HomeScreen(
         CometChatConversations(
             modifier = Modifier.padding(padding),
             title = "Chats",
+            style = hubConversationsStyle(),
+            hideSeparator = true,
             onItemClick = onOpenChat
         )
     }

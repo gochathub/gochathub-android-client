@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -177,9 +180,14 @@ internal fun ConversationListContent(
                 onPinToggle = { onPinToggle(conversation) }
             )
             
+            // hub: each row is an inset rounded card (item background + hairline border)
+            val card = RoundedCornerShape(14.dp)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 3.dp)
+                    .clip(card)
+                    .border(1.dp, style.itemStyle.separatorColor, card)
                     .focusable()
                     .combinedClickable(
                         onClick = { onItemClick(conversation) },
