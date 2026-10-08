@@ -10,7 +10,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class ErrorBody(
     val code: String,
-    val message: String
+    val message: String,
+    /** Only on `two_factor_required`: redeem at /auth/login/2fa. */
+    val challenge: String? = null
 )
 
 @Serializable
@@ -141,6 +143,13 @@ public data class UploadSessionDto(
 public data class LoginRequest(
     val username: String,
     val password: String,
+    @SerialName("token_request") val tokenRequest: Boolean = true
+)
+
+@Serializable
+public data class Login2FARequest(
+    val challenge: String,
+    val code: String,
     @SerialName("token_request") val tokenRequest: Boolean = true
 )
 

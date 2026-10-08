@@ -75,6 +75,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuthResponse"
         "401":
+          description: >
+            Bad credentials (`unauthorized`), or the password was right and the
+            account has two-factor enabled (`two_factor_required`, with
+            `error.challenge` — redeem it at `/auth/login/2fa`; no session
+            exists yet).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Turnstile token missing or rejected (`captcha_failed`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/login/2fa:
+    post:
+      tags: [auth]
+      operationId: login2fa
+      description: >
+        Redeem a `two_factor_required` challenge with a TOTP code or an unused
+        backup code. A challenge lives 5 minutes and allows 5 attempts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login2FARequest"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
           $ref: "#/components/responses/Unauthorized"
 
   /auth/logout:
@@ -202,6 +239,104 @@ paths:
       responses:
         "204":
           description: Password changed; all sessions (including this one) revoked.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /users/me/2fa/setup:
+    post:
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      operationId: setupTwoFactor
+      description: >
+        Start TOTP enrollment. Returns the secret and an `otpauth://` URL for
+        a QR code; nothing is enforced until `/users/me/2fa/enable`.
+      responses:
+        "200":
+          description: Pending enrollment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TwoFactorSetup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Two-factor is already enabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/me/2fa/enable:
+    post:
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      operationId: enableTwoFactor
+      description: Confirm enrollment with a first TOTP code. Backup codes are shown once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TwoFactorCodeRequest"
+      responses:
+        "200":
+          description: Enabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupCodes"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Two-factor is already enabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/me/2fa/backup-codes:
+    post:
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      operationId: regenerateBackupCodes
+      description: Replace all backup codes. Requires a current TOTP code.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TwoFactorCodeRequest"
+      responses:
+        "200":
+          description: New backup codes (old ones are void)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupCodes"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /users/me/2fa:
+    delete:
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      operationId: disableTwoFactor
+      description: Disable two-factor. Requires the password and a TOTP or backup code.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisableTwoFactorRequest"
+      responses:
+        "204":
+          description: Disabled
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -360,7 +495,12 @@ paths:
       tags: [rooms]
       security: [{ bearerAuth: [] }]
       operationId: archiveRoom
-      description: Archives the room (admins); member-level archive lives on the client.
+      description: >
+        Soft-deletes the room (room admins; the creator of a group_direct room
+        is its admin). The room and its history remain in the database but
+        every member's room list omits it, and subscribers receive a
+        room.archived event (docs/WEBSOCKETS.md). Member-level archive lives
+        on the client via PUT /rooms/{roomId}/archived.
       responses:
         "204":
           description: Archived
@@ -410,7 +550,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/RoomMember"
     post:
       tags: [rooms]
       security: [{ bearerAuth: [] }]
@@ -435,6 +575,27 @@ paths:
         required: true
         schema:
           type: string
+    patch:
+      tags: [rooms]
+      security: [{ bearerAuth: [] }]
+      operationId: setRoomMemberRole
+      description: >
+        Promote or demote a member (room admins and server admins). The last
+        admin of a room cannot be demoted (409 conflict). Emits
+        room.member_role_changed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMemberRoleRequest"
+      responses:
+        "204":
+          description: Updated
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Would leave the room without an admin
     delete:
       tags: [rooms]
       security: [{ bearerAuth: [] }]
@@ -640,6 +801,13 @@ paths:
             default: 50
         - in: query
           name: before
+          schema:
+            type: string
+        - in: query
+          name: q
+          description: >-
+            Case-insensitive substring match on message body (deleted messages
+            excluded). Paginates with `before`/`next_cursor` like the plain list.
           schema:
             type: string
       responses:
@@ -963,6 +1131,13 @@ components:
         password:
           type: string
           format: password
+        turnstile_token:
+          type: string
+          description: >
+            Cloudflare Turnstile response token. Required (single-use) when the
+            server has Turnstile enabled; ignored otherwise. A missing or
+            rejected token fails with 403 `captcha_failed` before credentials
+            are checked.
         token_request:
           type: boolean
           default: false
@@ -971,6 +1146,58 @@ components:
             the opaque session token in the response body for
             `Authorization: Bearer` use; browser clients use the cookie only
             (ADR-015).
+
+    Login2FARequest:
+      type: object
+      required: [challenge, code]
+      properties:
+        challenge:
+          type: string
+          description: The `error.challenge` from a `two_factor_required` login.
+        code:
+          type: string
+          description: 6-digit TOTP code or a single-use backup code.
+        token_request:
+          type: boolean
+          default: false
+          description: Same meaning as on LoginRequest.
+
+    TwoFactorSetup:
+      type: object
+      required: [secret, otpauth_url]
+      properties:
+        secret:
+          type: string
+          description: Base32 secret for manual entry.
+        otpauth_url:
+          type: string
+          description: "`otpauth://totp/...` URI to render as a QR code."
+
+    TwoFactorCodeRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+
+    DisableTwoFactorRequest:
+      type: object
+      required: [password, code]
+      properties:
+        password:
+          type: string
+          format: password
+        code:
+          type: string
+
+    BackupCodes:
+      type: object
+      required: [backup_codes]
+      properties:
+        backup_codes:
+          type: array
+          items:
+            type: string
 
     AuthResponse:
       description: >
@@ -1005,6 +1232,9 @@ components:
           type: string
           nullable: true
           description: Present only on self payloads (GET/PATCH /users/me, login).
+        two_factor_enabled:
+          type: boolean
+          description: Present only on self payloads (GET/PATCH /users/me, login).
         timezone:
           type: string
           nullable: true
@@ -1037,7 +1267,7 @@ components:
 
     Preferences:
       type: object
-      required: [last_seen_visible, read_receipts, allow_group_invites, allow_private_messages]
+      required: [last_seen_visible, read_receipts, allow_group_invites, allow_private_messages, spellcheck_enabled, spellcheck_words]
       properties:
         last_seen_visible:
           type: boolean
@@ -1047,6 +1277,13 @@ components:
           type: boolean
         allow_private_messages:
           type: boolean
+        spellcheck_enabled:
+          type: boolean
+          description: Client-side grammar check toggle (stored only).
+        spellcheck_words:
+          type: array
+          items: { type: string }
+          description: Personal dictionary.
 
     UpdatePreferencesRequest:
       description: Partial update; omitted fields keep current values.
@@ -1060,6 +1297,12 @@ components:
           type: boolean
         allow_private_messages:
           type: boolean
+        spellcheck_enabled:
+          type: boolean
+        spellcheck_words:
+          type: array
+          maxItems: 1000
+          items: { type: string, minLength: 1, maxLength: 64 }
       minProperties: 1
 
     AddContactRequest:
@@ -1384,6 +1627,25 @@ components:
         token:
           type: string
           description: The decrypted validation ping token sent back by the app.
+
+    RoomMember:
+      description: A member's public profile plus their role in this room.
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required: [room_role]
+          properties:
+            room_role:
+              type: string
+              enum: [admin, member]
+
+    SetMemberRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [admin, member]
 
     AddMemberRequest:
       type: object

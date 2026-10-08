@@ -21,7 +21,8 @@ public class HubApiException(
     public val httpStatus: Int,
     public val code: String,
     override val message: String,
-    public val retryAfterSeconds: Long? = null
+    public val retryAfterSeconds: Long? = null,
+    public val challenge: String? = null
 ) : Exception(message)
 
 /** Transport failure (DNS, TLS, timeouts) — no envelope available. */
@@ -103,16 +104,18 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
         response.close()
         var code = "unknown"
         var message = "HTTP $status"
+        var challenge: String? = null
         try {
             if (body.isNotEmpty()) {
                 JSON.decodeFromString(ErrorResponse.serializer(), body).error.let {
                     code = it.code
                     message = it.message
+                    challenge = it.challenge
                 }
             }
         } catch (_: Exception) { /* non-JSON error body */ }
         if (status == 401) onUnauthorized?.invoke()
-        throw HubApiException(status, code, message, retryAfter)
+        throw HubApiException(status, code, message, retryAfter, challenge)
     }
 
     private suspend fun <T> get(path: String, serializer: kotlinx.serialization.KSerializer<T>): T {
@@ -147,6 +150,12 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
             JSON.encodeToString(LoginRequest.serializer(), LoginRequest(username, password)),
             AuthResponseDto.serializer())
     }
+
+    /** Second step after a `two_factor_required` login: TOTP or backup code. */
+    public suspend fun login2fa(challenge: String, code: String): AuthResponseDto =
+        send("POST", "/auth/login/2fa",
+            JSON.encodeToString(Login2FARequest.serializer(), Login2FARequest(challenge, code)),
+            AuthResponseDto.serializer())
 
     public suspend fun logout() {
         send("POST", "/auth/logout", null)

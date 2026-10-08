@@ -62,6 +62,57 @@ class HubClientTest {
     }
 
     @Test
+    fun `two_factor_required keeps the challenge`() = runBlocking {
+        connect()
+        server.enqueue(
+            MockResponse().setResponseCode(401).setBody(
+                """{"error":{"code":"two_factor_required","message":"two-factor code required","challenge":"ch-1"}}"""
+            )
+        )
+        try {
+            client.login(server.url("/").toString(), "brian", "pw")
+            fail("should throw")
+        } catch (e: HubApiException) {
+            assertEquals("two_factor_required", e.code)
+            assertEquals("ch-1", e.challenge)
+        }
+    }
+
+    @Test
+    fun `login2fa posts challenge and code and returns the token`() = runBlocking {
+        connect()
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"token":"sess-2","user":{"id":"u1","username":"brian","display_name":"Brian","role":"user","avatar_url":""}}"""
+            )
+        )
+        assertEquals("sess-2", client.login2fa("ch-1", "123456").token)
+        val recorded = server.takeRequest()
+        assertEquals("/api/v1/auth/login/2fa", recorded.path)
+        val body = recorded.body.readUtf8()
+        org.junit.Assert.assertTrue(body.contains("\"challenge\":\"ch-1\""))
+        org.junit.Assert.assertTrue(body.contains("\"code\":\"123456\""))
+        org.junit.Assert.assertTrue(body.contains("\"token_request\":true"))
+    }
+
+    @Test
+    fun `captcha_failed surfaces as a stable code`() = runBlocking {
+        connect()
+        server.enqueue(
+            MockResponse().setResponseCode(403).setBody(
+                """{"error":{"code":"captcha_failed","message":"captcha verification failed"}}"""
+            )
+        )
+        try {
+            client.login(server.url("/").toString(), "brian", "pw")
+            fail("should throw")
+        } catch (e: HubApiException) {
+            assertEquals(403, e.httpStatus)
+            assertEquals("captcha_failed", e.code)
+        }
+    }
+
+    @Test
     fun `bearer rides every request`() = runBlocking {
         connect()
         store.token = "sess-7"

@@ -10,9 +10,27 @@ import com.gochathub.gochathubclient.push.Push
  */
 public object Auth {
 
+    /** Failure carries [com.cometchat.uikit.core.hub.HubApiException.challenge] when the account needs a 2FA code. */
     public suspend fun login(baseUrl: String, username: String, password: String): Result<AuthResponseDto> =
+        start { Hub.client.login(baseUrl, username, password) }
+
+    public suspend fun login2fa(challenge: String, code: String): Result<AuthResponseDto> =
+        start { Hub.client.login2fa(challenge, code) }
+
+    /**
+     * Personal API token (minted server-side, e.g. `gochathub-server token create`):
+     * skips password, Turnstile and 2FA. Validated with GET /users/me before it is kept.
+     */
+    public suspend fun loginWithToken(baseUrl: String, token: String): Result<AuthResponseDto> =
+        start {
+            Hub.client.baseUrl = baseUrl
+            Hub.store.token = token
+            AuthResponseDto(token, Hub.client.me())
+        }.onFailure { Hub.store.token = "" }
+
+    private suspend fun start(authenticate: suspend () -> AuthResponseDto): Result<AuthResponseDto> =
         try {
-            val response = Hub.client.login(baseUrl, username, password)
+            val response = authenticate()
             Hub.store.token = response.token.orEmpty()
             Hub.me = response.user
             Hub.socket.connect()

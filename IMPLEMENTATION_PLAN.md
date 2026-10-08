@@ -27,6 +27,21 @@ push → REST fetch → notification), system Back navigation.
 
 ## Open issues
 
+### Auth after server Turnstile + 2FA (2026-10-08)
+- Done: 2FA second step on the login screen; API-token sign-in (skips password,
+  Turnstile, 2FA); `captcha_failed` surfaces as a stable code; contract snapshot
+  refreshed. Token sign-in verified on the Pixel (rooms, messages, push register
+  + validate, sign-out). Unit tests cover the challenge, `/auth/login/2fa` body
+  and `captcha_failed`.
+- Not verified on device: the 2FA code step itself (needs a 2FA account's
+  authenticator; on dev only `testuser` has one).
+- Gap: the server has no HTTP endpoint to mint/list/revoke API tokens (CLI only,
+  no expiry set). Users cannot self-serve a token from the web UI yet.
+- Server finding: `POST /auth/logout` with an API token returns 500
+  (`mapError` has no `ErrBadRequest` case); the client wipes locally anyway.
+- Not built: Turnstile widget in a WebView (would need a server-hosted widget
+  page + site-key endpoint, and a third-party script load from Cloudflare).
+
 ### Bugs / gaps in shipped features
 1. **Sign-out push cleanup** — coded (`Push.deleteDevice` before logout,
    `Push.unregister` after wipe); **verified on device 2026-10-06**.
