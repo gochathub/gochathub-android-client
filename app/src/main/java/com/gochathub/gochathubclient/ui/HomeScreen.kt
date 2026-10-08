@@ -25,7 +25,8 @@ import kotlinx.coroutines.launch
 public fun HomeScreen(
     onOpenChat: (Conversation) -> Unit,
     onNewChat: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onSignedOut: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -40,7 +41,7 @@ public fun HomeScreen(
                     IconButton(onClick = onSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
-                    TextButton(onClick = { scope.launch { Auth.logout() } }) {
+                    TextButton(onClick = { scope.launch { Auth.logout(); onSignedOut() } }) {
                         Text("Sign out")
                     }
                 }

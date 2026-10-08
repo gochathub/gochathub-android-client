@@ -92,8 +92,13 @@ public object HubMappers {
             MediaMessage().apply {
                 setAttachments(dto.attachments.map { attachment(it) })
                 caption = dto.body
-                type = dto.attachments.firstOrNull()?.mimeType?.takeIf { it.startsWith("image/") }
-                    ?: CometChatConstants.MESSAGE_TYPE_FILE
+                val mime = dto.attachments.first().mimeType
+                type = when {
+                    mime.startsWith("image/") -> CometChatConstants.MESSAGE_TYPE_IMAGE
+                    mime.startsWith("video/") -> CometChatConstants.MESSAGE_TYPE_VIDEO
+                    mime.startsWith("audio/") -> CometChatConstants.MESSAGE_TYPE_AUDIO
+                    else -> CometChatConstants.MESSAGE_TYPE_FILE
+                }
             }
         } else {
             TextMessage(receiverUid, dto.body, receiverType).apply { text = dto.body }

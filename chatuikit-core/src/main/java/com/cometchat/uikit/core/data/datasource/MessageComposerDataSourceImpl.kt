@@ -38,8 +38,13 @@ internal class MessageComposerDataSourceImpl : MessageComposerDataSource {
 
     override suspend fun sendMediaMessage(message: MediaMessage): MediaMessage {
         val roomId = HubImpls.roomForReceiver(message.receiverUid, message.receiverType)
-        val files = if (message.file != null) listOf(message.file) else message.files
-        val ids = files.map { file ->
+        // The composer uploads on attach (startUpload); those attachments already exist server-side.
+        val uploadedIds = message.attachments.orEmpty().mapNotNull {
+            it.metadata?.optString(HubMappers.META_ID)?.takeIf { id -> id.isNotEmpty() }
+        }
+        val files = if (uploadedIds.isNotEmpty()) emptyList()
+            else if (message.file != null) listOf(message.file) else message.files.orEmpty()
+        val ids = uploadedIds + files.map { file ->
             val mime = guessMime(file.name, message.type)
             val bytes = file.readBytes()
             val session = Hub.client.createUpload(
@@ -57,7 +62,11 @@ internal class MessageComposerDataSourceImpl : MessageComposerDataSource {
         }
         val created = Hub.client.createMessage(
             roomId,
-            CreateMessageRequest(body = message.caption, attachmentIds = ids)
+            // the server rejects an empty body, so an attachment-only send carries the file name
+            CreateMessageRequest(
+                body = message.caption.orEmpty().ifBlank { message.attachments.orEmpty().firstOrNull()?.fileName ?: files.firstOrNull()?.name.orEmpty() },
+                attachmentIds = ids
+            )
         )
         return HubMappers.message(created, message.receiverType, message.receiverUid) as MediaMessage
     }

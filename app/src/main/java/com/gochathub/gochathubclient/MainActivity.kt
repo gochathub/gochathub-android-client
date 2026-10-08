@@ -68,7 +68,8 @@ public class MainActivity : ComponentActivity() {
                         route == Route.HOME -> HomeScreen(
                             onOpenChat = { conversation -> openRoomId = conversation.conversationId },
                             onNewChat = { route = Route.NEW_CHAT },
-                            onSettings = { route = Route.SETTINGS }
+                            onSettings = { route = Route.SETTINGS },
+                            onSignedOut = { loggedIn = false }
                         )
                         route == Route.NEW_CHAT -> NewChatScreen(
                             onOpenChat = { user ->
