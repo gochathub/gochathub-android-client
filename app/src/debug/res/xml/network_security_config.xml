@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only (overrides src/main): allow cleartext so a LAN or
+     emulator (10.0.2.2) dev server works without TLS. Never shipped in release. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

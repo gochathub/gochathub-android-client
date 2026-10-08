@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ponytail: LAN dev cleartext; the deployment is proxied HTTPS (ADR-016) -->
+<!-- HTTPS only; the deployment is proxied HTTPS (ADR-016). Debug builds
+     override this file in src/debug/res/xml/ for local dev servers. -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">192.0.2.10</domain>
-        <domain includeSubdomains="false">10.0.2.2</domain>
-    </domain-config>
 </network-security-config>
