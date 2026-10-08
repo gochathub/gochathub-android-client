@@ -70,9 +70,11 @@ public object HubMappers {
         ).apply {
             setConversationWith(conversationWith as com.gochathub.chat.models.AppEntity)
             unreadMessageCount = dto.unreadCount.toInt()
+            // Room updated_at moves only on edit/pin/archive, not on messages: last activity is the newest message.
             updatedAt = isoToEpoch(dto.updatedAt)
             Hub.lastMessageCache[dto.id]?.let {
                 lastMessage = message(it, receiverTypeOf(dto.type), Hub.receiverOf(dto).second)
+                updatedAt = lastMessage.sentAt
             }
         }
     }
