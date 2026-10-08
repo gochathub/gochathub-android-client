@@ -67,8 +67,6 @@ were deleted.
   lookups (pin/delete/react) only work for messages seen this session.
 
 ### Other repos
-- `gochathub-server` README links the client as `gochathub-androidclient`; the repo
-  is `gochathub-android-client`.
 - `~/projects/gochatserver` has an untracked `gochathub-server` binary I built at the
   repo root (`bin/` was missing) and an unrelated modified `.gitignore`.
 
