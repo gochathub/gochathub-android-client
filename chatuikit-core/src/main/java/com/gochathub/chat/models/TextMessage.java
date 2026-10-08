@@ -11,8 +11,8 @@ public class TextMessage extends BaseMessage {
     private String text;
     protected List<String> tags;
     private ModerationStatus moderationStatus;
-    public TextMessage() {}
-    public TextMessage(String receiverUid, String text, String receiverType) { this.receiverUid = receiverUid; this.text = text; this.receiverType = receiverType; }
+    public TextMessage() { this.type = "text"; }
+    public TextMessage(String receiverUid, String text, String receiverType) { this.receiverUid = receiverUid; this.text = text; this.receiverType = receiverType; this.type = "text"; }
     public String getText() { return text; }
     public void setText(String v) { this.text = v; }
     public List<String> getTags() { return tags; }

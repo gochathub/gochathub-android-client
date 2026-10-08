@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.gochathub.chat.models.Group
 import com.gochathub.chat.models.User
 import com.cometchat.uikit.compose.presentation.messagecomposer.ui.CometChatMessageComposer
@@ -36,6 +41,13 @@ public fun ChatScreen(
     var user by remember { mutableStateOf<User?>(null) }
     var group by remember { mutableStateOf<Group?>(null) }
 
+    // The Kit creates its list/header/composer ViewModels without a per-conversation key;
+    // in the activity's store the second room would reuse the first room's list.
+    val owner = remember(roomId) {
+        object : ViewModelStoreOwner { override val viewModelStore = ViewModelStore() }
+    }
+    DisposableEffect(owner) { onDispose { owner.viewModelStore.clear() } }
+
     LaunchedEffect(roomId) {
         try {
             val room = Hub.roomById(roomId) ?: Hub.client.room(roomId).also { Hub.rememberRoom(it) }
@@ -54,27 +66,29 @@ public fun ChatScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().imePadding()) {
-        val u = user
-        val g = group
-        if (u != null) {
-            CometChatMessageHeader(user = u, onBackPress = onBackPress)
-            CometChatMessageList(
-                user = u,
-                style = CometChatMessageListStyle.default(),
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            )
-            CometChatMessageComposer(user = u)
-        } else if (g != null) {
-            CometChatMessageHeader(group = g, onBackPress = onBackPress)
-            CometChatMessageList(
-                group = g,
-                style = CometChatMessageListStyle.default(),
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            )
-            CometChatMessageComposer(group = g)
-        } else {
-            Text("Room unavailable", modifier = Modifier.padding(16.dp))
+    CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
+        Column(modifier = Modifier.fillMaxSize().imePadding()) {
+            val u = user
+            val g = group
+            if (u != null) {
+                CometChatMessageHeader(user = u, onBackPress = onBackPress)
+                CometChatMessageList(
+                    user = u,
+                    style = CometChatMessageListStyle.default(),
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                )
+                CometChatMessageComposer(user = u)
+            } else if (g != null) {
+                CometChatMessageHeader(group = g, onBackPress = onBackPress)
+                CometChatMessageList(
+                    group = g,
+                    style = CometChatMessageListStyle.default(),
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                )
+                CometChatMessageComposer(group = g)
+            } else {
+                Text("Room unavailable", modifier = Modifier.padding(16.dp))
+            }
         }
     }
 }

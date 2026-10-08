@@ -29,4 +29,10 @@ class ModelShimTest {
         assertFalse(a.contentEquals(b))
         assertEquals(a, b) // same id
     }
+
+    @Test
+    fun `text message carries the text type the bubble dispatches on`() {
+        assertEquals("text", TextMessage("r", "hi", "user").type)
+        assertEquals("text", TextMessage().type)
+    }
 }
