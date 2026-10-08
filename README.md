@@ -31,6 +31,16 @@ It is built on the [CometChat Android UI Kit](https://github.com/cometchat/comet
 - **Privacy preferences and notification modes** — wired straight to the server's enforcement (the client doesn't filter locally).
 - **Receipts** — per-message delivered/read state rendered per the server's ADR-009 rules; opting out keeps you at "delivered" for others.
 
+## Screenshots
+
+<p align="center">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_login.png" alt="Sign in with your server URL" width="18%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_chats.png" alt="Conversation list" width="18%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_chat.png" alt="Direct chat" width="18%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5_attachments.png" alt="Attachments" width="18%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_settings.png" alt="Privacy and notification settings" width="18%">
+</p>
+
 ## Build
 
 ```bash
