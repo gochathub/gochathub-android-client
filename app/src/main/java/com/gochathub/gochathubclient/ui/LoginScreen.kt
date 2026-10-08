@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.cometchat.uikit.core.hub.HubApiException
+import com.cometchat.uikit.core.hub.MobileSignIn
 import com.gochathub.gochathubclient.Auth
 import com.gochathub.gochathubclient.R
 import kotlinx.coroutines.launch
@@ -39,14 +41,39 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
     var serverUrl by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var apiToken by rememberSaveable { mutableStateOf("") }
-    var useToken by rememberSaveable { mutableStateOf(false) }
+    var apiToken by remember { mutableStateOf("") } // a credential: kept out of saved instance state
+    var useToken by rememberSaveable { mutableStateOf(true) }
+    var scanning by remember { mutableStateOf(false) }
     var code by remember { mutableStateOf("") }
     // Not saveable: the 2FA challenge is a short-lived credential; rotation just restarts at the password step.
     var challenge by remember { mutableStateOf<String?>(null) }
     var busy by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+
+    if (scanning) {
+        QrScanScreen(
+            onScanned = { text ->
+                scanning = false
+                val creds = MobileSignIn.parse(text)
+                if (creds == null) {
+                    error = "That QR code is not a goChatHub sign-in code."
+                } else {
+                    serverUrl = creds.server
+                    busy = true
+                    error = null
+                    scope.launch {
+                        Auth.loginWithToken(creds.server, creds.token)
+                            .onSuccess { onLoggedIn() }
+                            .onFailure { error = it.message }
+                        busy = false
+                    }
+                }
+            },
+            onCancel = { scanning = false }
+        )
+        return
+    }
 
     val ready = serverUrl.isNotBlank() && when {
         challenge != null -> code.isNotBlank()
@@ -71,7 +98,15 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
         val pending = challenge
         when {
             pending != null -> LoginField(code, { code = it }, "Authenticator or backup code")
-            useToken -> LoginField(apiToken, { apiToken = it }, "API token", secret = true)
+            useToken -> {
+                OutlinedButton(
+                    onClick = { scanning = true },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Scan QR code") }
+                Spacer(Modifier.height(12.dp))
+                LoginField(apiToken, { apiToken = it }, "API token", secret = true)
+            }
             else -> {
                 LoginField(username, { username = it }, "Username")
                 Spacer(Modifier.height(12.dp))

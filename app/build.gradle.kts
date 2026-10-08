@@ -92,6 +92,12 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation("org.unifiedpush.android:connector:3.0.10")
+    // QR sign-in scanner (both Apache-2.0)
+    implementation("androidx.camera:camera-core:1.6.2")
+    implementation("androidx.camera:camera-camera2:1.6.2")
+    implementation("androidx.camera:camera-lifecycle:1.6.2")
+    implementation("androidx.camera:camera-view:1.6.2")
+    implementation("com.google.zxing:core:3.5.4")
 
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation("androidx.test:runner:1.6.2")

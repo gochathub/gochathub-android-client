@@ -35,8 +35,19 @@ push → REST fetch → notification), system Back navigation.
   and `captcha_failed`.
 - Not verified on device: the 2FA code step itself (needs a 2FA account's
   authenticator; on dev only `testuser` has one).
-- Gap: the server has no HTTP endpoint to mint/list/revoke API tokens (CLI only,
-  no expiry set). Users cannot self-serve a token from the web UI yet.
+- Mobile sign-in QR (2026-10-08): the login screen opens in API-token mode, with
+  "Scan QR code" (CameraX + ZXing core; `CAMERA` permission, camera optional) that
+  signs in immediately. Server: `POST/GET /users/me/tokens`, `DELETE
+  /users/me/tokens/{tokenId}` (gochathub-server `86ee194`, sessions only mint,
+  tokens never expire by decision). Web UI: Settings → Account → Mobile sign-in
+  creates the QR (`gochathub://login?server=...&token=...`, shown once) and lists
+  / revokes tokens (gochathub-webui `6bc381c`, `b883df5`). Verified: web QR decodes
+  to the expected payload; scanner opens the camera on the Pixel; parser unit
+  tests. **Not verified: a real camera scan of the web UI QR end to end.**
+- F-Droid: new runtime deps (CameraX 1.6.2, ZXing core 3.5.4, both Apache-2.0) and
+  the `CAMERA` permission; no proprietary services.
+- Because tokens never expire, losing a phone means revoking from the web UI
+  list; add expiry in `UserService.MintAPIToken` if that policy changes.
 - Server finding: `POST /auth/logout` with an API token returns 500
   (`mapError` has no `ErrBadRequest` case); the client wipes locally anyway.
 - Not built: Turnstile widget in a WebView (would need a server-hosted widget
