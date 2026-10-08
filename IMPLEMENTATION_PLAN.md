@@ -38,14 +38,27 @@ push → REST fetch → notification), system Back navigation.
 4. **Header presence always "Offline".** Presence wiring exists
    (`presence.changed`) but the online flip was never exercised.
 5. **Typing indicator display** on the phone is untested (outgoing frames verified).
-6. **Push renewal** (`PATCH /devices/{id}` returns 500 from the server on app start, 2026-10-06 — server-side bug, no error detail logged), re-register after sign-out/in, and
-   behaviour with the app in the foreground are untested. No distributor picker UI:
+6. **Push renewal** — server fix landed (gochathub-server `5b73677`: endpoint is globally
+   UNIQUE, renewal re-sent the same endpoint); verified on device 2026-10-07 (PATCH 204,
+   validate 204) and a push round trip through ntfy with the app in the background.
+   Behaviour with the app in the foreground is untested. No distributor picker UI:
    ntfy is preferred by name, else a lone distributor, else push is skipped.
-7. **Attachments** (upload session → presigned PUT → complete; download via
-   presigned URL, refetch on 403) implemented but never exercised.
-8. **Light theme** never viewed (only dark was checked on device).
-9. **New chat (people search), Invites, contacts, Settings toggle writes** — screens
-   exist; only Settings rendering was verified.
+7. **Attachments** — verified on device 2026-10-07 (attach → upload → send → presigned
+   download → image bubble). Found and fixed: send NPE'd (composer uploads on attach, the
+   datasource tried to upload again), MIME string used as message type. Attachment-only
+   send posts the file name as body (server rejects an empty body). The sent message did
+   not appear in the live timeline until the chat was reopened (not re-checked after the fixes).
+8. **Light theme** viewed 2026-10-07: renders, but contrast is weak (white initials on pale
+   avatars, white text on the light own-message bubble, pale "Sign out").
+9. **New chat (people search)** and **Settings writes** verified 2026-10-07. Invites and
+   contacts remain untested.
+10. **Group header shows "0 Member"** — the server Room schema has no member count.
+11. **Conversation-list previews and times go stale** after returning from a chat or
+    receiving frames; a relaunch refreshes them.
+12. **Sign-out against an unreachable server** left the user stuck on the list (not
+    re-checked after the sign-out fix, which now navigates explicitly).
+13. Fixed 2026-10-07: shim `TextMessage` had no `type` ("Unsupported: message_null"); chat
+    screens shared one ViewModel store, so a second room showed the first room's messages.
 
 ### Kit surfaces with no server counterpart (deliberately inert)
 Conversation pin; saved messages; mark-as-unread; message report/flag (option
@@ -61,7 +74,7 @@ were deleted.
   or per-request pagination state.
 - Release build: R8 + optional env-driven signing (`RELEASE_KEYSTORE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`; unsigned without them), CI builds it. Verified on device 2026-10-06 (self-signed test key): login, rooms, device register + validate under R8. Chat/message paths under R8 not exercised.
 - **F-Droid blocker removed (2026-10-06):** `chat-sdk-android` / `cards-android` dropped. `chatuikit-core/src/main/java/com/gochathub/chat/**` is now an in-tree, API-compatible set of plain data holders, request/builder holders and listener types (no networking; `fetchNext` and `callExtension` return `hub_unsupported`), so the Kit sources are unchanged. Card bubble shows text only. Debug + release build, unit tests pass; release smoke test on device pending.
-- F-Droid remaining: screenshots for fastlane metadata; shim renamed to com.gochathub.chat.* (2026-10-07); repos are public.
+- F-Droid remaining: v1.0.0 tag, fdroiddata merge request (see docs in the F-Droid brainstorm: F-Droid signs, `UpdateCheckMode: Tags`), public demo server for reviewers; screenshots done (`fastlane/.../phoneScreenshots`); shim renamed to com.gochathub.chat.* (2026-10-07); repos are public.
 - CI actions bumped to checkout@v5 / setup-gradle@v5 (Node 20 warning; confirm on next run).
 - `HubIds` derives the numeric Kit id from the UUID (ms<<20 | 20-bit hash): by-id
   lookups (pin/delete/react) only work for messages seen this session.
