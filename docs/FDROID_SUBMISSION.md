@@ -89,5 +89,5 @@ Not fixed unless noted. Also tracked in `IMPLEMENTATION_PLAN.md`.
 
 ## Dev environment notes
 
-The dev stack is `~/projects/gochathub-dev-env` (`gochat.sh`), reached through `https://gochat.example.com`.
+The dev stack is a local `gochat.sh` environment fronted by an HTTPS vhost.
 Server integration tests truncate their database: use `chat_test`, never `gochat_migrated` (real Rocket.Chat import).

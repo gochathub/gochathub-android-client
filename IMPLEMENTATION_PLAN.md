@@ -34,7 +34,7 @@ push → REST fetch → notification), system Back navigation.
   + validate, sign-out). Unit tests cover the challenge, `/auth/login/2fa` body
   and `captcha_failed`.
 - Not verified on device: the 2FA code step itself (needs a 2FA account's
-  authenticator; on dev only `testuser` has one).
+  authenticator; on dev only one test account has one).
 - Mobile sign-in QR (2026-10-08): the login screen opens in API-token mode, with
   "Scan QR code" (CameraX + ZXing core; `CAMERA` permission, camera optional) that
   signs in immediately. Server: `POST/GET /users/me/tokens`, `DELETE
@@ -116,7 +116,7 @@ were deleted.
   Port 8080 on that machine is an unrelated app — do not use it.
 - Test accounts (CLI-created): `gochathub-test` (notification mode `all`) and
   `peer-test`; direct room `01a11403-e41a-77eb-8de3-441557dc1b00`.
-- ntfy: `https://ntfy.example.com` (anonymous publish to `up…` topics accepted;
+- ntfy: a self-hosted instance (anonymous publish to `up…` topics accepted;
   the server has no token setting). Phone needs the ntfy app with that default server.
 - Phone: Pixel 8a over wireless debugging (`adb connect <ip:port>`); signed in as
   `gochathub-test`.
