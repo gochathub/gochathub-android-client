@@ -1,0 +1,1 @@
+Accent color: pick an accent (15 swatches) in Settings — it follows your account to the web and back.
