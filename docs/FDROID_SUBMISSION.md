@@ -18,7 +18,7 @@ Status as of 2026-10-07. Sources: F-Droid [Inclusion Policy](https://f-droid.org
 
 - Repo is public, MIT, no proprietary dependencies; wrapper pinned; no prebuilt `.so`/`.jar`/`.aar`; `dependenciesInfo` off.
 - Removed the Cloudsmith Maven repo and dead CometChat/Firebase catalog entries (`b7ae241`).
-- fastlane metadata: title, descriptions, icon, changelog `1.txt`, five phone screenshots (`fastlane/metadata/android/en-US/`).
+- fastlane metadata: title, descriptions, icon, changelogs `1.txt`–`3.txt`, five phone screenshots (`fastlane/metadata/android/en-US/`).
 - Server push-renewal fix (gochathub-server `5b73677`), verified on device.
 - Device-verified on the release (R8) build: login, rooms, chat, markdown, live receive, send, attachments,
   new chat search, settings writes, push through ntfy, light theme (weak contrast), sign-out.
@@ -56,15 +56,27 @@ Repo: https://github.com/gochathub/gochathub-android-client.git
 Builds:
   - versionName: 1.0.0
     versionCode: 1
-    commit: <full hash of v1.0.0>
+    commit: 04c67a4dae86f4ddf9d95447940d0c6b5afed048
+    subdir: app
+    gradle:
+      - yes
+  - versionName: 1.1.0
+    versionCode: 2
+    commit: a25ef2010fee1111db2204a12ac1c293919bc74d
+    subdir: app
+    gradle:
+      - yes
+  - versionName: 1.2.0
+    versionCode: 3
+    commit: 1c0ad135b257f2bd36c9686fc0617e9a1d3f339a
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.0.0
-CurrentVersionCode: 1
+CurrentVersion: 1.2.0
+CurrentVersionCode: 3
 ```
 
 ## Risks to check
