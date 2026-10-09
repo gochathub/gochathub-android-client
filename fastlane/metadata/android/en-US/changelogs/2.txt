@@ -1,0 +1,1 @@
+Share target: send text, images and files to a chat from any app's share sheet. Pick a room, edit, send.
