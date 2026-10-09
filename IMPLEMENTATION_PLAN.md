@@ -109,6 +109,21 @@ were deleted.
 - `~/projects/gochatserver` has an untracked `gochathub-server` binary I built at the
   repo root (`bin/` was missing) and an unrelated modified `.gitignore`.
 
+### Share target (2026-10-09)
+- Coded in one pass per `docs/SHARE_TARGET_REQUIREMENTS.md` + `docs/SHARE_TARGET_DESIGN.md`:
+  ACTION_SEND/SEND_MULTIPLE filters on MainActivity, `ShareTarget` (app `share`
+  package: intent extract + copy-to-cache staging reusing the Kit's
+  `createMediaSelectionResult`), parked `sharePayload` state with a banner + X on
+  HomeScreen, composer `initialText` (rides the existing `composeText` flow) and
+  `initialAttachments` (straight into `stageAttachments`), keep/discard dialog on
+  back.
+- Robolectric unit tests cover intent extraction (text/uri/mixed/multiple/empty)
+  and banner descriptions. Release contract snapshot refreshed (server added
+  webhooks, unrelated).
+- **Not verified on device** (Pixel not connected): banner flow, prefill of the
+  WYSIWYG input, staged-image send, SEND_MULTIPLE, keep/discard dialog, share
+  to the app while signed out.
+
 ## Dev environment (not in the repo — will not survive a reboot)
 - Server: `~/projects/gochatserver/gochathub-server serve` with
   `DATABASE_URL=postgres://chatdev:chatdev@127.0.0.1:5532/chatdev?sslmode=disable`

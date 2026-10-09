@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.gochathub.chat.models.Group
 import com.gochathub.chat.models.User
+import com.gochathub.gochathubclient.share.SharePayload
 import com.cometchat.uikit.compose.presentation.messagecomposer.ui.CometChatMessageComposer
 import com.cometchat.uikit.compose.presentation.messageheader.ui.CometChatMessageHeader
 import com.cometchat.uikit.compose.presentation.messagelist.ui.CometChatMessageList
@@ -31,10 +32,14 @@ import com.cometchat.uikit.core.hub.HubMappers
 /**
  * One chat over kit components: header, list, composer. `roomId` is the
  * server room; direct rooms resolve to their peer User, others to a Group.
+ * `sharedContent` (share-target prefill) applies to the composer once per
+ * room entry; drafts never survive re-entry (fresh store per room), so the
+ * full-set prefill cannot clobber a live draft.
  */
 @Composable
 public fun ChatScreen(
     roomId: String,
+    sharedContent: SharePayload? = null,
     onBackPress: () -> Unit
 ) {
     var user by remember { mutableStateOf<User?>(null) }
@@ -76,7 +81,11 @@ public fun ChatScreen(
                     style = hubMessageListStyle(),
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 )
-                CometChatMessageComposer(user = u)
+                CometChatMessageComposer(
+                    user = u,
+                    initialText = sharedContent?.text,
+                    initialAttachments = sharedContent?.attachments
+                )
             } else if (g != null) {
                 CometChatMessageHeader(group = g, onBackPress = onBackPress, style = hubHeaderStyle())
                 CometChatMessageList(
@@ -84,7 +93,11 @@ public fun ChatScreen(
                     style = hubMessageListStyle(),
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 )
-                CometChatMessageComposer(group = g)
+                CometChatMessageComposer(
+                    group = g,
+                    initialText = sharedContent?.text,
+                    initialAttachments = sharedContent?.attachments
+                )
             } else {
                 Text("Room unavailable", modifier = Modifier.padding(16.dp))
             }

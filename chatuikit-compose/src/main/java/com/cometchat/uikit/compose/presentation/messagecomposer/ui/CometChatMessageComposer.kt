@@ -253,6 +253,10 @@ public fun CometChatMessageComposer(
     disableMentions: Boolean = false,
     maxLines: Int = 5,
     placeholderText: String? = null,
+    // Share-target prefill: one-shot text injection (rides the existing
+    // composeText flow) and staged attachments, consumed once per composition
+    initialText: String? = null,
+    initialAttachments: List<StagedAttachmentInput>? = null,
     // Rich text configuration
     enabledFormats: Set<RichTextFormat> = emptySet(),
     // Custom view slots
@@ -437,6 +441,18 @@ public fun CometChatMessageComposer(
         if (parentMessageId > -1) {
             composerViewModel.setParentMessageId(parentMessageId)
         }
+    }
+
+    // Share-target prefill: text rides the existing composeText flow (injected
+    // into the segment controller by the LaunchedEffect(composeText) below);
+    // attachments go straight through the tray staging path (tiles upload while
+    // the user reads/edits the text; send stays gated on all tiles DONE).
+    LaunchedEffect(initialText) {
+        initialText?.let { composerViewModel.setComposeText(it) }
+    }
+    LaunchedEffect(initialAttachments) {
+        val inputs = initialAttachments?.takeIf { it.isNotEmpty() } ?: return@LaunchedEffect
+        composerViewModel.stageAttachments(inputs)
     }
 
     // Sync attachment option visibility with ViewModel
