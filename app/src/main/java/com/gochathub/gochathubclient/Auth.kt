@@ -3,6 +3,7 @@ package com.gochathub.gochathubclient
 import com.cometchat.uikit.core.hub.AuthResponseDto
 import com.cometchat.uikit.core.hub.Hub
 import com.gochathub.gochathubclient.push.Push
+import com.gochathub.gochathubclient.ui.Accent
 
 /**
  * Session flows: login stores the bearer token and the user payload; app
@@ -33,6 +34,7 @@ public object Auth {
             val response = authenticate()
             Hub.store.token = response.token.orEmpty()
             Hub.me = response.user
+            Accent.load()
             Hub.socket.connect()
             Push.register(Hub.ctx)
             Result.success(response)
@@ -48,6 +50,7 @@ public object Auth {
         Hub.socket.close()
         Hub.wipe()
         Push.unregister(Hub.ctx)
+        Accent.hex = Accent.DEFAULT
     }
 
     /**
@@ -58,6 +61,7 @@ public object Auth {
         if (!Hub.store.hasSession()) return false
         return try {
             Hub.me = Hub.client.me()
+            Accent.load()
             Hub.socket.connect()
             Push.register(Hub.ctx)
             true

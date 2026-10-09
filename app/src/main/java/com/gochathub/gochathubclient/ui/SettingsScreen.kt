@@ -1,13 +1,18 @@
 package com.gochathub.gochathubclient.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -19,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,6 +96,38 @@ public fun SettingsScreen(onBackPress: () -> Unit) {
                 }
             } else {
                 Text("Preferences unavailable", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            SectionLabel("Accent color")
+            Text(
+                "Follows your account to every device",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Accent.swatches.chunked(8).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
+                    row.forEach { hex ->
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = if (Accent.hex == hex) MaterialTheme.colorScheme.onSurface else androidx.compose.ui.graphics.Color.Transparent,
+                                    shape = CircleShape
+                                )
+                                .padding(3.dp)
+                                .background(Accent.color(hex), CircleShape)
+                                .clickable {
+                                    if (Accent.hex != hex) scope.launch { Accent.set(hex) }
+                                }
+                        )
+                    }
+                }
+            }
+            if (Accent.hex != Accent.DEFAULT) {
+                TextButton(onClick = { scope.launch { Accent.set("") } }) {
+                    Text("Reset to default")
+                }
             }
 
             SectionLabel("Notifications")

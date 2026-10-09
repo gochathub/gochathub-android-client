@@ -135,3 +135,13 @@ were deleted.
   the server has no token setting). Phone needs the ntfy app with that default server.
 - Phone: Pixel 8a over wireless debugging (`adb connect <ip:port>`); signed in as
   `gochathub-test`.
+
+## Stage 6: Accent color preference (2026-10-09)
+
+Goal: user-picked accent following the account (phone + web), stored server-side.
+Success criteria: server swatch validation + tests green; gradle full check green;
+web typecheck/lint green; contract in sync.
+Tests: AccentTest (app), preferences_test.go (service), CI contract check.
+Spec: docs/PRIMARY_COLOR_SETTINGS.md.
+Status: Complete (server + webui + android implemented in this pass;
+server change not yet committed — see git status in all three repos).

@@ -24,6 +24,7 @@ import com.cometchat.uikit.compose.presentation.messagelist.style.CometChatMessa
 import com.cometchat.uikit.compose.presentation.shared.messagebubble.style.CometChatMessageBubbleStyle
 import com.cometchat.uikit.compose.theme.CometChatColorScheme
 import com.cometchat.uikit.compose.theme.CometChatTheme
+import com.cometchat.uikit.compose.theme.blendColors
 import com.cometchat.uikit.compose.theme.darkColorScheme
 import com.cometchat.uikit.compose.theme.lightColorScheme
 
@@ -40,9 +41,6 @@ public object GoChatHubColors {
     public val darkBackground: Color = Color(0xFF182027)
 
     // webui accents (Tailwind)
-    public val indigo300: Color = Color(0xFFA5B4FC)
-    public val indigo400: Color = Color(0xFF818CF8)
-    public val indigo50: Color = Color(0xFFEEF2FF)
     public val green500: Color = Color(0xFF22C55E)
     public val red400: Color = Color(0xFFF87171)
     public val gray100: Color = Color(0xFFF3F4F6)
@@ -59,8 +57,6 @@ public object GoChatHubColors {
     public val canvas: Color = Color(0xFFEDF0F4)
     public val container: Color = Color(0xFFE3E8EE)
     public val stroke: Color = Color(0xFFD5DBE2)
-    public val indigo600: Color = Color(0xFF4F46E5)
-    public val indigoSoft: Color = Color(0xFFE0E7FF)
     public val strokeStrong: Color = Color(0xFFB4BEC9) // card borders
     public val text2: Color = Color(0xFF566372)
 }
@@ -75,11 +71,11 @@ public fun hubTopBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColor
 )
 
 @Composable
-public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
+public fun hubColorScheme(dark: Boolean, primaryLight: Color, primaryDark: Color): CometChatColorScheme {
     val c = GoChatHubColors
     return if (dark) {
         darkColorScheme(
-            primary = c.indigo400,
+            primary = primaryDark,
             neutralColor50 = c.darkBackground, // page bg
             neutralColor100 = c.gray800,       // cards/surfaces
             neutralColor200 = c.gray700,       // inputs
@@ -101,19 +97,19 @@ public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
             textColorSecondary = c.gray300,
             textColorTertiary = c.lightSlate,
             textColorDisabled = c.gray600,
-            textColorHighlight = c.indigo400,
+            textColorHighlight = primaryDark,
             iconTintPrimary = c.white,
             iconTintSecondary = c.lightSlate,
             iconTintTertiary = c.slate,
-            iconTintHighlight = c.indigo400,
-            primaryButtonBackgroundColor = c.indigo400,
+            iconTintHighlight = primaryDark,
+            primaryButtonBackgroundColor = primaryDark,
             primaryButtonTextColor = c.white,
             successColor = c.green500,
             errorColor = c.red400
         )
     } else {
         lightColorScheme(
-            primary = c.indigo600,
+            primary = primaryLight,
             neutralColor50 = c.canvas,
             neutralColor100 = c.white,
             neutralColor200 = c.container,
@@ -135,12 +131,12 @@ public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
             textColorSecondary = c.gray600,
             textColorTertiary = c.text2,
             textColorDisabled = c.gray300,
-            textColorHighlight = c.indigo600,
+            textColorHighlight = primaryLight,
             iconTintPrimary = c.gray800,
             iconTintSecondary = c.text2,
             iconTintTertiary = c.slate,
-            iconTintHighlight = c.indigo600,
-            primaryButtonBackgroundColor = c.indigo600,
+            iconTintHighlight = primaryLight,
+            primaryButtonBackgroundColor = primaryLight,
             primaryButtonTextColor = c.white,
             successColor = c.green500,
             errorColor = c.red400
@@ -152,8 +148,11 @@ public fun hubColorScheme(dark: Boolean): CometChatColorScheme {
 public fun GoChatHubTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
     val c = GoChatHubColors
+    // server-loaded accent (default indigo) drives light+dark primaries
+    val primaryLight = Accent.color(Accent.hex)
+    val primaryDark = Accent.dark(Accent.hex)
     val material = if (dark) androidx.compose.material3.darkColorScheme(
-        primary = c.indigo400, onPrimary = c.white,
+        primary = primaryDark, onPrimary = c.white,
         secondary = c.slate, onSecondary = c.white,
         background = c.darkBackground, onBackground = c.white,
         secondaryContainer = c.gray700, onSecondaryContainer = c.white, // selected chips
@@ -162,12 +161,12 @@ public fun GoChatHubTheme(content: @Composable () -> Unit) {
         outline = c.gray600, outlineVariant = c.gray700,
         error = c.red400, onError = c.white
     ) else androidx.compose.material3.lightColorScheme(
-        primary = c.indigo600, onPrimary = c.white,
+        primary = primaryLight, onPrimary = c.white,
         secondary = c.slate, onSecondary = c.white,
         background = c.canvas, onBackground = c.gray900,
         surface = c.white, onSurface = c.gray900,
         surfaceVariant = c.container, onSurfaceVariant = c.text2,
-        secondaryContainer = c.indigoSoft, onSecondaryContainer = c.gray900, // selected chips
+        secondaryContainer = blendColors(primaryLight, c.white, 0.88), // selected chips
         surfaceContainerHighest = c.container, // switch off-track
         outline = c.gray300, outlineVariant = c.stroke,
         error = c.red400, onError = c.white
@@ -179,7 +178,7 @@ public fun GoChatHubTheme(content: @Composable () -> Unit) {
             color = MaterialTheme.colorScheme.background
         ) {
             Box {
-                CometChatTheme(colorScheme = hubColorScheme(dark), content = content)
+                CometChatTheme(colorScheme = hubColorScheme(dark, primaryLight, primaryDark), content = content)
                 // light icons stay readable on every screen: charcoal behind the status bar
                 Spacer(
                     Modifier.fillMaxWidth()
@@ -212,8 +211,8 @@ public fun hubConversationsStyle(): CometChatConversationsStyle = CometChatConve
     )
 }
 
-/** Own-message bubble is indigo400 in both modes (light would otherwise get the deeper primary). */
+/** Own-message bubble uses the dark accent twin in both modes (indigo400 parity). */
 @Composable
 public fun hubMessageListStyle(): CometChatMessageListStyle = CometChatMessageListStyle.default().copy(
-    outgoingMessageBubbleStyle = CometChatMessageBubbleStyle.outgoing(backgroundColor = GoChatHubColors.indigo400)
+    outgoingMessageBubbleStyle = CometChatMessageBubbleStyle.outgoing(backgroundColor = Accent.dark(Accent.hex))
 )

@@ -35,7 +35,9 @@ public data class Preferences(
     @SerialName("last_seen_visible") val lastSeenVisible: Boolean = false,
     @SerialName("read_receipts") val readReceipts: Boolean = false,
     @SerialName("allow_group_invites") val allowGroupInvites: Boolean = false,
-    @SerialName("allow_private_messages") val allowPrivateMessages: Boolean = false
+    @SerialName("allow_private_messages") val allowPrivateMessages: Boolean = false,
+    /** Accent swatch hex; "" (never sent by the server) means default. */
+    @SerialName("primary_color") val primaryColor: String = ""
 )
 
 @Serializable
@@ -248,7 +250,9 @@ public data class UpdatePreferencesDto(
     @SerialName("last_seen_visible") val lastSeenVisible: Boolean? = null,
     @SerialName("read_receipts") val readReceipts: Boolean? = null,
     @SerialName("allow_group_invites") val allowGroupInvites: Boolean? = null,
-    @SerialName("allow_private_messages") val allowPrivateMessages: Boolean? = null
+    @SerialName("allow_private_messages") val allowPrivateMessages: Boolean? = null,
+    /** "" resets to the default; a swatch hex sets it; null omits. */
+    @SerialName("primary_color") val primaryColor: String? = null
 )
 
 @Serializable
