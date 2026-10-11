@@ -79,7 +79,7 @@ Instrumented round trip (needs a reachable server and credentials):
 
 ## Contributing
 
-PRs welcome. Keep `api/openapi.yaml` in sync with the upstream server contract (`./gradlew checkContract`), keep changes on the datasource seam (no direct server calls from UI code) and attach tests for behavior changes.
+See the [contributing guide](https://github.com/gochathub/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/gochathub/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/gochathub/.github/blob/main/SECURITY.md) (report vulnerabilities privately, not in issues). PRs welcome. Keep `api/openapi.yaml` in sync with the upstream server contract (`./gradlew checkContract`), keep changes on the datasource seam (no direct server calls from UI code) and attach tests for behavior changes.
 
 ## License
 
