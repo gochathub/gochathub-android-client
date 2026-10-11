@@ -77,6 +77,10 @@ Instrumented round trip (needs a reachable server and credentials):
 - Server contract: [`gochathub-server/api/openapi.yaml`](https://github.com/gochathub/gochathub-server/blob/main/api/openapi.yaml) — normative; this repo pins a snapshot per commit.
 - Server repo docs: [`WEBSOCKETS.md`](https://github.com/gochathub/gochathub-server/blob/main/docs/WEBSOCKETS.md), [`UNIFIEDPUSH.md`](https://github.com/gochathub/gochathub-server/blob/main/docs/UNIFIEDPUSH.md), [`DECISIONS.md`](https://github.com/gochathub/gochathub-server/blob/main/docs/DECISIONS.md).
 
+## Support
+
+Community help is free through [GitHub issues](https://github.com/gochathub/gochathub-android-client/issues). Paid installation, Rocket.Chat migration and maintenance of the server this app connects to are available: see [gochathub.com/support](https://gochathub.com/support/).
+
 ## Contributing
 
 See the [contributing guide](https://github.com/gochathub/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/gochathub/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/gochathub/.github/blob/main/SECURITY.md) (report vulnerabilities privately, not in issues). PRs welcome. Keep `api/openapi.yaml` in sync with the upstream server contract (`./gradlew checkContract`), keep changes on the datasource seam (no direct server calls from UI code) and attach tests for behavior changes.
