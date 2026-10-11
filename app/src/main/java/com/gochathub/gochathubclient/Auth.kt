@@ -1,7 +1,9 @@
 package com.gochathub.gochathubclient
 
+import android.content.Context
 import com.cometchat.uikit.core.hub.AuthResponseDto
 import com.cometchat.uikit.core.hub.Hub
+import com.cometchat.uikit.core.hub.MobileSignIn
 import com.gochathub.gochathubclient.push.Push
 import com.gochathub.gochathubclient.ui.Accent
 
@@ -28,6 +30,39 @@ public object Auth {
             Hub.store.token = token
             AuthResponseDto(token, Hub.client.me())
         }.onFailure { Hub.store.token = "" }
+
+    private val handoffPrefs get() = Hub.ctx.getSharedPreferences("gochathub_handoff", Context.MODE_PRIVATE)
+
+    /**
+     * Browser sign-in (passkeys): remember the PKCE verifier and `state` across process
+     * death and return the web sign-in URL to open. The page deep-links back with a
+     * one-time code, see [completeBrowserLogin].
+     */
+    public fun beginBrowserLogin(server: String): String {
+        val p = MobileSignIn.newPending(server)
+        handoffPrefs.edit().putString("server", p.server).putString("state", p.state)
+            .putString("verifier", p.verifier).apply()
+        return p.loginUrl()
+    }
+
+    /** Redeem the return link; the pending hand-off is single-use whatever the outcome. */
+    public suspend fun completeBrowserLogin(link: MobileSignIn.Link): Result<AuthResponseDto> {
+        val prefs = handoffPrefs
+        val server = prefs.getString("server", null)
+        val state = prefs.getString("state", null)
+        val verifier = prefs.getString("verifier", null)
+        prefs.edit().clear().apply()
+        if (server == null || state == null || verifier == null) {
+            return Result.failure(IllegalStateException("No browser sign-in in progress."))
+        }
+        if (state != link.state) return Result.failure(IllegalStateException("Sign-in link did not match."))
+        return try {
+            Hub.client.baseUrl = server
+            loginWithToken(server, Hub.client.exchangeMobileCode(link.code, verifier))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     private suspend fun start(authenticate: suspend () -> AuthResponseDto): Result<AuthResponseDto> =
         try {

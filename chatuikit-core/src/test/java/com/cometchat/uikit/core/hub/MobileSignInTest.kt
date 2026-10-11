@@ -34,3 +34,41 @@ class MobileSignInTest {
         ).forEach { assertNull(it, MobileSignIn.parse(it)) }
     }
 }
+
+/** Browser hand-off for passkey sign-in: PKCE challenge out, one-time code back. */
+class MobileHandoffTest {
+    @Test
+    fun `challenge is base64url sha256 of the verifier`() {
+        // RFC 7636 appendix B vector
+        val p = MobileSignIn.Pending("https://x.test", "s", "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk")
+        assertEquals("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM", p.challenge)
+    }
+
+    @Test
+    fun `login url carries challenge and state, and each pending is fresh`() {
+        val a = MobileSignIn.newPending(" https://chat.example.com/ ")
+        val b = MobileSignIn.newPending("https://chat.example.com")
+        assertEquals("https://chat.example.com/access/sign-in?mobile=1&challenge=${a.challenge}&state=${a.state}", a.loginUrl())
+        assertEquals(43, a.challenge.length)
+        assert(a.verifier != b.verifier && a.state != b.state)
+    }
+
+    @Test
+    fun `parses the return link`() {
+        assertEquals(
+            MobileSignIn.Link("c0de", "st8"),
+            MobileSignIn.parseHandoff("gochathub://login?server=https%3A%2F%2Fx.test&code=c0de&state=st8")
+        )
+    }
+
+    @Test
+    fun `rejects return links without code or state, or on another host`() {
+        listOf(
+            "gochathub://login?server=https%3A%2F%2Fx.test&state=s",
+            "gochathub://login?server=https%3A%2F%2Fx.test&code=c",
+            "gochathub://login?code=&state=s",
+            "gochathub://evil?code=c&state=s",
+            "https://login?code=c&state=s",
+        ).forEach { assertNull(it, MobileSignIn.parseHandoff(it)) }
+    }
+}

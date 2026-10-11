@@ -157,6 +157,12 @@ public class HubClient(store: HubSession, http: OkHttpClient = OkHttpClient()) {
             JSON.encodeToString(Login2FARequest.serializer(), Login2FARequest(challenge, code)),
             AuthResponseDto.serializer())
 
+    /** Browser hand-off (passkey sign-in): redeem the one-time code with its PKCE verifier for an API token. */
+    public suspend fun exchangeMobileCode(code: String, verifier: String): String =
+        send("POST", "/auth/mobile/token",
+            JSON.encodeToString(MobileTokenRequest.serializer(), MobileTokenRequest(code, verifier)),
+            MobileTokenResponse.serializer()).token
+
     public suspend fun logout() {
         send("POST", "/auth/logout", null)
     }

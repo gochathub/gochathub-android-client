@@ -24,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.cometchat.uikit.core.hub.Hub
+import com.cometchat.uikit.core.hub.MobileSignIn
 import com.gochathub.gochathubclient.share.SharePayload
 import com.gochathub.gochathubclient.share.ShareTarget
 import com.gochathub.gochathubclient.ui.ChatScreen
@@ -53,7 +54,7 @@ public class MainActivity : ComponentActivity() {
         Hub.client.onUnauthorized = { runOnUiThread { loggedIn = false } }
         readRoomIntent()
         readShareIntent()
-        restoreSession()
+        if (!readBrowserLogin()) restoreSession()
         setContent {
             GoChatHubTheme {
                 // Android 13+: notifications need a runtime grant; ask once after sign-in.
@@ -136,6 +137,26 @@ public class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         readRoomIntent(intent)
         readShareIntent(intent)
+        readBrowserLogin(intent)
+    }
+
+    /**
+     * Return from the browser sign-in (passkeys): redeem the one-time code. True when
+     * the intent was such a link, so a cold start skips the stored-session restore.
+     */
+    private fun readBrowserLogin(intent: Intent? = this.intent): Boolean {
+        val link = intent?.takeIf { it.action == Intent.ACTION_VIEW }?.dataString
+            ?.let { MobileSignIn.parseHandoff(it) } ?: return false
+        intent?.data = null // a recreated activity must not redeem the same link twice
+        lifecycleScope.launch {
+            Auth.completeBrowserLogin(link)
+                .onSuccess { loggedIn = true; route = Route.HOME }
+                .onFailure {
+                    Toast.makeText(this@MainActivity, it.message ?: "Sign-in failed", Toast.LENGTH_LONG).show()
+                    if (!loggedIn) loggedIn = Auth.restore() // the stored session, if any, still stands
+                }
+        }
+        return true
     }
 
     private fun readRoomIntent(intent: Intent? = this.intent) {

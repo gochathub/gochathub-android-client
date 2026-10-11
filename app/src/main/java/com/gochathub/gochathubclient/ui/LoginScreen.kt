@@ -1,5 +1,8 @@
 package com.gochathub.gochathubclient.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,6 +57,7 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
     var busy by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     if (scanning) {
         QrScanScreen(
@@ -167,6 +172,23 @@ public fun LoginScreen(onLoggedIn: () -> Unit) {
                     else -> "Use an API token instead"
                 }
             )
+        }
+        if (pending == null) {
+            // passkeys live in the browser: it signs in and deep-links a one-time code back
+            OutlinedButton(
+                onClick = {
+                    error = null
+                    try {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(Auth.beginBrowserLogin(serverUrl)))
+                        )
+                    } catch (_: ActivityNotFoundException) {
+                        error = "No browser available."
+                    }
+                },
+                enabled = !busy && serverUrl.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Sign in with a passkey (browser)") }
         }
         error?.let {
             Spacer(Modifier.height(12.dp))

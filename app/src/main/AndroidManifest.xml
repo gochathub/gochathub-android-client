@@ -33,6 +33,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Browser sign-in return: gochathub://login?server=&code=&state= -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gochathub" android:host="login" />
+            </intent-filter>
             <!-- Share target: broad mime; ShareTarget.extract routes text vs streams -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

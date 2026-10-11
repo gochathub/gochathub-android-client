@@ -149,6 +149,15 @@ public data class LoginRequest(
 )
 
 @Serializable
+public data class MobileTokenRequest(
+    val code: String,
+    @SerialName("code_verifier") val codeVerifier: String
+)
+
+@Serializable
+public data class MobileTokenResponse(val token: String)
+
+@Serializable
 public data class Login2FARequest(
     val challenge: String,
     val code: String,
