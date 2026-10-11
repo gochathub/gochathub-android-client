@@ -20,7 +20,7 @@
 It is built on the [CometChat Android UI Kit](https://github.com/cometchat/cometchat-uikit-android) (MIT) (`chatuikit-compose`). The Kit's screens, ViewModels and theme are kept; its networking layer is replaced at the Kit's datasource seam so every screen talks to a [gochathub-server](https://github.com/gochathub/gochathub-server) deployment, and the SDK model types it kept are now plain in-tree data holders (`chatuikit-core/src/main/java/com/gochathub/chat/**`) — no closed-source dependency remains, and no CometChat service is ever contacted.
 
 - Calls/voice/video are excluded end to end ([server ADR-012](https://github.com/gochathub/gochathub-server/blob/main/docs/DECISIONS.md)); polls, stickers and AI-assistant surfaces are stripped with them — they have no server counterpart.
-- Accounts come from the server's admin CLI ([ADR-014](https://github.com/gochathub/gochathub-server/blob/main/docs/DECISIONS.md)): the app ships a login form only — no signup, no password reset.
+- Accounts are created by a server admin, through the CLI or an emailed signup invite ([ADR-026](https://github.com/gochathub/gochathub-server/blob/main/docs/DECISIONS.md), which supersedes ADR-014): the app has a sign-in flow only (password, or passkey through a browser handoff) — no in-app signup, no password reset.
 
 ## Features
 
