@@ -43,6 +43,8 @@ public class MainActivity : ComponentActivity() {
     public enum class Route { LOGIN, HOME, NEW_CHAT, SETTINGS, INVITES }
 
     private var loggedIn by mutableStateOf(false)
+    /** Stored token being validated: show a blank screen, not the login form. */
+    private var restoring by mutableStateOf(false)
     private var route by mutableStateOf(Route.HOME)
     private var openRoomId by mutableStateOf<String?>(null)
     private var sharePayload by mutableStateOf<SharePayload?>(null)
@@ -54,7 +56,10 @@ public class MainActivity : ComponentActivity() {
         Hub.client.onUnauthorized = { runOnUiThread { loggedIn = false } }
         readRoomIntent()
         readShareIntent()
-        if (!readBrowserLogin()) restoreSession()
+        if (!readBrowserLogin()) {
+            restoring = Hub.store.hasSession()
+            restoreSession()
+        }
         setContent {
             GoChatHubTheme {
                 // Android 13+: notifications need a runtime grant; ask once after sign-in.
@@ -95,6 +100,7 @@ public class MainActivity : ComponentActivity() {
                 }
                 Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                     when {
+                        restoring -> Unit
                         !loggedIn -> LoginScreen(onLoggedIn = { loggedIn = true; route = Route.HOME })
                         openRoomId != null -> ChatScreen(
                             roomId = openRoomId!!,
@@ -210,6 +216,7 @@ public class MainActivity : ComponentActivity() {
     private fun restoreSession() {
         lifecycleScope.launch {
             loggedIn = Auth.restore()
+            restoring = false
         }
     }
 }

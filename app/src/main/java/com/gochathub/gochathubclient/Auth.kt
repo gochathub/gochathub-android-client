@@ -90,21 +90,23 @@ public object Auth {
 
     /**
      * App start with a stored token: validate it and open the socket.
-     * False ⇒ token dead; wipe and show login (ADR-015 401 rule).
+     * False ⇒ token dead; wipe and show login (ADR-015 401 rule). Any other
+     * failure (offline, 5xx) keeps the session: the socket retries on its own.
      */
     public suspend fun restore(): Boolean {
         if (!Hub.store.hasSession()) return false
-        return try {
+        try {
             Hub.me = Hub.client.me()
             Accent.load()
-            Hub.socket.connect()
-            Push.register(Hub.ctx)
-            true
         } catch (e: com.cometchat.uikit.core.hub.HubApiException) {
-            if (e.httpStatus == 401) Hub.wipe()
-            false
-        } catch (_: Exception) {
-            false // transport error: treat as logged-out state until retry
-        }
+            if (e.httpStatus == 401) {
+                Hub.wipe()
+                return false
+            }
+        } catch (_: Exception) { /* offline: stay signed in */ }
+        // ponytail: Hub.me stays null until the next successful fetch after an offline start
+        Hub.socket.connect()
+        Push.register(Hub.ctx)
+        return true
     }
 }
